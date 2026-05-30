@@ -22,6 +22,12 @@ export type TimeBlock =
   | "Afternoon"
   | "Anytime";
 
+export type ChildProfile = {
+  id: string;
+  name: string;
+  colorLabel?: "sage" | "gold" | "clay" | "blue";
+};
+
 export type PlannerItem = {
   id: string;
   title: string;
@@ -29,6 +35,29 @@ export type PlannerItem = {
   category: PlanCategory;
   status: PlanStatus;
   timeBlock: TimeBlock;
+  assignedTo: string;
   notes?: string;
   actualNotes?: string;
+};
+
+export type ChildWeeklySummary = {
+  childId: string;
+  childName: string;
+  completedCount: number;
+  movedCount: number;
+  skippedCount: number;
+  plannedCount: number;
+  highlights: string[];
+  summary: string;
+};
+
+export type SavedWeekLog = {
+  id: string;
+  weekLabel: string;
+  weekStart: string;
+  weekEnd: string;
+  savedAt: string;
+  children: ChildProfile[];
+  childSummaries: ChildWeeklySummary[];
+  plans: PlannerItem[];
 };

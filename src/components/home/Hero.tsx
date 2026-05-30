@@ -18,7 +18,7 @@ export default function Hero() {
           <p className="hero-text">{site.hero.text}</p>
 
           <div className="btn-row hero-actions">
-            <Button href="/planner">
+            <Button href="/dashboard/planner">
               {site.hero.primaryCta}
               <LuArrowRight />
             </Button>
@@ -43,8 +43,8 @@ export default function Hero() {
             <span className="pill pill-sage">
               <LuCalendarDays /> Moveable weekly plans
             </span>
-            <span className="pill pill-gold">Done / moved / skipped</span>
-            <span className="pill pill-clay">No rigid curriculum lock-in</span>
+            <span className="pill pill-gold">Saved week records</span>
+            <span className="pill pill-clay">Child rundowns</span>
           </div>
         </FadeIn>
       </div>

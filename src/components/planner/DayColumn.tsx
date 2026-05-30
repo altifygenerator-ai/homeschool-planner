@@ -1,7 +1,9 @@
 "use client";
 
 import PlanCard from "@/components/planner/PlanCard";
+import { dayLabels } from "@/data/demoPlans";
 import type {
+  ChildProfile,
   PlanCategory,
   PlannerItem,
   PlanStatus,
@@ -11,6 +13,7 @@ import type {
 type DayColumnProps = {
   day: WeekDay;
   plans: PlannerItem[];
+  children: ChildProfile[];
   onMove: (id: string, day: WeekDay) => void;
   onStatusChange: (id: string, status: PlanStatus) => void;
   onCategoryChange: (id: string, category: PlanCategory) => void;
@@ -21,6 +24,7 @@ type DayColumnProps = {
 export default function DayColumn({
   day,
   plans,
+  children,
   onMove,
   onStatusChange,
   onCategoryChange,
@@ -30,7 +34,7 @@ export default function DayColumn({
   return (
     <section className="day-column">
       <div className="day-column-header">
-        <p>{day}</p>
+        <p>{dayLabels[day]}</p>
         <span>{plans.length}</span>
       </div>
 
@@ -40,6 +44,7 @@ export default function DayColumn({
             <PlanCard
               key={plan.id}
               plan={plan}
+              children={children}
               onMove={onMove}
               onStatusChange={onStatusChange}
               onCategoryChange={onCategoryChange}

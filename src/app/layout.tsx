@@ -15,9 +15,9 @@ const body = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "SoftWeek | A Softer Homeschool Planner",
+  title: "SoftWeek | A Flexible Homeschool Planner",
   description:
-    "A calm homeschool planner for logging what actually happened, cleaning rough notes into useful summaries, and keeping flexible weekly records.",
+    "SoftWeek is an early homeschool planner project built around flexible weekly planning, saved week records, and gentle child portfolios.",
 };
 
 export default function RootLayout({

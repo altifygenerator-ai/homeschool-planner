@@ -1,9 +1,9 @@
-import { LuBookCheck, LuCirclePlus, LuMoveRight } from "react-icons/lu";
+import { LuArchive, LuBookCheck, LuCirclePlus, LuMoveRight } from "react-icons/lu";
 import { site } from "@/data/site";
 import SectionHeading from "@/components/shared/SectionHeading";
 import FadeIn from "@/components/shared/FadeIn";
 
-const icons = [ LuCirclePlus, LuMoveRight, LuBookCheck];
+const icons = [LuCirclePlus, LuMoveRight, LuArchive];
 
 export default function HowItWorks() {
   return (
@@ -12,13 +12,13 @@ export default function HowItWorks() {
         <FadeIn>
           <SectionHeading
             eyebrow="How it works"
-            title="A flexible weekly board instead of a rigid schedule."
-            text="The planner starts simple: add a loose plan, move it when needed, mark what happened, and keep the week from feeling broken."
+            title="A flexible weekly board first. Full accounts later."
+            text="The current version is meant to test the planning flow before adding Supabase accounts and permanent storage. For now, plans and saved weeks stay in your browser."
           />
 
           <div className="btn-row" style={{ marginTop: "1.7rem" }}>
-            <a className="btn btn-primary" href="/planner">
-              Open planner demo
+            <a className="btn btn-primary" href="/dashboard/planner">
+              Open early planner
             </a>
             <a className="btn btn-secondary" href="/beta">
               Help test it
@@ -28,7 +28,7 @@ export default function HowItWorks() {
 
         <div className="stack-md">
           {site.steps.map((step, index) => {
-            const Icon = icons[index];
+            const Icon = icons[index] ?? LuBookCheck;
 
             return (
               <FadeIn key={step.title} delay={index * 0.08}>

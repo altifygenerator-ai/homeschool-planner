@@ -48,7 +48,8 @@ export const demoPlans: PlannerItem[] = [
     category: "reading",
     status: "planned",
     timeBlock: "Morning",
-    notes: "Read together and let them narrate it back.",
+    assignedTo: "child-emma",
+    notes: "Read together and let her narrate it back.",
   },
   {
     id: "plan-2",
@@ -57,6 +58,7 @@ export const demoPlans: PlannerItem[] = [
     category: "nature",
     status: "done",
     timeBlock: "Afternoon",
+    assignedTo: "everyone",
     notes: "Collect leaves and sketch one or two.",
     actualNotes: "Talked about oak leaves and weather.",
   },
@@ -67,6 +69,7 @@ export const demoPlans: PlannerItem[] = [
     category: "life-skills",
     status: "done",
     timeBlock: "Midday",
+    assignedTo: "child-jack",
     notes: "Use baking or lunch prep for halves and quarters.",
   },
   {
@@ -76,6 +79,7 @@ export const demoPlans: PlannerItem[] = [
     category: "math",
     status: "moved",
     timeBlock: "Morning",
+    assignedTo: "child-emma",
     notes: "Move this if the morning gets too full.",
   },
 ];

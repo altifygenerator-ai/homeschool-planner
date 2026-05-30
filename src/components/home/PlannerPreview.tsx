@@ -1,4 +1,5 @@
 import {
+  LuArchive,
   LuBookOpen,
   LuCheck,
   LuChevronDown,
@@ -24,7 +25,7 @@ export default function PlannerPreview() {
         <div className="pill-row">
           <span className="pill pill-sage">This week</span>
           <span className="pill">Flexible plans</span>
-          <span className="pill pill-gold">Real-life notes</span>
+          <span className="pill pill-gold">Saved locally for now</span>
         </div>
 
         <div className="activity-row">
@@ -34,9 +35,7 @@ export default function PlannerPreview() {
 
           <div>
             <p className="activity-title">Read chapter 4 together</p>
-            <p className="activity-meta">
-              Reading · Morning
-            </p>
+            <p className="activity-meta">Reading · Morning · Emma</p>
 
             <div className="pill-row" style={{ marginTop: "0.65rem" }}>
               <span className="pill pill-sage">
@@ -54,22 +53,23 @@ export default function PlannerPreview() {
 
           <div>
             <p className="activity-title">Kitchen fractions</p>
-            <p className="activity-meta">
-              Life skills · Midday
-            </p>
+            <p className="activity-meta">Life skills · Midday · Jack</p>
 
             <div className="pill-row" style={{ marginTop: "0.65rem" }}>
               <span className="pill pill-gold">Moved</span>
-              <span className="pill">No pressure</span>
+              <span className="pill">Still counted</span>
             </div>
           </div>
         </div>
 
         <div className="summary-box">
-          <p className="summary-label">What actually happened</p>
+          <p className="summary-label">
+            <LuArchive style={{ display: "inline", marginRight: "0.35rem" }} />
+            Saved week idea
+          </p>
           <p className="summary-text">
-            We skipped the worksheet and practiced fractions while baking. Still
-            counted. Still recorded. No need to restart the whole plan.
+            At the end of the week, save the log and get a short rundown for
+            each child based on what was planned, moved, skipped, and completed.
           </p>
         </div>
 
@@ -80,9 +80,7 @@ export default function PlannerPreview() {
 
           <div>
             <p className="activity-title">Nature walk + leaf sketching</p>
-            <p className="activity-meta">
-              Nature · Afternoon
-            </p>
+            <p className="activity-meta">Nature · Afternoon · Everyone</p>
 
             <div className="pill-row" style={{ marginTop: "0.65rem" }}>
               <span className="pill pill-sage">

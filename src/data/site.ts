@@ -19,43 +19,40 @@ export const site = {
       href: "/beta",
     },
   ],
-
   hero: {
     eyebrow: "Flexible homeschool planning",
     title: "A homeschool planner that can move with your week.",
-    text: "Plan loosely, move things when life changes, and keep track of what actually happened without feeling locked into a perfect schedule.",
-    primaryCta: "Try the demo",
-    secondaryCta: "Join the beta list",
-    note: "Built for homeschool families who need planning to feel lighter, calmer, and more flexible.",
+    text: "SoftWeek is being built for homeschool families who need planning to feel lighter. Add loose plans, move things when life changes, save weekly records, and start building a simple history for each child without being locked into a rigid schedule.",
+    primaryCta: "Try the early version",
+    secondaryCta: "Join the tester list",
+    note: "Early version: your plans and saved weeks are stored in this browser for now while we test what works.",
   },
-
   problems: [
     {
       title: "Real homeschool weeks change.",
-      text: "A sick day, a grocery run, a long outside afternoon, or a random rabbit trail can throw off a rigid planner fast. SoftWeek is built so the plan can shift without making the week feel ruined.",
+      text: "A sick day, errands, a long outside afternoon, or a random rabbit trail can throw off a rigid planner fast. SoftWeek is being shaped around the idea that the plan should be able to move with the family.",
     },
     {
-      title: "Most planners make you feel behind.",
-      text: "Pretty boxes are nice until they become another thing to keep up with. This planner focuses on small, movable plans instead of forcing every day to look perfect.",
+      title: "Planning should not make parents feel behind.",
+      text: "A planner should help you keep up, not make every change feel like failure. The goal is loose plans, simple statuses, and a weekly board that still feels calm when life happens.",
     },
     {
-      title: "You still need a record of what happened.",
-      text: "The goal is not to over-document everything. It is to keep simple weekly notes, mark what got done, move what changed, and remember the real learning that happened.",
+      title: "Records matter, but they should not become busywork.",
+      text: "Saved weeks and child rundowns can help families look back over the year without having to rebuild every detail later. This early version is testing that flow before adding full accounts and database storage.",
     },
   ],
-
   steps: [
     {
-      title: "Add a loose plan",
-      text: "Drop in a reading lesson, nature walk, math review, library trip, or life-skills activity without building a full rigid schedule.",
+      title: "Plan the week loosely",
+      text: "Add reading, math, outings, nature study, life skills, or whatever fits your family without setting up a strict curriculum system first.",
     },
     {
-      title: "Move it when life changes",
-      text: "If Monday gets full, move the plan to Wednesday. Mark it done, skipped, or moved without making the whole week feel off track.",
+      title: "Move things when life changes",
+      text: "Move a plan to another day, mark it done, skip it, or add a quick note about what actually happened.",
     },
     {
-      title: "Keep a real-life weekly record",
-      text: "Add quick notes about what actually happened and keep the week organized in a way that feels calm instead of stressful.",
+      title: "Save the week as a record",
+      text: "When the week feels ready, save it as a simple weekly log with child rundowns. Right now that saves locally in your browser while the product direction is being tested.",
     },
   ],
 };

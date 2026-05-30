@@ -18,15 +18,15 @@ export default function BetaCTA() {
             }}
           >
             <div>
-              <p className="eyebrow">Built with real families</p>
+              <p className="eyebrow">Built with real feedback</p>
               <h2 className="section-title-sm">
-                I’m testing this before turning it into a full app.
+                We’re testing the flow before building the full account system.
               </h2>
               <p className="section-lead">
-                The goal is to build a planner that helps homeschool parents
-                feel less behind, not one that adds more boxes to fill out.
-                Early testers can help shape the weekly planning flow before it
-                gets bigger.
+                SoftWeek is still early. The planner works with local browser
+                storage right now so families can click around, test the flow,
+                and help shape what should come next before we add accounts,
+                synced storage, and bigger features.
               </p>
             </div>
 
@@ -37,7 +37,7 @@ export default function BetaCTA() {
 
               <div className="btn-row">
                 <Button href="/beta">
-                  Join the beta list
+                  Join the tester list
                   <LuArrowRight />
                 </Button>
               </div>

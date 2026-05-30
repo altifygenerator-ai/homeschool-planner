@@ -21,6 +21,7 @@ import {
   weekDays,
 } from "@/data/demoPlans";
 import type {
+  ChildProfile,
   PlanCategory,
   PlannerItem,
   PlanStatus,
@@ -29,6 +30,7 @@ import type {
 
 type PlanCardProps = {
   plan: PlannerItem;
+  children: ChildProfile[];
   onMove: (id: string, day: WeekDay) => void;
   onStatusChange: (id: string, status: PlanStatus) => void;
   onCategoryChange: (id: string, category: PlanCategory) => void;
@@ -55,6 +57,7 @@ function getStatusLabel(status: PlanStatus) {
 
 export default function PlanCard({
   plan,
+  children,
   onMove,
   onStatusChange,
   onCategoryChange,
@@ -63,6 +66,8 @@ export default function PlanCard({
 }: PlanCardProps) {
   const [isOpen, setIsOpen] = useState(false);
   const Icon = categoryIcons[plan.category];
+  const assignedChild =
+    children.find((child) => child.id === plan.assignedTo)?.name ?? "Everyone";
 
   return (
     <article className={`plan-card plan-card-${plan.status}`}>
@@ -79,12 +84,14 @@ export default function PlanCard({
             </span>
           </div>
 
-  <div className="plan-meta-stack">
-  <span>{categoryLabels[plan.category]}</span>
-  <span>{plan.timeBlock}</span>
-</div>
+          <div className="plan-meta-stack">
+            <span>{categoryLabels[plan.category]}</span>
+            <span>{plan.timeBlock}</span>
+          </div>
         </div>
       </div>
+
+      <div className="assigned-pill">For {assignedChild}</div>
 
       {plan.notes ? <p className="plan-notes">{plan.notes}</p> : null}
 
@@ -136,10 +143,10 @@ export default function PlanCard({
                 }
               >
                 {weekDays.map((day) => (
-  <option key={day} value={day}>
-    {dayLabels[day]}
-  </option>
-))}
+                  <option key={day} value={day}>
+                    {dayLabels[day]}
+                  </option>
+                ))}
               </select>
             </label>
 

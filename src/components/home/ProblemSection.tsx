@@ -10,9 +10,9 @@ export default function ProblemSection() {
     <section className="section-paper">
       <div className="container">
         <SectionHeading
-          eyebrow="The actual problem"
-          title="Most planners act like homeschool weeks never change."
-          text="But real homeschool days are flexible. Some learning is planned, some happens naturally, and some things need to move. SoftWeek is built around that reality."
+          eyebrow="The problem we’re testing"
+          title="Most planners assume homeschool weeks stay neat."
+          text="But real weeks change. SoftWeek is being built around flexible planning, simple records, and child history without turning homeschool into another admin job."
           center
         />
 

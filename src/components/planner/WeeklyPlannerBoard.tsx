@@ -3,6 +3,7 @@
 import DayColumn from "@/components/planner/DayColumn";
 import { weekDays } from "@/data/demoPlans";
 import type {
+  ChildProfile,
   PlanCategory,
   PlannerItem,
   PlanStatus,
@@ -11,6 +12,7 @@ import type {
 
 type WeeklyPlannerBoardProps = {
   plans: PlannerItem[];
+  children: ChildProfile[];
   onMove: (id: string, day: WeekDay) => void;
   onStatusChange: (id: string, status: PlanStatus) => void;
   onCategoryChange: (id: string, category: PlanCategory) => void;
@@ -20,6 +22,7 @@ type WeeklyPlannerBoardProps = {
 
 export default function WeeklyPlannerBoard({
   plans,
+  children,
   onMove,
   onStatusChange,
   onCategoryChange,
@@ -51,6 +54,7 @@ export default function WeeklyPlannerBoard({
             key={day}
             day={day}
             plans={plans.filter((plan) => plan.day === day)}
+            children={children}
             onMove={onMove}
             onStatusChange={onStatusChange}
             onCategoryChange={onCategoryChange}
