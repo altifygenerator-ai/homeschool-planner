@@ -1,9 +1,10 @@
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-import Hero from "@/components/home/Hero";
-import ProblemSection from "@/components/home/ProblemSection";
-import HowItWorks from "@/components/home/HowItWorks";
 import BetaCTA from "@/components/home/BetaCTA";
+import Hero from "@/components/home/Hero";
+import HowItWorks from "@/components/home/HowItWorks";
+import PlannerPreview from "@/components/home/PlannerPreview";
+import ProblemSection from "@/components/home/ProblemSection";
+import Footer from "@/components/layout/Footer";
+import Header from "@/components/layout/Header";
 
 export default function Home() {
   return (

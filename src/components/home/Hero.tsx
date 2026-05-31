@@ -1,4 +1,4 @@
-import { LuArrowRight, LuCalendarDays, LuLeaf } from "react-icons/lu";
+import { LuArrowRight, LuLeaf, LuMessageSquareText } from "react-icons/lu";
 import { site } from "@/data/site";
 import Button from "@/components/shared/Button";
 import FadeIn from "@/components/shared/FadeIn";
@@ -25,6 +25,7 @@ export default function Hero() {
 
             <Button href="/beta" variant="secondary">
               {site.hero.secondaryCta}
+              <LuMessageSquareText />
             </Button>
           </div>
 
@@ -40,11 +41,9 @@ export default function Hero() {
           </div>
 
           <div className="pill-row" style={{ marginTop: "1rem" }}>
-            <span className="pill pill-sage">
-              <LuCalendarDays /> Moveable weekly plans
-            </span>
+            <span className="pill pill-sage">Multi-day plans</span>
             <span className="pill pill-gold">Saved week records</span>
-            <span className="pill pill-clay">Child rundowns</span>
+            <span className="pill pill-clay">Tester feedback wanted</span>
           </div>
         </FadeIn>
       </div>

@@ -1,5 +1,37 @@
+import Link from "next/link";
+import {
+  LuArrowRight,
+  LuCircleCheck,
+  LuMail,
+  LuMessageSquareText,
+  LuMousePointerClick,
+} from "react-icons/lu";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+
+const testerEmail =
+  "mailto:jlccustoms@gmail.com?subject=SoftWeek%20Beta%20Tester&body=Hey%2C%20I%20saw%20SoftWeek%20and%20I%27d%20be%20interested%20in%20testing%20it.%0A%0AA%20little%20about%20our%20homeschool%20setup%3A%0A%0AWhat%20feels%20hardest%20about%20planning%20right%20now%3A%0A";
+
+const feedbackEmail =
+  "mailto:jlccustoms@gmail.com?subject=SoftWeek%20Feedback&body=Hey%2C%20I%20tried%20SoftWeek%20and%20here%27s%20my%20feedback.%0A%0AWhat%20felt%20useful%3A%0A%0AWhat%20felt%20confusing%3A%0A%0AWhat%20I%20wish%20it%20could%20do%3A%0A%0AAnything%20that%20felt%20too%20rigid%20or%20too%20busy%3A%0A";
+
+const feedbackPoints = [
+  {
+    icon: LuMousePointerClick,
+    title: "Try the weekly planner",
+    text: "Add a plan, choose one or several days, move cards around, mark things done or skipped, and see if the flow makes sense.",
+  },
+  {
+    icon: LuCircleCheck,
+    title: "Save a week",
+    text: "Use the save-week button and check whether the child rundowns feel helpful or if they need to work differently.",
+  },
+  {
+    icon: LuMessageSquareText,
+    title: "Tell me what felt off",
+    text: "The most helpful feedback is what felt confusing, cramped, too rigid, or missing for your actual homeschool week.",
+  },
+];
 
 export default function BetaPage() {
   return (
@@ -8,70 +40,104 @@ export default function BetaPage() {
 
       <section className="section">
         <div className="container">
-          <div className="section-center">
-            <p className="eyebrow">Early tester list</p>
-            <h1 className="section-title">
-              Help shape a homeschool planner that feels less stressful.
-            </h1>
-            <p className="section-lead">
-              This beta page is a placeholder for now. The first version will
-              collect interest from homeschool parents who want a softer way to
-              log activities, clean up notes, and keep weekly records.
-            </p>
+          <div className="beta-hero-grid">
+            <div>
+              <p className="eyebrow">Early tester feedback</p>
+
+              <h1 className="section-title">
+                Help shape a homeschool planner that feels less stressful.
+              </h1>
+
+              <p className="section-lead">
+                SoftWeek is still early, but the planning flow is live enough to
+                test. Right now it saves in your browser while I figure out what
+                homeschool families actually need before building the full
+                account system.
+              </p>
+
+              <div className="btn-row beta-actions">
+                <Link className="btn btn-primary" href="/dashboard/planner">
+                  Try the early planner
+                  <LuArrowRight />
+                </Link>
+
+                <Link className="btn btn-secondary" href={testerEmail}>
+                  <LuMail />
+                  Email me to test
+                </Link>
+              </div>
+
+              <p className="hero-note">
+                No account needed yet. No payment. No permanent cloud storage
+                yet. This is for testing the flow and getting real feedback
+                before the bigger version is built.
+              </p>
+            </div>
+
+            <div className="form-card beta-feedback-card">
+              <p className="eyebrow">What I’m looking for</p>
+              <h2 className="section-title-sm">Tell me what actually helps and what doesn’t.</h2>
+
+              <p className="text-soft">
+                I’m trying to find out if SoftWeek actually helps with flexible
+                homeschool planning, saved weeks, child records, and the feeling
+                of not being “behind” just because the week changed.
+              </p>
+
+              <div className="beta-question-list">
+                <p>Does adding plans feel easy?</p>
+                <p>Would multi-day plans save you time?</p>
+                <p>Do saved weeks and child rundowns feel useful?</p>
+                <p>What feels cramped, confusing, or unnecessary?</p>
+              </div>
+
+              <Link className="btn btn-primary" href={feedbackEmail}>
+                <LuMessageSquareText />
+                Send feedback
+              </Link>
+            </div>
           </div>
 
-          <div
-            className="form-card"
-            style={{
-              maxWidth: "680px",
-              margin: "2rem auto 0",
-            }}
-          >
-            <form className="form-grid">
-              <div className="field-group">
-                <label className="field-label" htmlFor="name">
-                  Name
-                </label>
-                <input
-                  className="input"
-                  id="name"
-                  placeholder="Your name"
-                  type="text"
-                />
-              </div>
+          <div className="beta-card-grid">
+            {feedbackPoints.map((item) => {
+              const Icon = item.icon;
 
-              <div className="field-group">
-                <label className="field-label" htmlFor="email">
-                  Email
-                </label>
-                <input
-                  className="input"
-                  id="email"
-                  placeholder="you@example.com"
-                  type="email"
-                />
-              </div>
+              return (
+                <article className="feature-card" key={item.title}>
+                  <div className="feature-icon">
+                    <Icon />
+                  </div>
 
-              <div className="field-group">
-                <label className="field-label" htmlFor="message">
-                  What feels hardest about homeschool planning right now?
-                </label>
-                <textarea
-                  className="textarea"
-                  id="message"
-                  placeholder="Planning ahead, logging what we did, keeping records, feeling behind..."
-                />
-              </div>
+                  <h3 className="feature-title">{item.title}</h3>
+                  <p className="feature-text">{item.text}</p>
+                </article>
+              );
+            })}
+          </div>
 
-              <button className="btn btn-primary" type="button">
-                Join beta list
-              </button>
-
-              <p className="text-small">
-                This form is visual only for the first MVP pass. We’ll wire it
-                up later once the landing page direction feels right.
+          <div className="soft-card beta-note-card">
+            <div>
+              <p className="eyebrow">Quick note</p>
+              <h2 className="section-title-sm">
+                This is local-storage testing for now.
+              </h2>
+              <p className="section-lead">
+                Anything you add is saved in your browser for testing. The full
+                SaaS version later would use accounts, database-backed saved
+                weeks, child profiles, and backups. For now, I’m keeping it
+                simple so the planner flow can be shaped by real families first.
               </p>
-            </form>
+            </div>
+
+            <div className="btn-row">
+              <Link className="btn btn-primary" href="/dashboard/planner">
+                Open planner
+              </Link>
+
+              <Link className="btn btn-secondary" href={feedbackEmail}>
+                Send feedback
+              </Link>
+            </div>
           </div>
         </div>
       </section>

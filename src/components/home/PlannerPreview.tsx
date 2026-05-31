@@ -4,6 +4,7 @@ import {
   LuCheck,
   LuChevronDown,
   LuLeaf,
+  LuMessageSquareText,
   LuSoup,
   LuX,
 } from "react-icons/lu";
@@ -24,8 +25,8 @@ export default function PlannerPreview() {
       <div className="planner-content">
         <div className="pill-row">
           <span className="pill pill-sage">This week</span>
-          <span className="pill">Flexible plans</span>
-          <span className="pill pill-gold">Saved locally for now</span>
+          <span className="pill">Moveable cards</span>
+          <span className="pill pill-gold">Local save for now</span>
         </div>
 
         <div className="activity-row">
@@ -52,12 +53,12 @@ export default function PlannerPreview() {
           </div>
 
           <div>
-            <p className="activity-title">Kitchen fractions</p>
-            <p className="activity-meta">Life skills · Midday · Jack</p>
+            <p className="activity-title">Swimming / movement time</p>
+            <p className="activity-meta">Mon · Wed · Fri · Everyone</p>
 
             <div className="pill-row" style={{ marginTop: "0.65rem" }}>
-              <span className="pill pill-gold">Moved</span>
-              <span className="pill">Still counted</span>
+              <span className="pill pill-gold">Multi-day</span>
+              <span className="pill">Added once</span>
             </div>
           </div>
         </div>
@@ -68,8 +69,8 @@ export default function PlannerPreview() {
             Saved week idea
           </p>
           <p className="summary-text">
-            At the end of the week, save the log and get a short rundown for
-            each child based on what was planned, moved, skipped, and completed.
+            Save the week and get a simple child rundown based on what was
+            planned, moved, skipped, completed, and noted.
           </p>
         </div>
 
@@ -94,6 +95,19 @@ export default function PlannerPreview() {
               </span>
             </div>
           </div>
+        </div>
+
+        <div className="summary-box feedback-summary-box">
+          <p className="summary-label">
+            <LuMessageSquareText
+              style={{ display: "inline", marginRight: "0.35rem" }}
+            />
+            What testers are helping shape
+          </p>
+          <p className="summary-text">
+            The planner flow, multi-day activities, saved weeks, child records,
+            and whether the whole thing feels calm enough to actually use.
+          </p>
         </div>
       </div>
     </div>

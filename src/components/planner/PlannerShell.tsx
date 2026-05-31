@@ -52,8 +52,8 @@ export default function PlannerShell() {
     );
   }, [activeChildId, plans]);
 
-  function handleAddPlan(plan: PlannerItem) {
-    setPlans((current) => [plan, ...current]);
+  function handleAddPlans(newPlans: PlannerItem[]) {
+    setPlans((current) => [...newPlans, ...current]);
     setSavedMessage("");
   }
 
@@ -69,6 +69,7 @@ export default function PlannerShell() {
           : plan
       )
     );
+
     setSavedMessage("");
   }
 
@@ -76,6 +77,7 @@ export default function PlannerShell() {
     setPlans((current) =>
       current.map((plan) => (plan.id === id ? { ...plan, status } : plan))
     );
+
     setSavedMessage("");
   }
 
@@ -83,6 +85,7 @@ export default function PlannerShell() {
     setPlans((current) =>
       current.map((plan) => (plan.id === id ? { ...plan, category } : plan))
     );
+
     setSavedMessage("");
   }
 
@@ -92,6 +95,7 @@ export default function PlannerShell() {
         plan.id === id ? { ...plan, actualNotes: value } : plan
       )
     );
+
     setSavedMessage("");
   }
 
@@ -113,21 +117,22 @@ export default function PlannerShell() {
   }
 
   return (
-    <div>
-      <div className="dashboard-page-heading">
-        <p className="eyebrow">Current planner</p>
-        <h1 className="section-title">
-          Plan gently, then save the week when it’s ready.
-        </h1>
-        <p className="section-lead">
-          This page is only for the current week: add loose plans, move things
-          around, mark what happened, and save the week record.
-        </p>
+    <div className="planner-workspace">
+      <section className="planner-page-heading">
+        <div>
+          <p className="eyebrow">Current planner</p>
 
-        <div
-          className="btn-row"
-          style={{ justifyContent: "center", marginTop: "1.5rem" }}
-        >
+          <h1 className="section-title">
+            Plan gently, then save the week when it’s ready.
+          </h1>
+
+          <p className="section-lead">
+            Add loose plans, place them on one day or several, move things
+            around, mark what happened, and save the week as a simple record.
+          </p>
+        </div>
+
+        <div className="planner-heading-actions">
           <button
             className="btn btn-secondary"
             type="button"
@@ -144,37 +149,37 @@ export default function PlannerShell() {
         {savedMessage ? (
           <p className="planner-save-message">{savedMessage}</p>
         ) : null}
-      </div>
+      </section>
 
-      <div className="planner-demo-grid">
-        <div className="stack-md">
-          <AddPlanForm children={demoChildren} onAddPlan={handleAddPlan} />
+      <section className="planner-add-row">
+        <AddPlanForm children={demoChildren} onAddPlans={handleAddPlans} />
+      </section>
 
-          <SaveWeekPanel
-            plans={plans}
-            children={demoChildren}
-            onSaveWeek={handleSaveWeek}
-          />
-        </div>
+      <section className="planner-tools-row">
+        <ChildSelector
+          children={demoChildren}
+          activeChildId={activeChildId}
+          onChange={setActiveChildId}
+        />
 
-        <div className="stack-md">
-          <ChildSelector
-            children={demoChildren}
-            activeChildId={activeChildId}
-            onChange={setActiveChildId}
-          />
+        <SaveWeekPanel
+          plans={plans}
+          children={demoChildren}
+          onSaveWeek={handleSaveWeek}
+        />
+      </section>
 
-          <WeeklyPlannerBoard
-            plans={visiblePlans}
-            children={demoChildren}
-            onMove={handleMove}
-            onStatusChange={handleStatusChange}
-            onCategoryChange={handleCategoryChange}
-            onActualNotesChange={handleActualNotesChange}
-            onDelete={handleDelete}
-          />
-        </div>
-      </div>
+      <section className="planner-board-row">
+        <WeeklyPlannerBoard
+          plans={visiblePlans}
+          children={demoChildren}
+          onMove={handleMove}
+          onStatusChange={handleStatusChange}
+          onCategoryChange={handleCategoryChange}
+          onActualNotesChange={handleActualNotesChange}
+          onDelete={handleDelete}
+        />
+      </section>
     </div>
   );
 }

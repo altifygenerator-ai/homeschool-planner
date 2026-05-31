@@ -1,18 +1,18 @@
-import { LuCalendarX, LuMoveRight, LuNotebookPen } from "react-icons/lu";
+import { LuCalendarX, LuCopyPlus, LuNotebookPen } from "react-icons/lu";
 import { site } from "@/data/site";
 import SectionHeading from "@/components/shared/SectionHeading";
 import FadeIn from "@/components/shared/FadeIn";
 
-const icons = [LuCalendarX, LuMoveRight, LuNotebookPen];
+const icons = [LuCalendarX, LuCopyPlus, LuNotebookPen];
 
 export default function ProblemSection() {
   return (
     <section className="section-paper">
       <div className="container">
         <SectionHeading
-          eyebrow="The problem we’re testing"
-          title="Most planners assume homeschool weeks stay neat."
-          text="But real weeks change. SoftWeek is being built around flexible planning, simple records, and child history without turning homeschool into another admin job."
+          eyebrow="What we’re testing"
+          title="SoftWeek is being shaped around real homeschool weeks."
+          text="The early version is live so homeschool families can test the flow before the full account system, database storage, and premium features are built."
           center
         />
 

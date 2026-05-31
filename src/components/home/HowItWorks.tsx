@@ -12,16 +12,16 @@ export default function HowItWorks() {
         <FadeIn>
           <SectionHeading
             eyebrow="How it works"
-            title="A flexible weekly board first. Full accounts later."
-            text="The current version is meant to test the planning flow before adding Supabase accounts and permanent storage. For now, plans and saved weeks stay in your browser."
+            title="Try the flow first. Help shape the full tool."
+            text="SoftWeek is not trying to become a rigid curriculum system. The goal is a gentle weekly planner that lets parents plan, adjust, save, and look back without adding more stress."
           />
 
           <div className="btn-row" style={{ marginTop: "1.7rem" }}>
             <a className="btn btn-primary" href="/dashboard/planner">
-              Open early planner
+              Open planner demo
             </a>
             <a className="btn btn-secondary" href="/beta">
-              Help test it
+              Give feedback
             </a>
           </div>
         </FadeIn>
