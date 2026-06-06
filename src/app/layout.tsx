@@ -34,6 +34,9 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "SoftWeek Planner" }],
   creator: "SoftWeek Planner",
+  verification: {
+    google: "0mLpkqixBfgJeNzzMQ9N_WWnKWxiAcm2Sa1MRief_Wk",
+  },
   openGraph: {
     title: "SoftWeek Planner | A Softer Homeschool Planner",
     description:
