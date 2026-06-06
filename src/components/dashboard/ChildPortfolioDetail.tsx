@@ -2,9 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { demoChildren } from "@/data/demoChildren";
-import { getSavedWeeks } from "@/lib/plannerStorage";
-import type { SavedWeekLog } from "@/types/planner";
+import { getChildren, getSavedWeeks } from "@/lib/plannerStorage";
+import type { ChildProfile, SavedWeekLog } from "@/types/planner";
 
 type ChildPortfolioDetailProps = {
   childId: string;
@@ -14,12 +13,22 @@ export default function ChildPortfolioDetail({
   childId,
 }: ChildPortfolioDetailProps) {
   const [savedWeeks, setSavedWeeks] = useState<SavedWeekLog[]>([]);
+  const [children, setChildren] = useState<ChildProfile[]>([]);
 
   useEffect(() => {
-    setSavedWeeks(getSavedWeeks());
+    const timer = window.setTimeout(() => {
+      setSavedWeeks(getSavedWeeks());
+      setChildren(getChildren());
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
-  const child = demoChildren.find((item) => item.id === childId);
+  const child =
+    children.find((item) => item.id === childId) ??
+    savedWeeks
+      .flatMap((week) => week.children)
+      .find((item) => item.id === childId);
 
   const summaries = useMemo(() => {
     return savedWeeks.flatMap((week) =>
@@ -51,7 +60,7 @@ export default function ChildPortfolioDetail({
       <div className="paper-card child-detail-card">
         <h1 className="section-title-sm">Child not found.</h1>
         <p className="text-soft">
-          This demo child profile does not exist. Go back to the children page.
+          This child profile is not available in the current browser data. Go back to the children page.
         </p>
         <Link className="btn btn-secondary" href="/dashboard/children">
           Back to children
@@ -72,7 +81,7 @@ export default function ChildPortfolioDetail({
         <h1 className="section-title">{child.name}</h1>
         <p className="section-lead">
           A simple look at saved weekly rundowns and activities tied to this
-          child. Later this can become the printable year view.
+          child.
         </p>
 
         <div className="dashboard-stat-row">

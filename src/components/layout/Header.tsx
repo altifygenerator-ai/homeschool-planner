@@ -22,9 +22,10 @@ export default function Header() {
           ))}
         </nav>
 
-        <Button href="/beta" variant="secondary">
-          Early access
-        </Button>
+        <div className="header-actions">
+          <Button href="/dashboard/planner">Open planner</Button>
+          <Button href="/beta" variant="secondary">Feedback</Button>
+        </div>
       </div>
     </header>
   );

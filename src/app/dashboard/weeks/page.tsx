@@ -10,7 +10,8 @@ export default function SavedWeeksPage() {
   const [savedWeeks, setSavedWeeks] = useState<SavedWeekLog[]>([]);
 
   useEffect(() => {
-    setSavedWeeks(getSavedWeeks());
+    const timer = window.setTimeout(() => setSavedWeeks(getSavedWeeks()), 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   function handleDeleteWeek(weekId: string) {

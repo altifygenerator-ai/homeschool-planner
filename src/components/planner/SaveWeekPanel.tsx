@@ -8,13 +8,13 @@ import { generateChildWeeklySummaries } from "@/lib/weeklySummary";
 
 type SaveWeekPanelProps = {
   plans: PlannerItem[];
-  children: ChildProfile[];
+  childProfiles: ChildProfile[];
   onSaveWeek: (week: SavedWeekLog) => void;
 };
 
 export default function SaveWeekPanel({
   plans,
-  children,
+  childProfiles,
   onSaveWeek,
 }: SaveWeekPanelProps) {
   const doneCount = plans.filter((plan) => plan.status === "done").length;
@@ -23,7 +23,7 @@ export default function SaveWeekPanel({
   const { weekLabel, weekStart, weekEnd } = getCurrentWeekRange();
 
   function handleSaveWeek() {
-    const childSummaries = generateChildWeeklySummaries(children, plans);
+    const childSummaries = generateChildWeeklySummaries(childProfiles, plans);
 
     onSaveWeek({
       id: createId("week"),
@@ -31,7 +31,7 @@ export default function SaveWeekPanel({
       weekStart,
       weekEnd,
       savedAt: new Date().toISOString(),
-      children,
+      children: childProfiles,
       plans,
       childSummaries,
     });
@@ -43,8 +43,8 @@ export default function SaveWeekPanel({
         <p className="eyebrow">Week record</p>
         <h2 className="section-title-sm">Save this week when it’s ready.</h2>
         <p className="text-soft">
-          This turns the current board into a saved weekly log and creates a
-          short rundown for each child.
+          Save the current board as a weekly log with a short rundown for each
+          child you added.
         </p>
       </div>
 
@@ -67,15 +67,15 @@ export default function SaveWeekPanel({
         </div>
       </div>
 
-      <button className="btn btn-primary" type="button" onClick={handleSaveWeek}>
+      <button className="btn btn-primary" type="button" onClick={handleSaveWeek} disabled={!plans.length}>
         <LuArchive />
-        Save week log
+Save this week
       </button>
 
       <p className="text-small">
         <LuBookOpenCheck style={{ display: "inline", marginRight: "0.3rem" }} />
-        Demo mode: saved weeks are stored in this browser for now. Later this
-        becomes Supabase storage.
+        Saved weeks stay in this browser during this testing version. You can
+        still use them to try the weekly record flow.
       </p>
     </section>
   );

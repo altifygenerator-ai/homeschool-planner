@@ -8,9 +8,7 @@ export default function ChildrenPage() {
         <p className="eyebrow">Children</p>
         <h1 className="section-title">Each child gets a gentle record.</h1>
         <p className="section-lead">
-          Child profiles will eventually hold saved weeks, activity history,
-          notes, and portfolio records. For now, this demo pulls from saved
-          local week logs.
+          Add your children here, then assign plans to them in the weekly planner. Saved weeks will build a simple record for each child over time.
         </p>
       </div>
 

@@ -8,24 +8,27 @@ import {
   LuCalendarDays,
   LuUsersRound,
 } from "react-icons/lu";
-import { demoChildren } from "@/data/demoChildren";
-import { getCurrentPlans, getSavedWeeks } from "@/lib/plannerStorage";
+import { getChildren, getCurrentPlans, getSavedWeeks } from "@/lib/plannerStorage";
 import type { PlannerItem, SavedWeekLog } from "@/types/planner";
 
 export default function DashboardHome() {
   const [plans, setPlans] = useState<PlannerItem[]>([]);
   const [savedWeeks, setSavedWeeks] = useState<SavedWeekLog[]>([]);
+  const [childCount, setChildCount] = useState(0);
 
   useEffect(() => {
-    setPlans(getCurrentPlans());
-    setSavedWeeks(getSavedWeeks());
+    const timer = window.setTimeout(() => {
+      setPlans(getCurrentPlans());
+      setSavedWeeks(getSavedWeeks());
+      setChildCount(getChildren().filter((child) => child.id !== "everyone").length);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
   const doneCount = plans.filter((plan) => plan.status === "done").length;
   const movedCount = plans.filter((plan) => plan.status === "moved").length;
   const skippedCount = plans.filter((plan) => plan.status === "skipped").length;
-  const childCount = demoChildren.filter((child) => child.id !== "everyone").length;
-
   return (
     <div className="dashboard-page-grid">
       <section className="dashboard-hero-card soft-card">
@@ -35,8 +38,8 @@ export default function DashboardHome() {
             Your current week is still flexible.
           </h2>
           <p className="section-lead">
-            Keep planning gently, move things when life changes, and save the
-            week when it feels ready.
+            Open the planner, add your children, build this week, and save the
+            record when it feels ready.
           </p>
         </div>
 
@@ -60,7 +63,7 @@ export default function DashboardHome() {
         </div>
 
         <Link className="btn btn-primary" href="/dashboard/planner">
-          Continue planning
+Open planner
           <LuArrowRight />
         </Link>
       </section>

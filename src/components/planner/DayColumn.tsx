@@ -13,7 +13,7 @@ import type {
 type DayColumnProps = {
   day: WeekDay;
   plans: PlannerItem[];
-  children: ChildProfile[];
+  childProfiles: ChildProfile[];
   onMove: (id: string, day: WeekDay) => void;
   onStatusChange: (id: string, status: PlanStatus) => void;
   onCategoryChange: (id: string, category: PlanCategory) => void;
@@ -24,7 +24,7 @@ type DayColumnProps = {
 export default function DayColumn({
   day,
   plans,
-  children,
+  childProfiles,
   onMove,
   onStatusChange,
   onCategoryChange,
@@ -44,7 +44,7 @@ export default function DayColumn({
             <PlanCard
               key={plan.id}
               plan={plan}
-              children={children}
+              childProfiles={childProfiles}
               onMove={onMove}
               onStatusChange={onStatusChange}
               onCategoryChange={onCategoryChange}

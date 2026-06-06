@@ -19,22 +19,20 @@ import type {
 } from "@/types/planner";
 
 type AddPlanFormProps = {
-  children: ChildProfile[];
+  childProfiles: ChildProfile[];
   onAddPlans: (plans: PlannerItem[]) => void;
 };
 
 export default function AddPlanForm({
-  children,
+  childProfiles,
   onAddPlans,
 }: AddPlanFormProps) {
-  const [title, setTitle] = useState("Read outside for 20 minutes");
-  const [selectedDays, setSelectedDays] = useState<WeekDay[]>(["Thursday"]);
+  const [title, setTitle] = useState("");
+  const [selectedDays, setSelectedDays] = useState<WeekDay[]>(["Monday"]);
   const [category, setCategory] = useState<PlanCategory>("reading");
   const [timeBlock, setTimeBlock] = useState<TimeBlock>("Anytime");
   const [assignedTo, setAssignedTo] = useState("everyone");
-  const [notes, setNotes] = useState(
-    "Keep it relaxed. If everyone is tired, move it to tomorrow."
-  );
+  const [notes, setNotes] = useState("");
 
   function toggleDay(day: WeekDay) {
     setSelectedDays((current) => {
@@ -58,7 +56,7 @@ export default function AddPlanForm({
       day,
       category,
       timeBlock,
-      assignedTo,
+      assignedTo: safeAssignedTo,
       status: "planned",
       notes: notes.trim(),
     }));
@@ -83,6 +81,10 @@ export default function AddPlanForm({
     );
   }
 
+  const safeAssignedTo = childProfiles.some((child) => child.id === assignedTo)
+    ? assignedTo
+    : "everyone";
+
   return (
     <aside className="form-card add-plan-card">
       <div className="add-plan-card-header">
@@ -101,7 +103,7 @@ export default function AddPlanForm({
           onClick={loadExample}
         >
           <LuRotateCcw />
-          Multi-day example
+          Use example
         </button>
       </div>
 
@@ -188,10 +190,10 @@ export default function AddPlanForm({
           <select
             className="select"
             id="assignedTo"
-            value={assignedTo}
+            value={safeAssignedTo}
             onChange={(event) => setAssignedTo(event.target.value)}
           >
-            {children.map((child) => (
+            {childProfiles.map((child) => (
               <option key={child.id} value={child.id}>
                 {child.name}
               </option>

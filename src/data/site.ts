@@ -1,18 +1,18 @@
 export const site = {
-  name: "SoftWeek",
+  name: "SoftWeek Planner",
   tagline: "A softer homeschool planner for real-life weeks.",
   nav: [
     {
-      label: "Home",
-      href: "/",
+      label: "Planner",
+      href: "/dashboard/planner",
     },
     {
-      label: "How it works",
-      href: "/#how-it-works",
+      label: "Children",
+      href: "/dashboard/children",
     },
     {
-      label: "What to test",
-      href: "/#what-to-test",
+      label: "Saved weeks",
+      href: "/dashboard/weeks",
     },
     {
       label: "Feedback",
@@ -20,12 +20,12 @@ export const site = {
     },
   ],
   hero: {
-    eyebrow: "Early homeschool planner test",
-    title: "A homeschool planner that can move with your week.",
-    text: "SoftWeek is an early working planner built for homeschool families whose weeks do not always fit neat boxes. Add loose plans, choose one day or several, move things around, mark what actually happened, and save the week as a simple record.",
-    primaryCta: "Try the planner",
-    secondaryCta: "Give feedback",
-    note: "Early version: plans and saved weeks are stored in this browser for now while the planning flow is tested.",
+    eyebrow: "Flexible homeschool planning",
+    title: "Plan a homeschool week that can move with real life.",
+    text: "SoftWeek Planner helps you add loose plans, place one activity on multiple days, assign plans to children, move things when the week changes, and save a simple record of what happened.",
+    primaryCta: "Open the planner",
+    secondaryCta: "Send feedback",
+    note: "The planner is usable now with browser storage while the account-backed version is being shaped from real feedback.",
   },
   problems: [
     {
@@ -34,25 +34,25 @@ export const site = {
     },
     {
       title: "Repeated plans should not mean repeated typing.",
-      text: "If something happens more than once a week, like swimming, reading, chores, or practice work, you should be able to add it once and place it on several days.",
+      text: "If something happens more than once a week, like swimming, reading, chores, or practice work, you can add it once and place it on several days.",
     },
     {
       title: "Records should feel helpful, not heavy.",
-      text: "Saved weeks and child rundowns should make it easier to look back without turning homeschool into another admin job.",
+      text: "Saved weeks and child rundowns make it easier to look back without turning homeschool into another admin job.",
     },
   ],
   steps: [
     {
-      title: "Add a loose plan",
-      text: "Enter reading, math, science, outings, life skills, movement, or whatever fits your family.",
+      title: "Add your children",
+      text: "Use the children section or the planner sidebar to add the names you actually plan for.",
     },
     {
-      title: "Choose one day or several",
-      text: "Use day chips to place one plan across multiple days without re-entering the same thing over and over.",
+      title: "Build a soft week",
+      text: "Add reading, math, outings, life skills, movement, chores, or anything else, then choose one day or several.",
     },
     {
       title: "Move, mark, and save",
-      text: "Move cards when life changes, mark them done or skipped, add notes about what actually happened, then save the week.",
+      text: "Move cards when life changes, mark them done or skipped, add notes about what happened, then save the week.",
     },
   ],
 };

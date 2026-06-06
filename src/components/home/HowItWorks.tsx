@@ -12,13 +12,13 @@ export default function HowItWorks() {
         <FadeIn>
           <SectionHeading
             eyebrow="How it works"
-            title="Try the flow first. Help shape the full tool."
-            text="SoftWeek is not trying to become a rigid curriculum system. The goal is a gentle weekly planner that lets parents plan, adjust, save, and look back without adding more stress."
+            title="Start planning without a setup maze."
+            text="SoftWeek Planner is built around the weekly rhythm most homeschool families already live in: add the plans, adjust when life changes, and save a simple record when the week is done."
           />
 
           <div className="btn-row" style={{ marginTop: "1.7rem" }}>
             <a className="btn btn-primary" href="/dashboard/planner">
-              Open planner demo
+              Open planner
             </a>
             <a className="btn btn-secondary" href="/beta">
               Give feedback

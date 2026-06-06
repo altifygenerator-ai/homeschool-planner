@@ -12,7 +12,7 @@ export default function Hero() {
           <p className="eyebrow">{site.hero.eyebrow}</p>
 
           <h1 className="hero-title">
-            A homeschool planner that can <span>move with your week.</span>
+            Plan a homeschool week that can <span>move with real life.</span>
           </h1>
 
           <p className="hero-text">{site.hero.text}</p>
@@ -43,7 +43,7 @@ export default function Hero() {
           <div className="pill-row" style={{ marginTop: "1rem" }}>
             <span className="pill pill-sage">Multi-day plans</span>
             <span className="pill pill-gold">Saved week records</span>
-            <span className="pill pill-clay">Tester feedback wanted</span>
+            <span className="pill pill-clay">Child profiles</span>
           </div>
         </FadeIn>
       </div>

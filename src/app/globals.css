@@ -2198,3 +2198,255 @@ img {
     padding-right: 0.5rem;
   }
 }
+/* Functional beta polish: planner access, child management, and less demo feel */
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex: 0 0 auto;
+}
+
+.header-actions .btn {
+  min-height: 42px;
+  padding: 0.72rem 0.95rem;
+  font-size: 0.86rem;
+}
+
+.btn:disabled,
+.btn[disabled] {
+  opacity: 0.56;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.planner-save-message-row {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.planner-save-message-row .planner-save-message {
+  margin: 0;
+}
+
+.child-selector-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.child-manager-inline {
+  display: grid;
+  gap: 0.75rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(234, 223, 206, 0.82);
+}
+
+.child-add-form {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.child-add-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.child-edit-list {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.child-edit-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 0.45rem;
+  align-items: center;
+  min-width: 0;
+}
+
+.child-edit-row > span {
+  min-width: 0;
+  color: var(--navy);
+  font-size: 0.9rem;
+  font-weight: 900;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mini-icon-button,
+.mini-text-button {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border: 1px solid rgba(234, 223, 206, 0.95);
+  border-radius: 999px;
+  background: rgba(255, 253, 248, 0.88);
+  color: rgba(36, 49, 63, 0.72);
+  padding: 0.45rem 0.72rem;
+  font-size: 0.78rem;
+  font-weight: 900;
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease;
+}
+
+.mini-icon-button {
+  width: 38px;
+  padding: 0;
+}
+
+.mini-icon-button:hover,
+.mini-text-button:hover {
+  transform: translateY(-1px);
+  background: white;
+  border-color: var(--border-strong);
+}
+
+.mini-icon-button.danger,
+.mini-text-button.danger {
+  color: #8d4e35;
+  border-color: rgba(201, 137, 107, 0.34);
+}
+
+.children-overview-stack {
+  display: grid;
+  gap: 1.2rem;
+}
+
+.child-manager-card {
+  padding: clamp(1.2rem, 4vw, 2rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.45fr);
+  gap: 1.2rem;
+  align-items: end;
+}
+
+.child-manager-card .section-lead {
+  max-width: 720px;
+}
+
+.child-manager-form {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.child-profile-card {
+  overflow: hidden;
+}
+
+.child-profile-main-link {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: 0.85rem;
+  color: inherit;
+}
+
+.child-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(234, 223, 206, 0.82);
+}
+
+.empty-children-card {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.35rem;
+  text-align: left;
+}
+
+.empty-children-card h3,
+.empty-children-card p {
+  margin: 0;
+}
+
+.empty-children-card h3 {
+  color: var(--navy);
+  font-size: 1.15rem;
+  font-weight: 950;
+  letter-spacing: -0.035em;
+}
+
+.empty-children-card p {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.add-plan-card .input::placeholder,
+.add-plan-card .textarea::placeholder {
+  color: rgba(111, 117, 111, 0.7);
+}
+
+.week-save-card .text-small {
+  color: rgba(36, 49, 63, 0.56);
+}
+
+@media (min-width: 1051px) {
+  .planner-tools-row {
+    grid-template-columns: minmax(300px, 0.72fr) minmax(0, 1.28fr);
+  }
+}
+
+@media (max-width: 940px) {
+  .child-manager-card {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+}
+
+@media (max-width: 760px) {
+  .header-actions .btn-secondary {
+    display: none;
+  }
+
+  .header-actions .btn {
+    min-height: 40px;
+    padding: 0.68rem 0.82rem;
+  }
+
+  .logo-mark {
+    min-width: 0;
+  }
+
+  .logo-mark > span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 620px) {
+  .child-add-row,
+  .child-edit-row {
+    grid-template-columns: 1fr;
+  }
+
+  .child-edit-row .mini-icon-button,
+  .child-edit-row .mini-text-button {
+    width: 100%;
+  }
+
+  .child-card-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .planner-save-message-row {
+    display: grid;
+  }
+}

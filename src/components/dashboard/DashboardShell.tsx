@@ -9,7 +9,7 @@ type DashboardShellProps = {
 
 const dashboardLinks = [
   {
-    label: "Dashboard",
+    label: "Home",
     href: "/dashboard",
   },
   {
@@ -35,7 +35,7 @@ export default function DashboardShell({ children }: DashboardShellProps) {
         <div className="container">
           <div className="dashboard-topbar soft-card">
             <div>
-              <p className="eyebrow">SoftWeek demo app</p>
+              <p className="eyebrow">SoftWeek Planner</p>
               <h1>Family planner workspace</h1>
             </div>
 

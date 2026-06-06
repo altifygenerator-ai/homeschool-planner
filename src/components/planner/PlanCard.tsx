@@ -30,7 +30,7 @@ import type {
 
 type PlanCardProps = {
   plan: PlannerItem;
-  children: ChildProfile[];
+  childProfiles: ChildProfile[];
   onMove: (id: string, day: WeekDay) => void;
   onStatusChange: (id: string, status: PlanStatus) => void;
   onCategoryChange: (id: string, category: PlanCategory) => void;
@@ -57,7 +57,7 @@ function getStatusLabel(status: PlanStatus) {
 
 export default function PlanCard({
   plan,
-  children,
+  childProfiles,
   onMove,
   onStatusChange,
   onCategoryChange,
@@ -67,7 +67,7 @@ export default function PlanCard({
   const [isOpen, setIsOpen] = useState(false);
   const Icon = categoryIcons[plan.category];
   const assignedChild =
-    children.find((child) => child.id === plan.assignedTo)?.name ?? "Everyone";
+    childProfiles.find((child) => child.id === plan.assignedTo)?.name ?? "Everyone";
 
   return (
     <article className={`plan-card plan-card-${plan.status}`}>

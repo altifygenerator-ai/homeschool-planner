@@ -9,15 +9,12 @@ export default function BetaCTA() {
         <FadeIn>
           <div className="soft-card beta-cta-card">
             <div>
-              <p className="eyebrow">Help test the early version</p>
+              <p className="eyebrow">Use it and shape what comes next</p>
               <h2 className="section-title-sm">
-                Try it like a real homeschool week, then tell me what feels off.
+                Try it for a real homeschool week, then tell me what would make it better.
               </h2>
               <p className="section-lead">
-                The biggest help right now is honest feedback on the planner
-                flow: adding plans, choosing multiple days, moving cards,
-                saving weeks, and whether the child records idea actually feels
-                useful.
+                SoftWeek Planner is usable now for children, weekly plans, multi-day activities, saved weeks, and child records. Feedback still matters because the goal is to build the parts homeschool families will actually use.
               </p>
             </div>
 
@@ -27,13 +24,13 @@ export default function BetaCTA() {
               </div>
 
               <p>
-                This early version uses local browser storage while the flow is
-                being tested.
+                Your planner saves in this browser right now, so you can use it
+                without creating an account.
               </p>
 
               <div className="btn-row">
                 <Button href="/dashboard/planner">
-                  Try planner
+                  Open planner
                   <LuArrowRight />
                 </Button>
 
@@ -52,12 +49,9 @@ export default function BetaCTA() {
             </div>
 
             <div>
-              <h3>Full accounts and database storage come later.</h3>
+              <h3>Accounts and backed-up storage are the next foundation.</h3>
               <p>
-                The final SaaS version should have real user accounts,
-                database-backed saved weeks, child profiles, backups, and a
-                genuinely useful free plan. Right now, the focus is testing the
-                planner flow before building the heavier backend.
+                The local version helps test the weekly flow first. The account-backed version should keep saved weeks, children, plans, and records in a real database with backups.
               </p>
             </div>
           </div>

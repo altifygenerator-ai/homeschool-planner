@@ -10,9 +10,9 @@ export default function ProblemSection() {
     <section className="section-paper">
       <div className="container">
         <SectionHeading
-          eyebrow="What we’re testing"
-          title="SoftWeek is being shaped around real homeschool weeks."
-          text="The early version is live so homeschool families can test the flow before the full account system, database storage, and premium features are built."
+          eyebrow="Why it exists"
+          title="SoftWeek Planner is built for the parts normal planners make harder."
+          text="The goal is simple: less re-typing, less guilt when the week changes, and easier records without turning homeschool into another admin job."
           center
         />
 
