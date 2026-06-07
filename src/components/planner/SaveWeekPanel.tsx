@@ -1,6 +1,6 @@
 "use client";
 
-import { LuArchive, LuBookOpenCheck } from "react-icons/lu";
+import { LuArchive } from "react-icons/lu";
 import type { ChildProfile, PlannerItem, SavedWeekLog } from "@/types/planner";
 import { createId } from "@/lib/utils";
 import { getCurrentWeekRange } from "@/lib/week";
@@ -38,17 +38,16 @@ export default function SaveWeekPanel({
   }
 
   return (
-    <section className="paper-card week-save-card">
-      <div>
+    <section className="paper-card week-save-card week-save-compact">
+      <div className="week-save-copy">
         <p className="eyebrow">Week record</p>
-        <h2 className="section-title-sm">Save this week when it’s ready.</h2>
-        <p className="text-soft">
-          Save the current board as a weekly log with a short rundown for each
-          child you added.
+        <h2 className="week-save-title">Save when the week is ready.</h2>
+        <p className="text-small">
+          Creates a saved week with child rundowns from this board.
         </p>
       </div>
 
-      <div className="week-stat-grid">
+      <div className="week-stat-grid week-stat-grid-compact" aria-label="Current week counts">
         <div>
           <strong>{plans.length}</strong>
           <span>plans</span>
@@ -69,14 +68,8 @@ export default function SaveWeekPanel({
 
       <button className="btn btn-primary" type="button" onClick={handleSaveWeek} disabled={!plans.length}>
         <LuArchive />
-Save this week
+        Save week
       </button>
-
-      <p className="text-small">
-        <LuBookOpenCheck style={{ display: "inline", marginRight: "0.3rem" }} />
-        Saved weeks stay in this browser during this testing version. You can
-        still use them to try the weekly record flow.
-      </p>
     </section>
   );
 }

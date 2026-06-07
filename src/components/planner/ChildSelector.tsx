@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LuPencil, LuPlus, LuTrash2 } from "react-icons/lu";
+import { LuPencil, LuPlus, LuSettings2, LuTrash2 } from "react-icons/lu";
 import type { ChildProfile } from "@/types/planner";
 
 type ChildSelectorProps = {
@@ -24,6 +24,7 @@ export default function ChildSelector({
   const [newChildName, setNewChildName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
+  const [isManaging, setIsManaging] = useState(false);
 
   const realChildren = childProfiles.filter((child) => child.id !== "everyone");
   const canManage = Boolean(onAddChild || onRenameChild || onDeleteChild);
@@ -52,12 +53,23 @@ export default function ChildSelector({
   }
 
   return (
-    <section className="child-selector-card">
-      <div className="child-selector-header">
+    <section className="child-selector-card child-selector-card-calm">
+      <div className="child-selector-header child-selector-header-calm">
         <div>
           <p className="eyebrow">Children</p>
-          <p className="child-selector-title">Plan for everyone or one child.</p>
+          <p className="child-selector-title">View the week by child.</p>
         </div>
+
+        {canManage ? (
+          <button
+            className="mini-helper-button"
+            type="button"
+            onClick={() => setIsManaging((current) => !current)}
+          >
+            <LuSettings2 />
+            {isManaging ? "Done" : "Manage"}
+          </button>
+        ) : null}
       </div>
 
       <div className="child-selector-row" aria-label="View planner by child">
@@ -81,7 +93,7 @@ export default function ChildSelector({
         ))}
       </div>
 
-      {canManage ? (
+      {canManage && isManaging ? (
         <div className="child-manager-inline">
           <form className="child-add-form" onSubmit={handleAddChild}>
             <label className="field-label" htmlFor="newChildName">

@@ -34,6 +34,7 @@ export default function PlannerShell() {
   const [activeChildId, setActiveChildId] = useState("all");
   const [hasLoaded, setHasLoaded] = useState(false);
   const [savedMessage, setSavedMessage] = useState("");
+  const [isAddingPlan, setIsAddingPlan] = useState(false);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -62,6 +63,7 @@ export default function PlannerShell() {
   function handleAddPlans(newPlans: PlannerItem[]) {
     setPlans((current) => [...newPlans, ...current]);
     setSavedMessage("");
+    setIsAddingPlan(false);
   }
 
   function handleMove(id: string, day: WeekDay) {
@@ -162,57 +164,76 @@ export default function PlannerShell() {
   }
 
   return (
-    <div className="planner-workspace">
-      <section className="planner-page-heading">
+    <div className="planner-workspace planner-workspace-calm">
+      <section className="planner-page-heading planner-page-heading-calm">
         <div>
           <p className="eyebrow">Current planner</p>
 
           <h1 className="section-title">
-            Plan the week, move what changes, save what happened.
+            Plan the week. Move what changes. Save what happened.
           </h1>
 
           <p className="section-lead">
-            Start right here. Add your children, place plans on one day or
-            several, adjust the week as life happens, and save a simple record
-            when you are ready.
+            Start with the week board. Add plans when you need them, filter by
+            child when helpful, and save the record when the week feels ready.
           </p>
         </div>
+      </section>
 
-        <div className="planner-heading-actions">
+      <section className="planner-control-strip soft-card">
+        <div className="planner-control-copy">
+          <p className="control-kicker">This week</p>
+          <strong>{plans.length} plans on the board</strong>
+          <span>
+            Add only what helps. The board stays movable, even when the week changes.
+          </span>
+        </div>
+
+        <div className="planner-control-actions">
+          <button
+            className="btn btn-primary"
+            type="button"
+            onClick={() => setIsAddingPlan((current) => !current)}
+          >
+            {isAddingPlan ? "Close form" : "+ Add plan"}
+          </button>
+
+          <Link className="btn btn-secondary" href="/dashboard/weeks">
+            Saved weeks
+          </Link>
+
           <button
             className="btn btn-secondary"
             type="button"
             onClick={handleClearWeek}
           >
-            Clear current week
+            Clear week
           </button>
-
-          <Link className="btn btn-secondary" href="/dashboard/weeks">
-            View saved weeks
-          </Link>
         </div>
-
-        {savedMessage ? (
-          <div className="planner-save-message-row">
-            <p className="planner-save-message">{savedMessage}</p>
-            {savedMessage.startsWith("Week saved") ? (
-              <button
-                className="mini-text-button"
-                type="button"
-                onClick={handleStartFreshWeek}
-              >
-                Start fresh week
-              </button>
-            ) : null}
-          </div>
-        ) : null}
       </section>
 
-      <section className="planner-add-row">
-        <AddPlanForm childProfiles={children} onAddPlans={handleAddPlans} />
-      </section>
+      {savedMessage ? (
+        <div className="planner-save-message-row">
+          <p className="planner-save-message">{savedMessage}</p>
+          {savedMessage.startsWith("Week saved") ? (
+            <button
+              className="mini-text-button"
+              type="button"
+              onClick={handleStartFreshWeek}
+            >
+              Start fresh week
+            </button>
+          ) : null}
+        </div>
+      ) : null}
 
-      <section className="planner-tools-row">
+      {isAddingPlan ? (
+        <section className="planner-add-row planner-add-row-open">
+          <AddPlanForm childProfiles={children} onAddPlans={handleAddPlans} />
+        </section>
+      ) : null}
+
+      <section className="planner-tools-row planner-tools-row-calm">
         <ChildSelector
           childProfiles={children}
           activeChildId={activeChildId}

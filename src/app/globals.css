@@ -2450,3 +2450,267 @@ img {
     display: grid;
   }
 }
+
+/* Calm planner workspace refresh: board first, controls only when needed */
+
+.planner-workspace-calm {
+  gap: 1rem;
+}
+
+.planner-page-heading-calm {
+  display: block;
+  padding-bottom: 0;
+  margin-bottom: 0.2rem;
+}
+
+.planner-page-heading-calm .section-title {
+  max-width: 880px;
+  font-size: clamp(2.15rem, 4.1vw, 4.25rem);
+}
+
+.planner-page-heading-calm .section-lead {
+  max-width: 720px;
+}
+
+.planner-control-strip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+}
+
+.planner-control-copy {
+  min-width: 0;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.control-kicker {
+  margin: 0;
+  color: var(--sage-dark);
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.planner-control-copy strong {
+  color: var(--navy);
+  font-size: 1.05rem;
+  font-weight: 950;
+  letter-spacing: -0.035em;
+}
+
+.planner-control-copy span {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.planner-control-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.planner-control-actions .btn,
+.week-save-compact .btn {
+  min-height: 42px;
+  padding: 0.7rem 0.95rem;
+  font-size: 0.86rem;
+}
+
+.planner-add-row-open {
+  animation: softDrop 180ms ease both;
+}
+
+@keyframes softDrop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.planner-tools-row-calm {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.72fr) minmax(0, 1.28fr);
+  gap: 0.9rem;
+  align-items: stretch;
+}
+
+.child-selector-card-calm,
+.week-save-compact {
+  min-width: 0;
+  height: 100%;
+  align-content: start;
+}
+
+.child-selector-header-calm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.8rem;
+  align-items: start;
+}
+
+.child-selector-header-calm .mini-helper-button {
+  min-height: 34px;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.76rem;
+}
+
+.child-selector-card-calm .child-selector-title {
+  margin-top: 0.3rem;
+}
+
+.child-selector-card-calm .child-selector-row {
+  padding-top: 0.1rem;
+}
+
+.child-manager-inline {
+  margin-top: 0.2rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(234, 223, 206, 0.78);
+}
+
+.week-save-compact {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(260px, 0.95fr) auto;
+  gap: 0.9rem;
+  align-items: center;
+  padding: 1rem;
+}
+
+.week-save-copy {
+  min-width: 0;
+}
+
+.week-save-title {
+  margin: 0.35rem 0 0;
+  color: var(--navy);
+  font-size: 1.02rem;
+  font-weight: 950;
+  letter-spacing: -0.035em;
+}
+
+.week-save-copy .text-small {
+  margin: 0.3rem 0 0;
+}
+
+.week-stat-grid-compact {
+  min-width: 0 !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 0.45rem;
+}
+
+.week-stat-grid-compact div {
+  min-height: 62px;
+  padding: 0.45rem;
+}
+
+.week-stat-grid-compact strong {
+  font-size: 1.35rem;
+}
+
+.week-stat-grid-compact span {
+  font-size: 0.64rem;
+}
+
+.week-save-compact .btn {
+  width: fit-content;
+  justify-self: end;
+  white-space: nowrap;
+}
+
+.week-save-compact .btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+  transform: none;
+  box-shadow: none;
+}
+
+.planner-save-message-row {
+  margin: 0;
+  justify-content: flex-start;
+}
+
+.planner-save-message-row .planner-save-message {
+  margin: 0;
+}
+
+.planner-board-row {
+  order: 10;
+}
+
+.planner-board-shell {
+  padding: 0.95rem;
+}
+
+.planner-board-header {
+  align-items: center;
+}
+
+.planner-board-header .section-title-sm {
+  font-size: clamp(1.55rem, 2.8vw, 2.6rem);
+}
+
+@media (max-width: 1180px) {
+  .planner-control-strip,
+  .planner-tools-row-calm,
+  .week-save-compact {
+    grid-template-columns: 1fr;
+  }
+
+  .planner-control-actions {
+    justify-content: flex-start;
+  }
+
+  .week-save-compact .btn {
+    justify-self: start;
+  }
+}
+
+@media (max-width: 760px) {
+  .planner-control-strip,
+  .week-save-compact,
+  .child-selector-card-calm {
+    padding: 0.9rem;
+    border-radius: 22px;
+  }
+
+  .planner-control-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .planner-control-actions .btn,
+  .week-save-compact .btn {
+    width: 100%;
+  }
+
+  .child-selector-header-calm {
+    grid-template-columns: 1fr;
+  }
+
+  .child-selector-header-calm .mini-helper-button {
+    width: 100%;
+  }
+
+  .week-stat-grid-compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .planner-board-header .pill-row {
+    width: 100%;
+  }
+
+  .planner-board-header .pill {
+    flex: 1;
+    justify-content: center;
+  }
+}
