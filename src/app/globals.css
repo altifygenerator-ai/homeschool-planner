@@ -2714,3 +2714,135 @@ img {
     justify-content: center;
   }
 }
+
+
+/* SoftWeek beta feedback updates */
+
+.planner-board-subtitle {
+  max-width: 760px;
+  margin: 0.65rem 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.planner-control-actions-expanded {
+  align-items: center;
+}
+
+.week-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.week-switcher .mini-text-button {
+  min-height: 38px;
+  border-radius: 999px;
+  background: rgba(255, 253, 248, 0.86);
+  border: 1px solid rgba(234, 223, 206, 0.95);
+  color: rgba(36, 49, 63, 0.72);
+  padding: 0.48rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.week-switcher .mini-text-button:hover {
+  background: white;
+  border-color: var(--border-strong);
+}
+
+.day-chip-row-seven {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.day-chip-row-seven .day-chip {
+  min-width: 0;
+  padding-left: 0.3rem;
+  padding-right: 0.3rem;
+}
+
+.add-plan-category-field {
+  min-width: 0;
+}
+
+.category-add-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.45rem;
+}
+
+.category-add-row .input {
+  min-height: 40px;
+  border-radius: 14px;
+  font-size: 0.86rem;
+}
+
+.category-add-row .mini-icon-button {
+  width: 40px;
+  height: 40px;
+}
+
+.weekly-board {
+  grid-auto-columns: minmax(220px, 245px);
+}
+
+@media (min-width: 1280px) {
+  .weekly-board {
+    grid-auto-columns: minmax(215px, 1fr);
+  }
+}
+
+@media (max-width: 1180px) {
+  .week-switcher {
+    justify-content: flex-start;
+  }
+
+  .add-plan-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .add-plan-title-field,
+  .add-plan-days-field,
+  .add-plan-category-field,
+  .add-plan-notes-field,
+  .add-plan-submit-row {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 760px) {
+  .week-switcher {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .week-switcher .mini-text-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 620px) {
+  .add-plan-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .add-plan-title-field,
+  .add-plan-days-field,
+  .add-plan-category-field,
+  .add-plan-notes-field,
+  .add-plan-submit-row {
+    grid-column: auto;
+  }
+
+  .day-chip-row-seven {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .weekly-board {
+    grid-auto-columns: minmax(245px, 82vw);
+  }
+}

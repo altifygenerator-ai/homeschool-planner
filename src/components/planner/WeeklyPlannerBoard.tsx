@@ -3,6 +3,7 @@
 import DayColumn from "@/components/planner/DayColumn";
 import { weekDays } from "@/data/demoPlans";
 import type {
+  CategoryDefinition,
   ChildProfile,
   PlanCategory,
   PlannerItem,
@@ -13,6 +14,8 @@ import type {
 type WeeklyPlannerBoardProps = {
   plans: PlannerItem[];
   childProfiles: ChildProfile[];
+  categories: CategoryDefinition[];
+  weekLabel: string;
   onMove: (id: string, day: WeekDay) => void;
   onStatusChange: (id: string, status: PlanStatus) => void;
   onCategoryChange: (id: string, category: PlanCategory) => void;
@@ -23,6 +26,8 @@ type WeeklyPlannerBoardProps = {
 export default function WeeklyPlannerBoard({
   plans,
   childProfiles,
+  categories,
+  weekLabel,
   onMove,
   onStatusChange,
   onCategoryChange,
@@ -38,7 +43,10 @@ export default function WeeklyPlannerBoard({
       <div className="planner-board-header">
         <div>
           <p className="eyebrow">This week</p>
-          <h2 className="section-title-sm">A week that can move with you.</h2>
+          <h2 className="section-title-sm">A 7-day week that can move with you.</h2>
+          <p className="planner-board-subtitle">
+            {weekLabel} · Weekdays, weekends, field trips, life lessons, and catch-up days can all live on the same board.
+          </p>
         </div>
 
         <div className="pill-row">
@@ -55,6 +63,7 @@ export default function WeeklyPlannerBoard({
             day={day}
             plans={plans.filter((plan) => plan.day === day)}
             childProfiles={childProfiles}
+            categories={categories}
             onMove={onMove}
             onStatusChange={onStatusChange}
             onCategoryChange={onCategoryChange}

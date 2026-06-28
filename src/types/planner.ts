@@ -3,18 +3,19 @@ export type WeekDay =
   | "Tuesday"
   | "Wednesday"
   | "Thursday"
-  | "Friday";
+  | "Friday"
+  | "Saturday"
+  | "Sunday";
 
 export type PlanStatus = "planned" | "done" | "moved" | "skipped";
 
-export type PlanCategory =
-  | "reading"
-  | "math"
-  | "nature"
-  | "life-skills"
-  | "creative"
-  | "outing"
-  | "other";
+export type PlanCategory = string;
+
+export type CategoryDefinition = {
+  id: PlanCategory;
+  label: string;
+  isCustom?: boolean;
+};
 
 export type TimeBlock =
   | "Morning"
@@ -36,6 +37,7 @@ export type PlannerItem = {
   status: PlanStatus;
   timeBlock: TimeBlock;
   assignedTo: string;
+  weekStart?: string;
   notes?: string;
   actualNotes?: string;
 };

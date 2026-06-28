@@ -1,4 +1,8 @@
-import type { PlannerItem, WeekDay } from "@/types/planner";
+import type {
+  CategoryDefinition,
+  PlannerItem,
+  WeekDay,
+} from "@/types/planner";
 
 export const weekDays = [
   "Monday",
@@ -6,6 +10,8 @@ export const weekDays = [
   "Wednesday",
   "Thursday",
   "Friday",
+  "Saturday",
+  "Sunday",
 ] as const;
 
 export const dayLabels: Record<WeekDay, string> = {
@@ -14,27 +20,43 @@ export const dayLabels: Record<WeekDay, string> = {
   Wednesday: "Wed",
   Thursday: "Thu",
   Friday: "Fri",
+  Saturday: "Sat",
+  Sunday: "Sun",
 };
 
-export const categories = [
-  "reading",
-  "math",
-  "nature",
-  "life-skills",
-  "creative",
-  "outing",
-  "other",
-] as const;
+export const defaultCategoryDefinitions: CategoryDefinition[] = [
+  { id: "reading", label: "Reading" },
+  { id: "math", label: "Math" },
+  { id: "nature", label: "Nature" },
+  { id: "life-skills", label: "Life skills" },
+  { id: "outing", label: "Outing" },
+  { id: "science", label: "Science" },
+  { id: "history", label: "History" },
+  { id: "language-arts", label: "Language arts" },
+  { id: "creative", label: "Creative" },
+  { id: "other", label: "Other" },
+];
 
-export const categoryLabels = {
-  reading: "Reading",
-  math: "Math",
-  nature: "Nature",
-  "life-skills": "Life skills",
-  creative: "Creative",
-  outing: "Outing",
-  other: "Other",
-} as const;
+export const categories = defaultCategoryDefinitions.map((category) => category.id);
+
+export const categoryLabels = defaultCategoryDefinitions.reduce(
+  (labels, category) => {
+    labels[category.id] = category.label;
+    return labels;
+  },
+  {} as Record<string, string>
+);
+
+export function getCategoryLabel(
+  categoryId: string,
+  categoryDefinitions: CategoryDefinition[] = defaultCategoryDefinitions
+) {
+  return (
+    categoryDefinitions.find((category) => category.id === categoryId)?.label ??
+    categoryLabels[categoryId] ??
+    categoryId
+  );
+}
 
 export const statuses = ["planned", "done", "moved", "skipped"] as const;
 
@@ -54,7 +76,7 @@ export const demoPlans: PlannerItem[] = [
   {
     id: "plan-2",
     title: "Nature walk + leaf sketching",
-    day: "Monday",
+    day: "Sunday",
     category: "nature",
     status: "done",
     timeBlock: "Afternoon",

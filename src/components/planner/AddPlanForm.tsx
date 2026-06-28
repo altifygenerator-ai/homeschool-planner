@@ -1,16 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { LuPlus, LuRotateCcw } from "react-icons/lu";
+import { LuPlus, LuRotateCcw, LuTag } from "react-icons/lu";
 import {
-  categories,
-  categoryLabels,
   dayLabels,
+  getCategoryLabel,
   timeBlocks,
   weekDays,
 } from "@/data/demoPlans";
 import { createId } from "@/lib/utils";
 import type {
+  CategoryDefinition,
   ChildProfile,
   PlanCategory,
   PlannerItem,
@@ -20,16 +20,24 @@ import type {
 
 type AddPlanFormProps = {
   childProfiles: ChildProfile[];
+  categories: CategoryDefinition[];
+  weekStart: string;
   onAddPlans: (plans: PlannerItem[]) => void;
+  onAddCategory: (name: string) => CategoryDefinition | undefined;
 };
 
 export default function AddPlanForm({
   childProfiles,
+  categories,
+  weekStart,
   onAddPlans,
+  onAddCategory,
 }: AddPlanFormProps) {
+  const firstCategory = categories[0]?.id ?? "reading";
   const [title, setTitle] = useState("");
   const [selectedDays, setSelectedDays] = useState<WeekDay[]>(["Monday"]);
-  const [category, setCategory] = useState<PlanCategory>("reading");
+  const [category, setCategory] = useState<PlanCategory>(firstCategory);
+  const [customCategoryName, setCustomCategoryName] = useState("");
   const [timeBlock, setTimeBlock] = useState<TimeBlock>("Anytime");
   const [assignedTo, setAssignedTo] = useState("everyone");
   const [notes, setNotes] = useState("");
@@ -45,6 +53,14 @@ export default function AddPlanForm({
     });
   }
 
+  function handleAddCategory() {
+    const nextCategory = onAddCategory(customCategoryName);
+    if (!nextCategory) return;
+
+    setCategory(nextCategory.id);
+    setCustomCategoryName("");
+  }
+
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -54,10 +70,11 @@ export default function AddPlanForm({
       id: createId("plan"),
       title: title.trim(),
       day,
-      category,
+      category: safeCategory,
       timeBlock,
       assignedTo: safeAssignedTo,
       status: "planned",
+      weekStart,
       notes: notes.trim(),
     }));
 
@@ -72,14 +89,18 @@ export default function AddPlanForm({
 
   function loadExample() {
     setTitle("Swimming / movement time");
-    setSelectedDays(["Monday", "Wednesday", "Friday"]);
-    setCategory("life-skills");
+    setSelectedDays(["Tuesday", "Wednesday", "Thursday", "Friday", "Sunday"]);
+    setCategory(categories.some((item) => item.id === "life-skills") ? "life-skills" : firstCategory);
     setTimeBlock("Afternoon");
     setAssignedTo("everyone");
     setNotes(
-      "Add it once and place it on multiple days instead of re-entering it each time."
+      "Add it once, pick the days that fit this week, and move it later if life changes."
     );
   }
+
+  const safeCategory = categories.some((item) => item.id === category)
+    ? category
+    : firstCategory;
 
   const safeAssignedTo = childProfiles.some((child) => child.id === assignedTo)
     ? assignedTo
@@ -92,8 +113,8 @@ export default function AddPlanForm({
           <p className="eyebrow">Loose planning</p>
           <h2 className="section-title-sm">Add a plan to the week.</h2>
           <p className="text-soft">
-            Choose one day or several, assign it to a child or everyone, and
-            keep it movable when the week changes.
+            Pick any days in your 7-day week, assign it to a child or everyone,
+            and keep it movable when real life changes the plan.
           </p>
         </div>
 
@@ -115,7 +136,7 @@ export default function AddPlanForm({
           <input
             className="input"
             id="title"
-            placeholder="Swimming, math review, library trip..."
+            placeholder="Swimming, spelling practice, Sunday field trip..."
             value={title}
             onChange={(event) => setTitle(event.target.value)}
           />
@@ -124,7 +145,7 @@ export default function AddPlanForm({
         <div className="field-group add-plan-days-field">
           <span className="field-label">Days</span>
 
-          <div className="day-chip-row">
+          <div className="day-chip-row day-chip-row-seven">
             {weekDays.map((day) => {
               const isActive = selectedDays.includes(day);
 
@@ -143,28 +164,49 @@ export default function AddPlanForm({
           </div>
 
           <p className="form-helper-text">
-            Pick one day or several for repeated activities.
+            Choose one day, several weekdays, or weekend learning days too.
           </p>
         </div>
 
-        <div className="field-group">
+        <div className="field-group add-plan-category-field">
           <label className="field-label" htmlFor="category">
             Category
           </label>
           <select
             className="select"
             id="category"
-            value={category}
+            value={safeCategory}
             onChange={(event) =>
               setCategory(event.target.value as PlanCategory)
             }
           >
             {categories.map((item) => (
-              <option key={item} value={item}>
-                {categoryLabels[item]}
+              <option key={item.id} value={item.id}>
+                {getCategoryLabel(item.id, categories)}
               </option>
             ))}
           </select>
+
+          <div className="category-add-row">
+            <input
+              className="input"
+              placeholder="Add spelling, typing, social studies..."
+              value={customCategoryName}
+              onChange={(event) => setCustomCategoryName(event.target.value)}
+            />
+            <button
+              className="mini-icon-button"
+              type="button"
+              onClick={handleAddCategory}
+              aria-label="Add custom category"
+            >
+              <LuTag />
+            </button>
+          </div>
+
+          <p className="form-helper-text">
+            Add a custom category when your subject needs a better name.
+          </p>
         </div>
 
         <div className="field-group">
@@ -208,7 +250,7 @@ export default function AddPlanForm({
           <textarea
             className="textarea compact-textarea"
             id="notes"
-            placeholder="Optional notes, supplies, or a loose backup plan..."
+            placeholder="Optional notes, supplies, a loose backup plan, or what you want to remember..."
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
           />

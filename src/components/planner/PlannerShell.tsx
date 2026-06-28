@@ -7,17 +7,24 @@ import ChildSelector from "@/components/planner/ChildSelector";
 import SaveWeekPanel from "@/components/planner/SaveWeekPanel";
 import WeeklyPlannerBoard from "@/components/planner/WeeklyPlannerBoard";
 import {
-  clearCurrentPlans,
+  addCategoryDefinition,
+  clearPlansForWeek,
   deleteChildProfile,
+  getActiveWeekStart,
+  getCategoryDefinitions,
   getChildren,
-  getCurrentPlans,
+  getPlansForWeek,
   renameChildProfile,
+  saveActiveWeekStart,
+  saveCategoryDefinitions,
   saveChildren,
-  saveCurrentPlans,
+  savePlansForWeek,
   saveWeekLog,
 } from "@/lib/plannerStorage";
+import { getCurrentWeekRange, getWeekRangeFromStart, shiftWeekStart } from "@/lib/week";
 import { createId } from "@/lib/utils";
 import type {
+  CategoryDefinition,
   ChildProfile,
   PlanCategory,
   PlannerItem,
@@ -31,15 +38,21 @@ const colorLabels: ChildProfile["colorLabel"][] = ["sage", "gold", "clay", "blue
 export default function PlannerShell() {
   const [plans, setPlans] = useState<PlannerItem[]>([]);
   const [children, setChildren] = useState<ChildProfile[]>([]);
+  const [categories, setCategories] = useState<CategoryDefinition[]>([]);
   const [activeChildId, setActiveChildId] = useState("all");
+  const [activeWeekStart, setActiveWeekStart] = useState("");
   const [hasLoaded, setHasLoaded] = useState(false);
   const [savedMessage, setSavedMessage] = useState("");
   const [isAddingPlan, setIsAddingPlan] = useState(false);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      setPlans(getCurrentPlans());
+      const savedWeekStart = getActiveWeekStart();
+
+      setActiveWeekStart(savedWeekStart);
+      setPlans(getPlansForWeek(savedWeekStart));
       setChildren(getChildren());
+      setCategories(getCategoryDefinitions());
       setHasLoaded(true);
     }, 0);
 
@@ -47,9 +60,15 @@ export default function PlannerShell() {
   }, []);
 
   useEffect(() => {
-    if (!hasLoaded) return;
-    saveCurrentPlans(plans);
-  }, [plans, hasLoaded]);
+    if (!hasLoaded || !activeWeekStart) return;
+    savePlansForWeek(activeWeekStart, plans);
+  }, [plans, activeWeekStart, hasLoaded]);
+
+  const weekRange = useMemo(() => {
+    return activeWeekStart
+      ? getWeekRangeFromStart(activeWeekStart)
+      : getCurrentWeekRange();
+  }, [activeWeekStart]);
 
   const visiblePlans = useMemo(() => {
     if (activeChildId === "all") return plans;
@@ -59,6 +78,36 @@ export default function PlannerShell() {
         plan.assignedTo === activeChildId || plan.assignedTo === "everyone"
     );
   }, [activeChildId, plans]);
+
+  function handleSwitchWeek(direction: number) {
+    if (!activeWeekStart) return;
+
+    savePlansForWeek(activeWeekStart, plans);
+
+    const nextWeekStart = shiftWeekStart(activeWeekStart, direction);
+
+    setActiveWeekStart(nextWeekStart);
+    saveActiveWeekStart(nextWeekStart);
+    setPlans(getPlansForWeek(nextWeekStart));
+    setActiveChildId("all");
+    setSavedMessage(direction > 0 ? "Next week opened." : "Previous week opened.");
+    setIsAddingPlan(false);
+  }
+
+  function handleThisWeek() {
+    if (!activeWeekStart) return;
+
+    savePlansForWeek(activeWeekStart, plans);
+
+    const currentWeekStart = getCurrentWeekRange().weekStart;
+
+    setActiveWeekStart(currentWeekStart);
+    saveActiveWeekStart(currentWeekStart);
+    setPlans(getPlansForWeek(currentWeekStart));
+    setActiveChildId("all");
+    setSavedMessage("Current week opened.");
+    setIsAddingPlan(false);
+  }
 
   function handleAddPlans(newPlans: PlannerItem[]) {
     setPlans((current) => [...newPlans, ...current]);
@@ -114,22 +163,44 @@ export default function PlannerShell() {
   }
 
   function handleClearWeek() {
-    clearCurrentPlans();
+    if (!activeWeekStart) return;
+
+    clearPlansForWeek(activeWeekStart);
     setPlans([]);
     setActiveChildId("all");
-    setSavedMessage("Current week cleared. You can start fresh whenever you are ready.");
+    setSavedMessage(`${weekRange.weekLabel} cleared. You can start fresh whenever you are ready.`);
   }
 
   function handleStartFreshWeek() {
-    clearCurrentPlans();
+    if (!activeWeekStart) return;
+
+    const nextWeekStart = shiftWeekStart(activeWeekStart, 1);
+
+    clearPlansForWeek(nextWeekStart);
+    saveActiveWeekStart(nextWeekStart);
+    setActiveWeekStart(nextWeekStart);
     setPlans([]);
     setActiveChildId("all");
     setSavedMessage("Fresh week started.");
+    setIsAddingPlan(true);
   }
 
   function handleSaveWeek(week: SavedWeekLog) {
     saveWeekLog(week);
     setSavedMessage("Week saved. You can start a fresh week or keep editing this one.");
+  }
+
+  function handleAddCategory(name: string) {
+    const nextCategory = addCategoryDefinition(name);
+
+    if (nextCategory) {
+      const nextCategories = getCategoryDefinitions();
+      saveCategoryDefinitions(nextCategories);
+      setCategories(nextCategories);
+      setSavedMessage(`${nextCategory.label} added as a category.`);
+    }
+
+    return nextCategory;
   }
 
   function handleAddChild(name: string) {
@@ -154,7 +225,7 @@ export default function PlannerShell() {
   function handleDeleteChild(childId: string) {
     const childName = children.find((child) => child.id === childId)?.name ?? "Child";
     setChildren(deleteChildProfile(childId));
-    setPlans(getCurrentPlans());
+    setPlans(getPlansForWeek(activeWeekStart));
 
     if (activeChildId === childId) {
       setActiveChildId("all");
@@ -174,22 +245,46 @@ export default function PlannerShell() {
           </h1>
 
           <p className="section-lead">
-            Start with the week board. Add plans when you need them, filter by
-            child when helpful, and save the record when the week feels ready.
+            Plan weekdays or weekends, add your own categories, move cards when
+            life changes, and save the record when the week feels ready.
           </p>
         </div>
       </section>
 
       <section className="planner-control-strip soft-card">
         <div className="planner-control-copy">
-          <p className="control-kicker">This week</p>
-          <strong>{plans.length} plans on the board</strong>
+          <p className="control-kicker">Week of {weekRange.weekLabel}</p>
+          <strong>{plans.length} plans on this board</strong>
           <span>
-            Add only what helps. The board stays movable, even when the week changes.
+            Open a different week if you want to plan ahead, or keep this week simple.
           </span>
         </div>
 
-        <div className="planner-control-actions">
+        <div className="planner-control-actions planner-control-actions-expanded">
+          <div className="week-switcher">
+            <button
+              className="mini-text-button"
+              type="button"
+              onClick={() => handleSwitchWeek(-1)}
+            >
+              Previous week
+            </button>
+            <button
+              className="mini-text-button"
+              type="button"
+              onClick={handleThisWeek}
+            >
+              This week
+            </button>
+            <button
+              className="mini-text-button"
+              type="button"
+              onClick={() => handleSwitchWeek(1)}
+            >
+              Next week
+            </button>
+          </div>
+
           <button
             className="btn btn-primary"
             type="button"
@@ -229,7 +324,13 @@ export default function PlannerShell() {
 
       {isAddingPlan ? (
         <section className="planner-add-row planner-add-row-open">
-          <AddPlanForm childProfiles={children} onAddPlans={handleAddPlans} />
+          <AddPlanForm
+            childProfiles={children}
+            categories={categories}
+            weekStart={weekRange.weekStart}
+            onAddPlans={handleAddPlans}
+            onAddCategory={handleAddCategory}
+          />
         </section>
       ) : null}
 
@@ -246,6 +347,9 @@ export default function PlannerShell() {
         <SaveWeekPanel
           plans={plans}
           childProfiles={children}
+          weekLabel={weekRange.weekLabel}
+          weekStart={weekRange.weekStart}
+          weekEnd={weekRange.weekEnd}
           onSaveWeek={handleSaveWeek}
         />
       </section>
@@ -254,6 +358,8 @@ export default function PlannerShell() {
         <WeeklyPlannerBoard
           plans={visiblePlans}
           childProfiles={children}
+          categories={categories}
+          weekLabel={weekRange.weekLabel}
           onMove={handleMove}
           onStatusChange={handleStatusChange}
           onCategoryChange={handleCategoryChange}

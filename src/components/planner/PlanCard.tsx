@@ -7,6 +7,8 @@ import {
   LuCheck,
   LuChevronDown,
   LuChevronUp,
+  LuGraduationCap,
+  LuLandmark,
   LuLeaf,
   LuMap,
   LuMoveRight,
@@ -15,12 +17,12 @@ import {
   LuX,
 } from "react-icons/lu";
 import {
-  categories,
-  categoryLabels,
   dayLabels,
+  getCategoryLabel,
   weekDays,
 } from "@/data/demoPlans";
 import type {
+  CategoryDefinition,
   ChildProfile,
   PlanCategory,
   PlannerItem,
@@ -31,6 +33,7 @@ import type {
 type PlanCardProps = {
   plan: PlannerItem;
   childProfiles: ChildProfile[];
+  categories: CategoryDefinition[];
   onMove: (id: string, day: WeekDay) => void;
   onStatusChange: (id: string, status: PlanStatus) => void;
   onCategoryChange: (id: string, category: PlanCategory) => void;
@@ -38,13 +41,16 @@ type PlanCardProps = {
   onDelete: (id: string) => void;
 };
 
-const categoryIcons = {
+const categoryIcons: Record<string, typeof LuMoveRight> = {
   reading: LuBookOpen,
   math: LuCalculator,
   nature: LuLeaf,
   "life-skills": LuSoup,
   creative: LuPalette,
   outing: LuMap,
+  science: LuGraduationCap,
+  history: LuLandmark,
+  "language-arts": LuBookOpen,
   other: LuMoveRight,
 };
 
@@ -58,6 +64,7 @@ function getStatusLabel(status: PlanStatus) {
 export default function PlanCard({
   plan,
   childProfiles,
+  categories,
   onMove,
   onStatusChange,
   onCategoryChange,
@@ -65,7 +72,7 @@ export default function PlanCard({
   onDelete,
 }: PlanCardProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const Icon = categoryIcons[plan.category];
+  const Icon = categoryIcons[plan.category] ?? LuMoveRight;
   const assignedChild =
     childProfiles.find((child) => child.id === plan.assignedTo)?.name ?? "Everyone";
 
@@ -85,7 +92,7 @@ export default function PlanCard({
           </div>
 
           <div className="plan-meta-stack">
-            <span>{categoryLabels[plan.category]}</span>
+            <span>{getCategoryLabel(plan.category, categories)}</span>
             <span>{plan.timeBlock}</span>
           </div>
         </div>
@@ -159,8 +166,8 @@ export default function PlanCard({
                 }
               >
                 {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {categoryLabels[category]}
+                  <option key={category.id} value={category.id}>
+                    {getCategoryLabel(category.id, categories)}
                   </option>
                 ))}
               </select>

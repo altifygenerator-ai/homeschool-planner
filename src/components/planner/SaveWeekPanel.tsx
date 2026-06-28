@@ -3,24 +3,28 @@
 import { LuArchive } from "react-icons/lu";
 import type { ChildProfile, PlannerItem, SavedWeekLog } from "@/types/planner";
 import { createId } from "@/lib/utils";
-import { getCurrentWeekRange } from "@/lib/week";
 import { generateChildWeeklySummaries } from "@/lib/weeklySummary";
 
 type SaveWeekPanelProps = {
   plans: PlannerItem[];
   childProfiles: ChildProfile[];
+  weekLabel: string;
+  weekStart: string;
+  weekEnd: string;
   onSaveWeek: (week: SavedWeekLog) => void;
 };
 
 export default function SaveWeekPanel({
   plans,
   childProfiles,
+  weekLabel,
+  weekStart,
+  weekEnd,
   onSaveWeek,
 }: SaveWeekPanelProps) {
   const doneCount = plans.filter((plan) => plan.status === "done").length;
   const movedCount = plans.filter((plan) => plan.status === "moved").length;
   const skippedCount = plans.filter((plan) => plan.status === "skipped").length;
-  const { weekLabel, weekStart, weekEnd } = getCurrentWeekRange();
 
   function handleSaveWeek() {
     const childSummaries = generateChildWeeklySummaries(childProfiles, plans);
@@ -41,7 +45,7 @@ export default function SaveWeekPanel({
     <section className="paper-card week-save-card week-save-compact">
       <div className="week-save-copy">
         <p className="eyebrow">Week record</p>
-        <h2 className="week-save-title">Save when the week is ready.</h2>
+        <h2 className="week-save-title">Save {weekLabel} when it’s ready.</h2>
         <p className="text-small">
           Creates a saved week with child rundowns from this board.
         </p>

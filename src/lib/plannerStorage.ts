@@ -1,8 +1,18 @@
-import type { ChildProfile, PlannerItem, SavedWeekLog } from "@/types/planner";
+import { defaultCategoryDefinitions } from "@/data/demoPlans";
+import { getCurrentWeekRange } from "@/lib/week";
+import type {
+  CategoryDefinition,
+  ChildProfile,
+  PlannerItem,
+  SavedWeekLog,
+} from "@/types/planner";
 
 const SAVED_WEEKS_KEY = "softweek_saved_weeks";
 const CURRENT_PLANS_KEY = "softweek_current_plans";
 const CHILDREN_KEY = "softweek_children";
+const ACTIVE_WEEK_START_KEY = "softweek_active_week_start";
+const WEEK_PLANS_PREFIX = "softweek_week_plans";
+const CATEGORIES_KEY = "softweek_categories";
 
 export const EVERYONE_CHILD: ChildProfile = {
   id: "everyone",
@@ -37,19 +47,111 @@ function cleanChildren(children: ChildProfile[]) {
     });
 }
 
-export function getCurrentPlans(): PlannerItem[] {
+function normalizeWeekStart(weekStart: string) {
+  return weekStart.slice(0, 10);
+}
+
+function weekPlansKey(weekStart: string) {
+  return `${WEEK_PLANS_PREFIX}:${normalizeWeekStart(weekStart)}`;
+}
+
+function makeCategoryId(name: string) {
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 48);
+}
+
+function cleanCategories(categories: CategoryDefinition[]) {
+  const seen = new Set<string>();
+
+  return categories
+    .map((category) => ({
+      ...category,
+      id: makeCategoryId(category.id || category.label),
+      label: category.label.trim(),
+      isCustom: Boolean(category.isCustom),
+    }))
+    .filter((category) => category.id.length > 0 && category.label.length > 0)
+    .filter((category) => {
+      if (seen.has(category.id)) return false;
+      seen.add(category.id);
+      return true;
+    });
+}
+
+export function getActiveWeekStart() {
+  if (typeof window === "undefined") return getCurrentWeekRange().weekStart;
+
+  const saved = window.localStorage.getItem(ACTIVE_WEEK_START_KEY);
+  return saved || getCurrentWeekRange().weekStart;
+}
+
+export function saveActiveWeekStart(weekStart: string) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(ACTIVE_WEEK_START_KEY, weekStart);
+}
+
+export function getPlansForWeek(weekStart: string): PlannerItem[] {
   if (typeof window === "undefined") return [];
-  return safeParse<PlannerItem[]>(window.localStorage.getItem(CURRENT_PLANS_KEY), []);
+
+  const nextPlans = safeParse<PlannerItem[]>(
+    window.localStorage.getItem(weekPlansKey(weekStart)),
+    []
+  );
+
+  // Backward compatibility for early testers who had one current-plan key.
+  if (nextPlans.length) return nextPlans;
+
+  const legacyPlans = safeParse<PlannerItem[]>(
+    window.localStorage.getItem(CURRENT_PLANS_KEY),
+    []
+  );
+
+  if (legacyPlans.length && normalizeWeekStart(weekStart) === normalizeWeekStart(getCurrentWeekRange().weekStart)) {
+    return legacyPlans.map((plan) => ({ ...plan, weekStart }));
+  }
+
+  return [];
+}
+
+export function savePlansForWeek(weekStart: string, plans: PlannerItem[]) {
+  if (typeof window === "undefined") return;
+
+  const stampedPlans = plans.map((plan) => ({
+    ...plan,
+    weekStart,
+  }));
+
+  window.localStorage.setItem(weekPlansKey(weekStart), JSON.stringify(stampedPlans));
+
+  if (normalizeWeekStart(weekStart) === normalizeWeekStart(getCurrentWeekRange().weekStart)) {
+    window.localStorage.setItem(CURRENT_PLANS_KEY, JSON.stringify(stampedPlans));
+  }
+}
+
+export function clearPlansForWeek(weekStart: string) {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(weekPlansKey(weekStart));
+
+  if (normalizeWeekStart(weekStart) === normalizeWeekStart(getCurrentWeekRange().weekStart)) {
+    window.localStorage.removeItem(CURRENT_PLANS_KEY);
+  }
+}
+
+export function getCurrentPlans(): PlannerItem[] {
+  return getPlansForWeek(getActiveWeekStart());
 }
 
 export function saveCurrentPlans(plans: PlannerItem[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(CURRENT_PLANS_KEY, JSON.stringify(plans));
+  savePlansForWeek(getActiveWeekStart(), plans);
 }
 
 export function clearCurrentPlans() {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(CURRENT_PLANS_KEY);
+  clearPlansForWeek(getActiveWeekStart());
 }
 
 export function getChildren(): ChildProfile[] {
@@ -83,12 +185,80 @@ export function deleteChildProfile(childId: string) {
   const nextChildren = getChildren().filter((child) => child.id !== childId);
   saveChildren(nextChildren);
 
-  const nextPlans = getCurrentPlans().map((plan) =>
+  const activeWeekStart = getActiveWeekStart();
+  const nextPlans = getPlansForWeek(activeWeekStart).map((plan) =>
     plan.assignedTo === childId ? { ...plan, assignedTo: EVERYONE_CHILD.id } : plan
   );
-  saveCurrentPlans(nextPlans);
+  savePlansForWeek(activeWeekStart, nextPlans);
 
   return getChildren();
+}
+
+export function getCategoryDefinitions(): CategoryDefinition[] {
+  if (typeof window === "undefined") return defaultCategoryDefinitions;
+
+  const saved = safeParse<CategoryDefinition[]>(
+    window.localStorage.getItem(CATEGORIES_KEY),
+    []
+  );
+
+  const customOnly = cleanCategories(saved).filter(
+    (savedCategory) =>
+      !defaultCategoryDefinitions.some(
+        (defaultCategory) => defaultCategory.id === savedCategory.id
+      )
+  );
+
+  return [...defaultCategoryDefinitions, ...customOnly];
+}
+
+export function saveCategoryDefinitions(categories: CategoryDefinition[]) {
+  if (typeof window === "undefined") return;
+
+  const customOnly = cleanCategories(categories).filter(
+    (category) =>
+      category.isCustom &&
+      !defaultCategoryDefinitions.some(
+        (defaultCategory) => defaultCategory.id === category.id
+      )
+  );
+
+  window.localStorage.setItem(CATEGORIES_KEY, JSON.stringify(customOnly));
+}
+
+export function addCategoryDefinition(name: string) {
+  const label = name.trim();
+  if (!label) return getCategoryDefinitions()[0];
+
+  const current = getCategoryDefinitions();
+  const baseId = makeCategoryId(label);
+  let id = baseId || "custom";
+  let count = 2;
+
+  while (current.some((category) => category.id === id)) {
+    id = `${baseId}-${count}`;
+    count += 1;
+  }
+
+  const nextCategory: CategoryDefinition = {
+    id,
+    label,
+    isCustom: true,
+  };
+
+  saveCategoryDefinitions([...current, nextCategory]);
+  return nextCategory;
+}
+
+export function deleteCategoryDefinition(categoryId: string) {
+  if (typeof window === "undefined") return getCategoryDefinitions();
+
+  const next = getCategoryDefinitions().filter(
+    (category) => category.id !== categoryId || !category.isCustom
+  );
+
+  saveCategoryDefinitions(next);
+  return getCategoryDefinitions();
 }
 
 export function getSavedWeeks(): SavedWeekLog[] {
