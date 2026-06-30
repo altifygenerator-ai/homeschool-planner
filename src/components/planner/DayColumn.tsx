@@ -21,6 +21,7 @@ type DayColumnProps = {
   onCategoryChange: (id: string, category: PlanCategory) => void;
   onActualNotesChange: (id: string, value: string) => void;
   onDelete: (id: string) => void;
+  canEditStructure?: boolean;
 };
 
 export default function DayColumn({
@@ -33,6 +34,7 @@ export default function DayColumn({
   onCategoryChange,
   onActualNotesChange,
   onDelete,
+  canEditStructure = true,
 }: DayColumnProps) {
   return (
     <section className="day-column">
@@ -54,6 +56,7 @@ export default function DayColumn({
               onCategoryChange={onCategoryChange}
               onActualNotesChange={onActualNotesChange}
               onDelete={onDelete}
+              canEditStructure={canEditStructure}
             />
           ))
         ) : (

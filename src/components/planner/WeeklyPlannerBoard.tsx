@@ -21,6 +21,7 @@ type WeeklyPlannerBoardProps = {
   onCategoryChange: (id: string, category: PlanCategory) => void;
   onActualNotesChange: (id: string, value: string) => void;
   onDelete: (id: string) => void;
+  canEditStructure?: boolean;
 };
 
 export default function WeeklyPlannerBoard({
@@ -33,6 +34,7 @@ export default function WeeklyPlannerBoard({
   onCategoryChange,
   onActualNotesChange,
   onDelete,
+  canEditStructure = true,
 }: WeeklyPlannerBoardProps) {
   const doneCount = plans.filter((plan) => plan.status === "done").length;
   const movedCount = plans.filter((plan) => plan.status === "moved").length;
@@ -69,6 +71,7 @@ export default function WeeklyPlannerBoard({
             onCategoryChange={onCategoryChange}
             onActualNotesChange={onActualNotesChange}
             onDelete={onDelete}
+            canEditStructure={canEditStructure}
           />
         ))}
       </div>

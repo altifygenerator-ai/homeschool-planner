@@ -2846,3 +2846,949 @@ img {
     grid-auto-columns: minmax(245px, 82vw);
   }
 }
+
+/* Real beta account / SaaS-ready updates */
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.header-actions .btn {
+  min-height: 42px;
+  padding: 0.72rem 0.95rem;
+  font-size: 0.86rem;
+}
+
+.home-hero-section {
+  padding: 5.4rem 0 5.8rem;
+}
+
+.home-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.02fr) minmax(320px, 0.78fr);
+  gap: 3.2rem;
+  align-items: center;
+}
+
+.home-hero-copy {
+  max-width: 760px;
+}
+
+.home-product-card {
+  padding: clamp(1.3rem, 4vw, 2rem);
+  display: grid;
+  gap: 1.1rem;
+}
+
+.home-product-card h2 {
+  margin: 0;
+  color: var(--navy);
+  font-family: var(--font-heading), Georgia, serif;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  line-height: 0.96;
+  letter-spacing: -0.05em;
+}
+
+.product-loop-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.product-loop-list div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.85rem;
+  border-radius: 18px;
+  background: rgba(251, 247, 239, 0.78);
+  border: 1px solid rgba(234, 223, 206, 0.88);
+}
+
+.product-loop-list span,
+.home-step-card > span {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--sage-soft);
+  color: var(--sage-dark);
+  font-weight: 950;
+}
+
+.product-loop-list p {
+  margin: 0;
+  color: rgba(36, 49, 63, 0.76);
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.home-step-card {
+  padding: 1.15rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.9rem;
+  align-items: start;
+}
+
+.home-step-card h3 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 1.04rem;
+  font-weight: 950;
+  letter-spacing: -0.03em;
+}
+
+.home-step-card p {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.beta-release-card {
+  padding: clamp(1.35rem, 5vw, 3rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.45fr);
+  gap: 1.6rem;
+  align-items: center;
+}
+
+.beta-release-panel {
+  min-width: 0;
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+  padding: 1.1rem;
+  border-radius: 24px;
+  background: rgba(251, 247, 239, 0.78);
+  border: 1px solid rgba(234, 223, 206, 0.9);
+}
+
+.beta-release-panel > svg,
+.auth-promise-card > svg {
+  width: 42px;
+  height: 42px;
+  padding: 0.7rem;
+  border-radius: 16px;
+  color: var(--sage-dark);
+  background: var(--sage-soft);
+}
+
+.beta-release-panel p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.auth-section {
+  padding-top: 4.5rem;
+}
+
+.auth-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 0.72fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.auth-copy {
+  max-width: 760px;
+}
+
+.auth-promise-card {
+  margin-top: 1.4rem;
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.9rem;
+  align-items: start;
+}
+
+.auth-promise-card strong {
+  display: block;
+  color: var(--navy);
+  font-weight: 950;
+  letter-spacing: -0.025em;
+}
+
+.auth-promise-card p {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.auth-mini-grid {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.auth-mini-grid div {
+  padding: 0.95rem;
+  border-radius: 18px;
+  background: rgba(255, 253, 248, 0.76);
+  border: 1px solid rgba(234, 223, 206, 0.9);
+}
+
+.auth-mini-grid strong,
+.auth-mini-grid span {
+  display: block;
+}
+
+.auth-mini-grid strong {
+  color: var(--navy);
+  font-size: 0.95rem;
+  font-weight: 950;
+}
+
+.auth-mini-grid span {
+  margin-top: 0.35rem;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.auth-card {
+  padding: 1.2rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+  padding: 0.35rem;
+  border-radius: 999px;
+  background: rgba(251, 247, 239, 0.88);
+  border: 1px solid rgba(234, 223, 206, 0.9);
+}
+
+.auth-tabs button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(36, 49, 63, 0.68);
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+
+.auth-tabs button.active {
+  background: white;
+  color: var(--sage-dark);
+  box-shadow: 0 10px 20px rgba(60, 47, 33, 0.08);
+}
+
+.auth-message {
+  margin: 0;
+  border-radius: 16px;
+  background: var(--gold-soft);
+  color: #6a4d16;
+  padding: 0.75rem 0.85rem;
+  font-size: 0.9rem;
+  font-weight: 850;
+  line-height: 1.5;
+}
+
+.auth-divider {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0.7rem;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.auth-divider span {
+  height: 1px;
+  background: rgba(234, 223, 206, 0.95);
+}
+
+.auth-divider p,
+.auth-footnote {
+  margin: 0;
+}
+
+.auth-guest-button,
+.auth-back-link {
+  width: 100%;
+}
+
+.auth-back-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  color: var(--sage-dark);
+  font-size: 0.88rem;
+  font-weight: 900;
+}
+
+.auth-required-card {
+  padding: clamp(1.35rem, 4vw, 2.6rem);
+  display: grid;
+  gap: 1.3rem;
+}
+
+.account-bar {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(234, 223, 206, 0.8);
+}
+
+.account-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 34px;
+  border-radius: 999px;
+  background: var(--sage-soft);
+  color: var(--sage-dark);
+  padding: 0.42rem 0.72rem;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.child-limited-card h3 {
+  margin: 0.35rem 0 0;
+  color: var(--navy);
+  font-size: 1.05rem;
+  font-weight: 950;
+  letter-spacing: -0.03em;
+}
+
+@media (max-width: 980px) {
+  .home-hero-grid,
+  .auth-grid,
+  .beta-release-card {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-mini-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .header-actions .btn-secondary {
+    display: none;
+  }
+
+  .home-hero-section {
+    padding: 3.5rem 0 4rem;
+  }
+
+  .auth-promise-card,
+  .home-step-card {
+    grid-template-columns: 1fr;
+  }
+
+  .beta-release-panel .btn,
+  .auth-card .btn {
+    width: 100%;
+  }
+}
+
+/* Account overview and clear beta plan messaging */
+
+.account-overview-stack {
+  display: grid;
+  gap: 1.2rem;
+}
+
+.account-overview-hero {
+  padding: clamp(1.35rem, 4vw, 2.7rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.42fr);
+  gap: 1.4rem;
+  align-items: center;
+}
+
+.account-plan-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.9rem;
+  align-items: start;
+  padding: 1rem;
+  border-radius: 24px;
+  background: rgba(251, 247, 239, 0.78);
+  border: 1px solid rgba(234, 223, 206, 0.9);
+}
+
+.account-plan-icon,
+.plan-feature-top > svg,
+.account-beta-note > svg,
+.account-upgrade-note > svg {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  color: var(--sage-dark);
+  background: var(--sage-soft);
+  flex: 0 0 auto;
+}
+
+.account-plan-icon svg,
+.plan-feature-top > svg,
+.account-beta-note > svg,
+.account-upgrade-note > svg {
+  width: 22px;
+  height: 22px;
+}
+
+.account-plan-card span,
+.plan-feature-top span,
+.account-stat-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.account-plan-card strong {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--navy);
+  font-family: var(--font-heading), Georgia, serif;
+  font-size: clamp(1.7rem, 3vw, 2.6rem);
+  line-height: 0.95;
+  letter-spacing: -0.055em;
+}
+
+.account-plan-card p,
+.account-stat-card p,
+.plan-feature-card p,
+.account-beta-note p,
+.account-upgrade-note p {
+  margin: 0.45rem 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.account-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.account-stat-card {
+  display: grid;
+  align-content: start;
+  gap: 0.55rem;
+  padding: 1rem;
+  min-height: 178px;
+}
+
+.account-stat-card > svg {
+  width: 30px;
+  height: 30px;
+  color: var(--sage-dark);
+}
+
+.account-stat-card strong {
+  display: block;
+  color: var(--navy);
+  font-family: var(--font-heading), Georgia, serif;
+  font-size: clamp(1.65rem, 2.8vw, 2.35rem);
+  line-height: 1;
+  letter-spacing: -0.055em;
+}
+
+.account-action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.beta-plan-section {
+  padding: clamp(1.35rem, 5vw, 2.8rem);
+  display: grid;
+  gap: 1.4rem;
+}
+
+.beta-plan-heading {
+  max-width: 860px;
+}
+
+.plan-feature-grid,
+.marketing-plan-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.marketing-plan-grid {
+  margin-top: 1rem;
+}
+
+.plan-feature-card {
+  min-width: 0;
+  padding: 1.15rem;
+  border-radius: 24px;
+  background: rgba(255, 253, 248, 0.78);
+  border: 1px solid rgba(234, 223, 206, 0.92);
+  box-shadow: 0 14px 36px rgba(60, 47, 33, 0.06);
+}
+
+.plan-feature-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.plan-feature-top h3 {
+  margin: 0.25rem 0 0;
+  color: var(--navy);
+  font-family: var(--font-heading), Georgia, serif;
+  font-size: clamp(1.55rem, 3vw, 2.35rem);
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+}
+
+.premium-feature-card .plan-feature-top > svg {
+  color: #6a4d16;
+  background: var(--gold-soft);
+}
+
+.plan-feature-card ul {
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.plan-feature-card li {
+  position: relative;
+  padding-left: 1.2rem;
+  color: rgba(36, 49, 63, 0.78);
+  font-size: 0.93rem;
+  line-height: 1.5;
+  font-weight: 760;
+}
+
+.plan-feature-card li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.58em;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--sage);
+}
+
+.premium-feature-card li::before {
+  background: var(--gold);
+}
+
+.account-beta-note,
+.account-upgrade-note {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1.1rem;
+}
+
+.account-beta-note h3,
+.account-upgrade-note h3 {
+  margin: 0.25rem 0 0;
+  color: var(--navy);
+  font-size: 1.08rem;
+  font-weight: 950;
+  letter-spacing: -0.035em;
+}
+
+.account-beta-note .btn,
+.account-upgrade-note .btn {
+  white-space: nowrap;
+}
+
+.dashboard-card-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+@media (max-width: 980px) {
+  .account-overview-hero,
+  .account-stat-grid,
+  .account-action-grid,
+  .plan-feature-grid,
+  .marketing-plan-grid,
+  .account-beta-note,
+  .account-upgrade-note {
+    grid-template-columns: 1fr;
+  }
+
+  .account-beta-note .btn,
+  .account-upgrade-note .btn {
+    width: fit-content;
+  }
+}
+
+@media (max-width: 620px) {
+  .account-beta-note .btn,
+  .account-upgrade-note .btn {
+    width: 100%;
+  }
+
+  .plan-feature-top,
+  .account-plan-card {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-feature-top {
+    display: grid;
+  }
+}
+
+/* Account overview CSS repair */
+.account-overview-stack {
+  width: 100%;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.account-overview-hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1.25rem, 4vw, 2.6rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+  gap: clamp(1rem, 3vw, 1.75rem);
+  align-items: stretch;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(217, 182, 111, 0.2), transparent 20rem),
+    radial-gradient(circle at 100% 15%, rgba(143, 174, 155, 0.22), transparent 22rem),
+    rgba(255, 253, 248, 0.9);
+}
+
+.account-overview-hero > div:first-child {
+  align-self: center;
+  min-width: 0;
+}
+
+.account-overview-hero .section-title-sm {
+  margin-top: 0.7rem;
+  max-width: 760px;
+}
+
+.account-overview-hero .section-lead,
+.beta-plan-heading .section-lead {
+  max-width: 820px;
+  color: var(--muted);
+}
+
+.account-plan-card {
+  min-width: 0;
+  height: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.9rem;
+  align-items: start;
+  padding: 1rem;
+  border-radius: 24px;
+  background:
+    linear-gradient(145deg, rgba(255, 253, 248, 0.86), rgba(251, 247, 239, 0.76));
+  border: 1px solid rgba(234, 223, 206, 0.94);
+  box-shadow: 0 16px 42px rgba(60, 47, 33, 0.07);
+}
+
+.account-plan-icon,
+.plan-feature-top > svg,
+.account-beta-note > svg,
+.account-upgrade-note > svg {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 17px;
+  color: var(--sage-dark);
+  background: var(--sage-soft);
+  flex: 0 0 auto;
+}
+
+.account-plan-icon svg,
+.plan-feature-top > svg,
+.account-beta-note > svg,
+.account-upgrade-note > svg {
+  width: 22px;
+  height: 22px;
+}
+
+.account-plan-card span,
+.plan-feature-top span,
+.account-stat-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.account-plan-card strong {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--navy);
+  font-family: var(--font-heading), Georgia, serif;
+  font-size: clamp(1.65rem, 3vw, 2.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.055em;
+}
+
+.account-plan-card p,
+.account-stat-card p,
+.plan-feature-card p,
+.account-beta-note p,
+.account-upgrade-note p {
+  margin: 0.45rem 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.account-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+  align-items: stretch;
+}
+
+.account-stat-card {
+  min-width: 0;
+  min-height: 174px;
+  padding: 1rem;
+  display: grid;
+  align-content: start;
+  gap: 0.55rem;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(143, 174, 155, 0.13), transparent 9rem),
+    rgba(255, 253, 248, 0.9);
+}
+
+.account-stat-card > svg {
+  width: 31px;
+  height: 31px;
+  color: var(--sage-dark);
+}
+
+.account-stat-card strong {
+  display: block;
+  color: var(--navy);
+  font-family: var(--font-heading), Georgia, serif;
+  font-size: clamp(1.6rem, 2.8vw, 2.35rem);
+  line-height: 1;
+  letter-spacing: -0.055em;
+  word-break: break-word;
+}
+
+.account-action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.account-action-grid .dashboard-link-card {
+  height: 100%;
+  min-height: 210px;
+  background:
+    linear-gradient(180deg, rgba(255, 253, 248, 0.94), rgba(255, 250, 241, 0.88));
+}
+
+.beta-plan-section {
+  padding: clamp(1.25rem, 5vw, 2.7rem);
+  display: grid;
+  gap: 1.45rem;
+  background:
+    radial-gradient(circle at 8% 8%, rgba(217, 182, 111, 0.16), transparent 20rem),
+    radial-gradient(circle at 100% 0%, rgba(143, 174, 155, 0.17), transparent 22rem),
+    rgba(255, 253, 248, 0.88);
+}
+
+.beta-plan-heading {
+  max-width: 900px;
+}
+
+.beta-plan-heading .section-title-sm {
+  margin-top: 0.65rem;
+}
+
+.plan-feature-grid,
+.marketing-plan-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.plan-feature-card {
+  min-width: 0;
+  height: 100%;
+  padding: clamp(1rem, 3vw, 1.25rem);
+  border-radius: 24px;
+  background: rgba(255, 253, 248, 0.84);
+  border: 1px solid rgba(234, 223, 206, 0.94);
+  box-shadow: 0 14px 36px rgba(60, 47, 33, 0.06);
+}
+
+.free-feature-card {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(143, 174, 155, 0.16), transparent 13rem),
+    rgba(255, 253, 248, 0.86);
+}
+
+.premium-feature-card {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(217, 182, 111, 0.22), transparent 13rem),
+    rgba(255, 253, 248, 0.86);
+}
+
+.plan-feature-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.plan-feature-top h3 {
+  margin: 0.25rem 0 0;
+  color: var(--navy);
+  font-family: var(--font-heading), Georgia, serif;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+}
+
+.premium-feature-card .plan-feature-top > svg {
+  color: #6a4d16;
+  background: var(--gold-soft);
+}
+
+.plan-feature-card ul {
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.plan-feature-card li {
+  position: relative;
+  padding-left: 1.2rem;
+  color: rgba(36, 49, 63, 0.78);
+  font-size: 0.93rem;
+  line-height: 1.5;
+  font-weight: 760;
+}
+
+.plan-feature-card li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.58em;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--sage);
+}
+
+.premium-feature-card li::before {
+  background: var(--gold);
+}
+
+.account-beta-note,
+.account-upgrade-note {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1.1rem;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(217, 182, 111, 0.12), transparent 13rem),
+    rgba(255, 253, 248, 0.9);
+}
+
+.account-beta-note h3,
+.account-upgrade-note h3 {
+  margin: 0.25rem 0 0;
+  color: var(--navy);
+  font-size: 1.08rem;
+  font-weight: 950;
+  letter-spacing: -0.035em;
+}
+
+.account-beta-note .btn,
+.account-upgrade-note .btn {
+  white-space: nowrap;
+}
+
+@media (max-width: 1080px) {
+  .account-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .account-overview-hero,
+  .account-action-grid,
+  .plan-feature-grid,
+  .marketing-plan-grid,
+  .account-beta-note,
+  .account-upgrade-note {
+    grid-template-columns: 1fr;
+  }
+
+  .account-beta-note .btn,
+  .account-upgrade-note .btn {
+    width: fit-content;
+  }
+}
+
+@media (max-width: 620px) {
+  .account-overview-stack {
+    gap: 1rem;
+  }
+
+  .account-overview-hero,
+  .beta-plan-section {
+    padding: 1rem;
+    border-radius: 22px;
+  }
+
+  .account-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-plan-card,
+  .plan-feature-top {
+    grid-template-columns: 1fr;
+  }
+
+  .account-plan-card {
+    display: grid;
+  }
+
+  .plan-feature-top {
+    display: grid;
+  }
+
+  .account-beta-note .btn,
+  .account-upgrade-note .btn {
+    width: 100%;
+  }
+}

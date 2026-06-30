@@ -13,34 +13,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
-      url: `${baseUrl}/dashboard`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/dashboard/planner`,
+      url: `${baseUrl}/login`,
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/dashboard/weeks`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.65,
-    },
-    {
-      url: `${baseUrl}/dashboard/children`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.65,
-    },
-    {
       url: `${baseUrl}/beta`,
       lastModified: now,
       changeFrequency: "weekly",
-      priority: 0.85,
+      priority: 0.75,
     },
   ];
 }

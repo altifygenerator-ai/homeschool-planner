@@ -49,12 +49,12 @@ export default function BetaPage() {
               </h1>
 
               <p className="section-lead">
-                SoftWeek Planner is usable now for weekly planning, multi-day activities, child profiles, saved weeks, and simple records. I’m still using real feedback to decide what needs to be clearer, easier, or more useful next.
+                SoftWeek Planner is usable now for weekly planning, multi-day activities, child profiles, saved weeks, and simple records. I’m still using real feedback to decide what needs to be clearer, calmer, or more useful next.
               </p>
 
               <div className="btn-row beta-actions">
-                <Link className="btn btn-primary" href="/dashboard/planner">
-                  Try the early planner
+                <Link className="btn btn-primary" href="/login?mode=create">
+                  Create beta account
                   <LuArrowRight />
                 </Link>
 
@@ -65,7 +65,7 @@ export default function BetaPage() {
               </div>
 
               <p className="hero-note">
-                No account needed. No payment. Your planner data saves in this browser while the account-backed version is being shaped.
+                Create a beta account, log back in on this device, or use guest mode if you want to try the planner first.
               </p>
             </div>
 
@@ -115,13 +115,13 @@ export default function BetaPage() {
                 Your feedback shapes the next version.
               </h2>
               <p className="section-lead">
-                The planner uses browser storage right now so families can try the weekly flow without signing up. The next foundation is account-backed saving, children, weekly records, and backups once the flow feels right.
+                This early beta is meant for testing the weekly flow, family setup, saved records, and child logins. A fuller account release is planned next so families can keep safer records, access their planner more easily, and use stronger print and export tools.
               </p>
             </div>
 
             <div className="btn-row">
-              <Link className="btn btn-primary" href="/dashboard/planner">
-                Open planner
+              <Link className="btn btn-primary" href="/guest">
+                Try as guest
               </Link>
 
               <Link className="btn btn-secondary" href={feedbackEmail}>

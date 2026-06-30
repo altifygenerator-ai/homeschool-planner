@@ -1,0 +1,68 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { LuArrowRight, LuMousePointerClick, LuUserPlus } from "react-icons/lu";
+import { getActiveAccountContext, startGuestSession, type AccountContext } from "@/lib/localAuth";
+
+type AuthGateProps = {
+  children: React.ReactNode;
+};
+
+export default function AuthGate({ children }: AuthGateProps) {
+  const [context, setContext] = useState<AccountContext | null>(null);
+  const [hasChecked, setHasChecked] = useState(false);
+
+  useEffect(() => {
+    function refresh() {
+      setContext(getActiveAccountContext());
+      setHasChecked(true);
+    }
+
+    refresh();
+    window.addEventListener("softweek-session-changed", refresh);
+    return () => window.removeEventListener("softweek-session-changed", refresh);
+  }, []);
+
+  if (!hasChecked) return null;
+
+  if (!context) {
+    return (
+      <section className="auth-required-card soft-card">
+        <div>
+          <p className="eyebrow">Account needed</p>
+          <h1 className="section-title-sm">Open SoftWeek with a beta account or guest access.</h1>
+          <p className="section-lead">
+            Create a beta account to keep your family setup and saved weeks
+            together on this device, log back in, or try the planner as a guest
+            first.
+          </p>
+        </div>
+
+        <div className="btn-row">
+          <Link className="btn btn-primary" href="/login?mode=create">
+            <LuUserPlus />
+            Create account
+          </Link>
+          <button
+            className="btn btn-secondary"
+            type="button"
+            onClick={() => {
+              startGuestSession();
+              setContext(getActiveAccountContext());
+            }}
+          >
+            <LuMousePointerClick />
+            Try as guest
+          </button>
+          <Link className="btn btn-secondary" href="/login?mode=login">
+            Log in
+            <LuArrowRight />
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
+  return <>{children}</>;
+}

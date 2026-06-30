@@ -21,7 +21,15 @@ import {
   savePlansForWeek,
   saveWeekLog,
 } from "@/lib/plannerStorage";
-import { getCurrentWeekRange, getWeekRangeFromStart, shiftWeekStart } from "@/lib/week";
+import {
+  getActiveAccountContext,
+  type AccountContext,
+} from "@/lib/localAuth";
+import {
+  getCurrentWeekRange,
+  getWeekRangeFromStart,
+  shiftWeekStart,
+} from "@/lib/week";
 import { createId } from "@/lib/utils";
 import type {
   CategoryDefinition,
@@ -44,19 +52,38 @@ export default function PlannerShell() {
   const [hasLoaded, setHasLoaded] = useState(false);
   const [savedMessage, setSavedMessage] = useState("");
   const [isAddingPlan, setIsAddingPlan] = useState(false);
+  const [accountContext, setAccountContext] = useState<AccountContext | null>(null);
+
+  const isChildView = accountContext?.isChild ?? false;
+  const canPlan = accountContext?.account.permissions.canPlan ?? true;
+  const canManageChildren = accountContext?.account.permissions.canManageChildren ?? true;
+  const canSaveWeeks = accountContext?.account.permissions.canSaveWeeks ?? true;
+  const canEditCategories = accountContext?.account.permissions.canEditCategories ?? true;
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
+      const context = getActiveAccountContext();
       const savedWeekStart = getActiveWeekStart();
 
+      setAccountContext(context);
       setActiveWeekStart(savedWeekStart);
       setPlans(getPlansForWeek(savedWeekStart));
       setChildren(getChildren());
       setCategories(getCategoryDefinitions());
+      setActiveChildId(context?.isChild && context.session.childId ? context.session.childId : "all");
       setHasLoaded(true);
     }, 0);
 
     return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    function refreshContext() {
+      setAccountContext(getActiveAccountContext());
+    }
+
+    window.addEventListener("softweek-session-changed", refreshContext);
+    return () => window.removeEventListener("softweek-session-changed", refreshContext);
   }, []);
 
   useEffect(() => {
@@ -70,52 +97,67 @@ export default function PlannerShell() {
       : getCurrentWeekRange();
   }, [activeWeekStart]);
 
+  const visibleChildren = useMemo(() => {
+    if (!isChildView || !accountContext?.session.childId) return children;
+
+    return children.filter(
+      (child) => child.id === "everyone" || child.id === accountContext.session.childId
+    );
+  }, [accountContext, children, isChildView]);
+
   const visiblePlans = useMemo(() => {
+    if (isChildView && accountContext?.session.childId) {
+      return plans.filter(
+        (plan) =>
+          plan.assignedTo === accountContext.session.childId ||
+          plan.assignedTo === "everyone"
+      );
+    }
+
     if (activeChildId === "all") return plans;
 
     return plans.filter(
       (plan) =>
         plan.assignedTo === activeChildId || plan.assignedTo === "everyone"
     );
-  }, [activeChildId, plans]);
+  }, [accountContext, activeChildId, isChildView, plans]);
+
+  function reloadWeek(weekStart: string) {
+    setActiveWeekStart(weekStart);
+    saveActiveWeekStart(weekStart);
+    setPlans(getPlansForWeek(weekStart));
+    setActiveChildId(isChildView && accountContext?.session.childId ? accountContext.session.childId : "all");
+    setIsAddingPlan(false);
+  }
 
   function handleSwitchWeek(direction: number) {
     if (!activeWeekStart) return;
 
     savePlansForWeek(activeWeekStart, plans);
-
     const nextWeekStart = shiftWeekStart(activeWeekStart, direction);
-
-    setActiveWeekStart(nextWeekStart);
-    saveActiveWeekStart(nextWeekStart);
-    setPlans(getPlansForWeek(nextWeekStart));
-    setActiveChildId("all");
+    reloadWeek(nextWeekStart);
     setSavedMessage(direction > 0 ? "Next week opened." : "Previous week opened.");
-    setIsAddingPlan(false);
   }
 
   function handleThisWeek() {
     if (!activeWeekStart) return;
 
     savePlansForWeek(activeWeekStart, plans);
-
-    const currentWeekStart = getCurrentWeekRange().weekStart;
-
-    setActiveWeekStart(currentWeekStart);
-    saveActiveWeekStart(currentWeekStart);
-    setPlans(getPlansForWeek(currentWeekStart));
-    setActiveChildId("all");
+    reloadWeek(getCurrentWeekRange().weekStart);
     setSavedMessage("Current week opened.");
-    setIsAddingPlan(false);
   }
 
   function handleAddPlans(newPlans: PlannerItem[]) {
+    if (!canPlan) return;
+
     setPlans((current) => [...newPlans, ...current]);
     setSavedMessage("");
     setIsAddingPlan(false);
   }
 
   function handleMove(id: string, day: WeekDay) {
+    if (!canPlan) return;
+
     setPlans((current) =>
       current.map((plan) =>
         plan.id === id
@@ -140,6 +182,8 @@ export default function PlannerShell() {
   }
 
   function handleCategoryChange(id: string, category: PlanCategory) {
+    if (!canPlan) return;
+
     setPlans((current) =>
       current.map((plan) => (plan.id === id ? { ...plan, category } : plan))
     );
@@ -158,12 +202,14 @@ export default function PlannerShell() {
   }
 
   function handleDelete(id: string) {
+    if (!canPlan) return;
+
     setPlans((current) => current.filter((plan) => plan.id !== id));
     setSavedMessage("");
   }
 
   function handleClearWeek() {
-    if (!activeWeekStart) return;
+    if (!activeWeekStart || !canPlan) return;
 
     clearPlansForWeek(activeWeekStart);
     setPlans([]);
@@ -172,7 +218,7 @@ export default function PlannerShell() {
   }
 
   function handleStartFreshWeek() {
-    if (!activeWeekStart) return;
+    if (!activeWeekStart || !canPlan) return;
 
     const nextWeekStart = shiftWeekStart(activeWeekStart, 1);
 
@@ -186,11 +232,15 @@ export default function PlannerShell() {
   }
 
   function handleSaveWeek(week: SavedWeekLog) {
+    if (!canSaveWeeks) return;
+
     saveWeekLog(week);
     setSavedMessage("Week saved. You can start a fresh week or keep editing this one.");
   }
 
   function handleAddCategory(name: string) {
+    if (!canEditCategories) return categories[0];
+
     const nextCategory = addCategoryDefinition(name);
 
     if (nextCategory) {
@@ -204,6 +254,8 @@ export default function PlannerShell() {
   }
 
   function handleAddChild(name: string) {
+    if (!canManageChildren) return;
+
     const realChildCount = children.filter((child) => child.id !== "everyone").length;
     const nextChild: ChildProfile = {
       id: createId("child"),
@@ -218,11 +270,15 @@ export default function PlannerShell() {
   }
 
   function handleRenameChild(childId: string, name: string) {
+    if (!canManageChildren) return;
+
     setChildren(renameChildProfile(childId, name));
     setSavedMessage("Child profile updated.");
   }
 
   function handleDeleteChild(childId: string) {
+    if (!canManageChildren) return;
+
     const childName = children.find((child) => child.id === childId)?.name ?? "Child";
     setChildren(deleteChildProfile(childId));
     setPlans(getPlansForWeek(activeWeekStart));
@@ -238,15 +294,18 @@ export default function PlannerShell() {
     <div className="planner-workspace planner-workspace-calm">
       <section className="planner-page-heading planner-page-heading-calm">
         <div>
-          <p className="eyebrow">Current planner</p>
+          <p className="eyebrow">{isChildView ? "Child view" : "Current planner"}</p>
 
           <h1 className="section-title">
-            Plan the week. Move what changes. Save what happened.
+            {isChildView
+              ? "Check the week and mark what happened."
+              : "Plan the week. Move what changes. Save what happened."}
           </h1>
 
           <p className="section-lead">
-            Plan weekdays or weekends, add your own categories, move cards when
-            life changes, and save the record when the week feels ready.
+            {isChildView
+              ? "This limited view lets an older child mark work done, skip what needs skipped, and add notes without changing the whole family planner."
+              : "Plan weekdays or weekends, add your own categories, move cards when life changes, and save the record when the week feels ready."}
           </p>
         </div>
       </section>
@@ -254,75 +313,63 @@ export default function PlannerShell() {
       <section className="planner-control-strip soft-card">
         <div className="planner-control-copy">
           <p className="control-kicker">Week of {weekRange.weekLabel}</p>
-          <strong>{plans.length} plans on this board</strong>
+          <strong>{visiblePlans.length} plans in this view</strong>
           <span>
-            Open a different week if you want to plan ahead, or keep this week simple.
+            {isChildView
+              ? "Parent controls are limited in this child login."
+              : "Open a different week if you want to plan ahead, or keep this week simple."}
           </span>
         </div>
 
         <div className="planner-control-actions planner-control-actions-expanded">
           <div className="week-switcher">
-            <button
-              className="mini-text-button"
-              type="button"
-              onClick={() => handleSwitchWeek(-1)}
-            >
+            <button className="mini-text-button" type="button" onClick={() => handleSwitchWeek(-1)}>
               Previous week
             </button>
-            <button
-              className="mini-text-button"
-              type="button"
-              onClick={handleThisWeek}
-            >
+            <button className="mini-text-button" type="button" onClick={handleThisWeek}>
               This week
             </button>
-            <button
-              className="mini-text-button"
-              type="button"
-              onClick={() => handleSwitchWeek(1)}
-            >
+            <button className="mini-text-button" type="button" onClick={() => handleSwitchWeek(1)}>
               Next week
             </button>
           </div>
 
-          <button
-            className="btn btn-primary"
-            type="button"
-            onClick={() => setIsAddingPlan((current) => !current)}
-          >
-            {isAddingPlan ? "Close form" : "+ Add plan"}
-          </button>
+          {canPlan ? (
+            <button
+              className="btn btn-primary"
+              type="button"
+              onClick={() => setIsAddingPlan((current) => !current)}
+            >
+              {isAddingPlan ? "Close form" : "+ Add plan"}
+            </button>
+          ) : null}
 
-          <Link className="btn btn-secondary" href="/dashboard/weeks">
-            Saved weeks
-          </Link>
+          {canSaveWeeks ? (
+            <Link className="btn btn-secondary" href="/dashboard/weeks">
+              Saved weeks
+            </Link>
+          ) : null}
 
-          <button
-            className="btn btn-secondary"
-            type="button"
-            onClick={handleClearWeek}
-          >
-            Clear week
-          </button>
+          {canPlan ? (
+            <button className="btn btn-secondary" type="button" onClick={handleClearWeek}>
+              Clear week
+            </button>
+          ) : null}
         </div>
       </section>
 
       {savedMessage ? (
         <div className="planner-save-message-row">
           <p className="planner-save-message">{savedMessage}</p>
-          {savedMessage.startsWith("Week saved") ? (
-            <button
-              className="mini-text-button"
-              type="button"
-              onClick={handleStartFreshWeek}
-            >
+          {savedMessage.startsWith("Week saved") && canPlan ? (
+            <button className="mini-text-button" type="button" onClick={handleStartFreshWeek}>
               Start fresh week
             </button>
           ) : null}
         </div>
       ) : null}
 
-      {isAddingPlan ? (
+      {isAddingPlan && canPlan ? (
         <section className="planner-add-row planner-add-row-open">
           <AddPlanForm
             childProfiles={children}
@@ -336,22 +383,33 @@ export default function PlannerShell() {
 
       <section className="planner-tools-row planner-tools-row-calm">
         <ChildSelector
-          childProfiles={children}
-          activeChildId={activeChildId}
+          childProfiles={visibleChildren}
+          activeChildId={isChildView && accountContext?.session.childId ? accountContext.session.childId : activeChildId}
           onChange={setActiveChildId}
-          onAddChild={handleAddChild}
-          onRenameChild={handleRenameChild}
-          onDeleteChild={handleDeleteChild}
+          onAddChild={canManageChildren ? handleAddChild : undefined}
+          onRenameChild={canManageChildren ? handleRenameChild : undefined}
+          onDeleteChild={canManageChildren ? handleDeleteChild : undefined}
         />
 
-        <SaveWeekPanel
-          plans={plans}
-          childProfiles={children}
-          weekLabel={weekRange.weekLabel}
-          weekStart={weekRange.weekStart}
-          weekEnd={weekRange.weekEnd}
-          onSaveWeek={handleSaveWeek}
-        />
+        {canSaveWeeks ? (
+          <SaveWeekPanel
+            plans={plans}
+            childProfiles={children}
+            weekLabel={weekRange.weekLabel}
+            weekStart={weekRange.weekStart}
+            weekEnd={weekRange.weekEnd}
+            onSaveWeek={handleSaveWeek}
+          />
+        ) : (
+          <div className="week-save-card child-limited-card">
+            <p className="eyebrow">Limited child login</p>
+            <h3>Parent tools are hidden here.</h3>
+            <p className="text-small">
+              This login can help mark work done and add notes, but saving weeks,
+              adding plans, and managing children stay with the parent account.
+            </p>
+          </div>
+        )}
       </section>
 
       <section className="planner-board-row">
@@ -360,6 +418,7 @@ export default function PlannerShell() {
           childProfiles={children}
           categories={categories}
           weekLabel={weekRange.weekLabel}
+          canEditStructure={canPlan}
           onMove={handleMove}
           onStatusChange={handleStatusChange}
           onCategoryChange={handleCategoryChange}

@@ -1,4 +1,4 @@
-import { LuArrowRight, LuDatabase, LuHeartHandshake } from "react-icons/lu";
+import { LuArrowRight, LuHeartHandshake, LuLock } from "react-icons/lu";
 import Button from "@/components/shared/Button";
 import FadeIn from "@/components/shared/FadeIn";
 
@@ -24,8 +24,8 @@ export default function BetaCTA() {
               </div>
 
               <p>
-                Your planner saves in this browser right now, so you can use it
-                without creating an account.
+                You can try the planner as a guest, or create a beta account if
+                you want your family setup and saved weeks kept together on this device.
               </p>
 
               <div className="btn-row">
@@ -45,13 +45,13 @@ export default function BetaCTA() {
         <FadeIn delay={0.12}>
           <div className="soft-card beta-storage-note">
             <div className="feature-icon">
-              <LuDatabase />
+              <LuLock />
             </div>
 
             <div>
-              <h3>Accounts and backed-up storage are the next foundation.</h3>
+              <h3>A fuller account release is the next foundation.</h3>
               <p>
-                The local version helps test the weekly flow first. The account-backed version should keep saved weeks, children, plans, and records in a real database with backups.
+                This beta helps test the weekly flow first. The fuller release is being built for backed-up accounts, safer saved records, child profiles, print tools, and easier access across devices.
               </p>
             </div>
           </div>

@@ -60,7 +60,7 @@ export default function ChildPortfolioDetail({
       <div className="paper-card child-detail-card">
         <h1 className="section-title-sm">Child not found.</h1>
         <p className="text-soft">
-          This child profile is not available in the current browser data. Go back to the children page.
+          This child profile is not available right now. Go back to the children page.
         </p>
         <Link className="btn btn-secondary" href="/dashboard/children">
           Back to children

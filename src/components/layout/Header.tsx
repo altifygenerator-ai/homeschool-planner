@@ -1,9 +1,34 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { LuNotebookPen } from "react-icons/lu";
+import { LuNotebookPen, LuUserRound } from "react-icons/lu";
 import { site } from "@/data/site";
 import Button from "@/components/shared/Button";
+import { getActiveAccountContext, type AccountContext } from "@/lib/localAuth";
 
 export default function Header() {
+  const [context, setContext] = useState<AccountContext | null>(null);
+
+  useEffect(() => {
+    function refresh() {
+      setContext(getActiveAccountContext());
+    }
+
+    refresh();
+    window.addEventListener("softweek-session-changed", refresh);
+    return () => window.removeEventListener("softweek-session-changed", refresh);
+  }, []);
+
+  const nav = context
+    ? [
+        { label: "Planner", href: "/dashboard/planner" },
+        { label: "Saved weeks", href: "/dashboard/weeks" },
+        { label: "Children", href: "/dashboard/children" },
+        { label: "Account", href: "/dashboard/account" },
+      ]
+    : site.nav;
+
   return (
     <header className="site-header">
       <div className="header-inner">
@@ -15,7 +40,7 @@ export default function Header() {
         </Link>
 
         <nav className="nav-links" aria-label="Main navigation">
-          {site.nav.map((item) => (
+          {nav.map((item) => (
             <Link href={item.href} key={item.label}>
               {item.label}
             </Link>
@@ -23,8 +48,19 @@ export default function Header() {
         </nav>
 
         <div className="header-actions">
-          <Button href="/dashboard/planner">Open planner</Button>
-          <Button href="/beta" variant="secondary">Feedback</Button>
+          {context ? (
+            <Button href="/dashboard/account">
+              <LuUserRound />
+              Account
+            </Button>
+          ) : (
+            <>
+              <Button href="/login?mode=create">Create account</Button>
+              <Button href="/guest" variant="secondary">
+                Try guest
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </header>

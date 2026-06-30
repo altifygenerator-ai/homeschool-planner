@@ -39,6 +39,7 @@ type PlanCardProps = {
   onCategoryChange: (id: string, category: PlanCategory) => void;
   onActualNotesChange: (id: string, value: string) => void;
   onDelete: (id: string) => void;
+  canEditStructure?: boolean;
 };
 
 const categoryIcons: Record<string, typeof LuMoveRight> = {
@@ -70,6 +71,7 @@ export default function PlanCard({
   onCategoryChange,
   onActualNotesChange,
   onDelete,
+  canEditStructure = true,
 }: PlanCardProps) {
   const [isOpen, setIsOpen] = useState(false);
   const Icon = categoryIcons[plan.category] ?? LuMoveRight;
@@ -140,39 +142,41 @@ export default function PlanCard({
 
       {isOpen ? (
         <div className="plan-adjust-panel">
-          <div className="adjust-control-grid">
-            <label className="mini-field">
-              <span>Move to</span>
-              <select
-                value={plan.day}
-                onChange={(event) =>
-                  onMove(plan.id, event.target.value as WeekDay)
-                }
-              >
-                {weekDays.map((day) => (
-                  <option key={day} value={day}>
-                    {dayLabels[day]}
-                  </option>
-                ))}
-              </select>
-            </label>
+          {canEditStructure ? (
+            <div className="adjust-control-grid">
+              <label className="mini-field">
+                <span>Move to</span>
+                <select
+                  value={plan.day}
+                  onChange={(event) =>
+                    onMove(plan.id, event.target.value as WeekDay)
+                  }
+                >
+                  {weekDays.map((day) => (
+                    <option key={day} value={day}>
+                      {dayLabels[day]}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-            <label className="mini-field">
-              <span>Type</span>
-              <select
-                value={plan.category}
-                onChange={(event) =>
-                  onCategoryChange(plan.id, event.target.value as PlanCategory)
-                }
-              >
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {getCategoryLabel(category.id, categories)}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
+              <label className="mini-field">
+                <span>Type</span>
+                <select
+                  value={plan.category}
+                  onChange={(event) =>
+                    onCategoryChange(plan.id, event.target.value as PlanCategory)
+                  }
+                >
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {getCategoryLabel(category.id, categories)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          ) : null}
 
           <label className="mini-field">
             <span>What actually happened?</span>
@@ -185,13 +189,15 @@ export default function PlanCard({
             />
           </label>
 
-          <button
-            className="remove-plan-button"
-            type="button"
-            onClick={() => onDelete(plan.id)}
-          >
-            Remove this plan
-          </button>
+          {canEditStructure ? (
+            <button
+              className="remove-plan-button"
+              type="button"
+              onClick={() => onDelete(plan.id)}
+            >
+              Remove this plan
+            </button>
+          ) : null}
         </div>
       ) : null}
     </article>

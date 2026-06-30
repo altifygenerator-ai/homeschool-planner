@@ -1,4 +1,5 @@
 import { defaultCategoryDefinitions } from "@/data/demoPlans";
+import { getActiveFamilyId } from "@/lib/localAuth";
 import { getCurrentWeekRange } from "@/lib/week";
 import type {
   CategoryDefinition,
@@ -27,6 +28,38 @@ function safeParse<T>(value: string | null, fallback: T): T {
     return JSON.parse(value) as T;
   } catch {
     return fallback;
+  }
+}
+
+function scopedKey(key: string) {
+  return `${key}:${getActiveFamilyId()}`;
+}
+
+function readScopedValue(key: string) {
+  if (typeof window === "undefined") return null;
+
+  const scoped = window.localStorage.getItem(scopedKey(key));
+  if (scoped !== null) return scoped;
+
+  // Let the guest/local beta keep seeing early tester data saved before accounts existed.
+  if (getActiveFamilyId() === "guest-family") {
+    return window.localStorage.getItem(key);
+  }
+
+  return null;
+}
+
+function writeScopedValue(key: string, value: string) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(scopedKey(key), value);
+}
+
+function removeScopedValue(key: string) {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(scopedKey(key));
+
+  if (getActiveFamilyId() === "guest-family") {
+    window.localStorage.removeItem(key);
   }
 }
 
@@ -86,32 +119,33 @@ function cleanCategories(categories: CategoryDefinition[]) {
 export function getActiveWeekStart() {
   if (typeof window === "undefined") return getCurrentWeekRange().weekStart;
 
-  const saved = window.localStorage.getItem(ACTIVE_WEEK_START_KEY);
+  const saved = readScopedValue(ACTIVE_WEEK_START_KEY);
   return saved || getCurrentWeekRange().weekStart;
 }
 
 export function saveActiveWeekStart(weekStart: string) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(ACTIVE_WEEK_START_KEY, weekStart);
+  writeScopedValue(ACTIVE_WEEK_START_KEY, weekStart);
 }
 
 export function getPlansForWeek(weekStart: string): PlannerItem[] {
   if (typeof window === "undefined") return [];
 
   const nextPlans = safeParse<PlannerItem[]>(
-    window.localStorage.getItem(weekPlansKey(weekStart)),
+    readScopedValue(weekPlansKey(weekStart)),
     []
   );
 
-  // Backward compatibility for early testers who had one current-plan key.
   if (nextPlans.length) return nextPlans;
 
   const legacyPlans = safeParse<PlannerItem[]>(
-    window.localStorage.getItem(CURRENT_PLANS_KEY),
+    readScopedValue(CURRENT_PLANS_KEY),
     []
   );
 
-  if (legacyPlans.length && normalizeWeekStart(weekStart) === normalizeWeekStart(getCurrentWeekRange().weekStart)) {
+  if (
+    legacyPlans.length &&
+    normalizeWeekStart(weekStart) === normalizeWeekStart(getCurrentWeekRange().weekStart)
+  ) {
     return legacyPlans.map((plan) => ({ ...plan, weekStart }));
   }
 
@@ -126,19 +160,18 @@ export function savePlansForWeek(weekStart: string, plans: PlannerItem[]) {
     weekStart,
   }));
 
-  window.localStorage.setItem(weekPlansKey(weekStart), JSON.stringify(stampedPlans));
+  writeScopedValue(weekPlansKey(weekStart), JSON.stringify(stampedPlans));
 
   if (normalizeWeekStart(weekStart) === normalizeWeekStart(getCurrentWeekRange().weekStart)) {
-    window.localStorage.setItem(CURRENT_PLANS_KEY, JSON.stringify(stampedPlans));
+    writeScopedValue(CURRENT_PLANS_KEY, JSON.stringify(stampedPlans));
   }
 }
 
 export function clearPlansForWeek(weekStart: string) {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(weekPlansKey(weekStart));
+  removeScopedValue(weekPlansKey(weekStart));
 
   if (normalizeWeekStart(weekStart) === normalizeWeekStart(getCurrentWeekRange().weekStart)) {
-    window.localStorage.removeItem(CURRENT_PLANS_KEY);
+    removeScopedValue(CURRENT_PLANS_KEY);
   }
 }
 
@@ -157,13 +190,12 @@ export function clearCurrentPlans() {
 export function getChildren(): ChildProfile[] {
   if (typeof window === "undefined") return [EVERYONE_CHILD];
 
-  const saved = safeParse<ChildProfile[]>(window.localStorage.getItem(CHILDREN_KEY), []);
+  const saved = safeParse<ChildProfile[]>(readScopedValue(CHILDREN_KEY), []);
   return [EVERYONE_CHILD, ...cleanChildren(saved)];
 }
 
 export function saveChildren(children: ChildProfile[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(CHILDREN_KEY, JSON.stringify(cleanChildren(children)));
+  writeScopedValue(CHILDREN_KEY, JSON.stringify(cleanChildren(children)));
 }
 
 export function renameChildProfile(childId: string, name: string) {
@@ -198,7 +230,7 @@ export function getCategoryDefinitions(): CategoryDefinition[] {
   if (typeof window === "undefined") return defaultCategoryDefinitions;
 
   const saved = safeParse<CategoryDefinition[]>(
-    window.localStorage.getItem(CATEGORIES_KEY),
+    readScopedValue(CATEGORIES_KEY),
     []
   );
 
@@ -223,7 +255,7 @@ export function saveCategoryDefinitions(categories: CategoryDefinition[]) {
       )
   );
 
-  window.localStorage.setItem(CATEGORIES_KEY, JSON.stringify(customOnly));
+  writeScopedValue(CATEGORIES_KEY, JSON.stringify(customOnly));
 }
 
 export function addCategoryDefinition(name: string) {
@@ -263,7 +295,7 @@ export function deleteCategoryDefinition(categoryId: string) {
 
 export function getSavedWeeks(): SavedWeekLog[] {
   if (typeof window === "undefined") return [];
-  return safeParse<SavedWeekLog[]>(window.localStorage.getItem(SAVED_WEEKS_KEY), []);
+  return safeParse<SavedWeekLog[]>(readScopedValue(SAVED_WEEKS_KEY), []);
 }
 
 export function saveWeekLog(log: SavedWeekLog) {
@@ -273,7 +305,7 @@ export function saveWeekLog(log: SavedWeekLog) {
   const withoutDuplicate = current.filter((item) => item.id !== log.id);
   const next = [log, ...withoutDuplicate];
 
-  window.localStorage.setItem(SAVED_WEEKS_KEY, JSON.stringify(next));
+  writeScopedValue(SAVED_WEEKS_KEY, JSON.stringify(next));
 }
 
 export function deleteSavedWeek(weekId: string) {
@@ -282,10 +314,9 @@ export function deleteSavedWeek(weekId: string) {
   const current = getSavedWeeks();
   const next = current.filter((week) => week.id !== weekId);
 
-  window.localStorage.setItem(SAVED_WEEKS_KEY, JSON.stringify(next));
+  writeScopedValue(SAVED_WEEKS_KEY, JSON.stringify(next));
 }
 
 export function clearSavedWeeks() {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(SAVED_WEEKS_KEY);
+  removeScopedValue(SAVED_WEEKS_KEY);
 }

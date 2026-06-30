@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     template: "%s | SoftWeek Planner",
   },
   description:
-    "SoftWeek Planner is a softer homeschool planner for real-life weeks. Plan flexible activities, add one plan to multiple days, save weekly records, and keep simple child profiles.",
+    "SoftWeek Planner is a softer homeschool planner for real-life weeks with flexible weekly planning, child profiles, saved records, guest access, and beta account tools.",
   keywords: [
     "homeschool planner",
     "homeschool planning app",
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "SoftWeek Planner | A Softer Homeschool Planner",
     description:
-      "Plan real-life homeschool weeks with flexible activities, multi-day plans, saved week records, and simple child profiles.",
+      "Plan real-life homeschool weeks with flexible activities, multi-day plans, child profiles, saved week records, and beta account tools.",
     url: "https://softweekplanner.com",
     siteName: "SoftWeek Planner",
     type: "website",
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "SoftWeek Planner | A Softer Homeschool Planner",
     description:
-      "A flexible homeschool planner for real-life weeks, with multi-day plans, saved records, and simple child profiles.",
+      "A flexible homeschool planner for real-life weeks, with multi-day plans, beta accounts, saved records, and child profiles.",
   },
 };
 

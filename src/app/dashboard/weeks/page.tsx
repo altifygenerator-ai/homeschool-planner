@@ -23,17 +23,15 @@ export default function SavedWeeksPage() {
     <DashboardShell>
       <div className="dashboard-page-heading">
         <p className="eyebrow">Saved weeks</p>
-        <h1 className="section-title">Look back without digging around.</h1>
+        <h1 className="section-title">Records without digging around.</h1>
         <p className="section-lead">
-          Saved weeks collect the plans, notes, and child rundowns from each
-          week so the year can build naturally over time.
+          Saved weeks collect plans, notes, and child rundowns so SoftWeek can
+          grow into printable records, child portfolios, exports, and backed-up
+          homeschool history.
         </p>
       </div>
 
-      <SavedWeeksView
-        savedWeeks={savedWeeks}
-        onDeleteWeek={handleDeleteWeek}
-      />
+      <SavedWeeksView savedWeeks={savedWeeks} onDeleteWeek={handleDeleteWeek} />
     </DashboardShell>
   );
 }

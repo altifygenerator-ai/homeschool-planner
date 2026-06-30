@@ -6,9 +6,11 @@ export default function ChildrenPage() {
     <DashboardShell>
       <div className="dashboard-page-heading">
         <p className="eyebrow">Children</p>
-        <h1 className="section-title">Each child gets a gentle record.</h1>
+        <h1 className="section-title">Profiles, portfolios, and optional child logins.</h1>
         <p className="section-lead">
-          Add your children here, then assign plans to them in the weekly planner. Saved weeks will build a simple record for each child over time.
+          Add the children you plan for, assign weekly plans to them, and create
+          a limited login for older kids when you want them to help mark work
+          done without changing the whole family planner.
         </p>
       </div>
 

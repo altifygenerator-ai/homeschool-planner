@@ -1,0 +1,266 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import {
+  LuArchive,
+  LuArrowRight,
+  LuCalendarDays,
+  LuCrown,
+  LuFileText,
+  LuHeartHandshake,
+  LuLock,
+  LuSparkles,
+  LuUserRound,
+  LuUsersRound,
+} from "react-icons/lu";
+import {
+  getAccountsForActiveFamily,
+  getActiveAccountContext,
+  type AccountContext,
+  type LocalAccount,
+} from "@/lib/localAuth";
+import {
+  getChildren,
+  getCurrentPlans,
+  getSavedWeeks,
+} from "@/lib/plannerStorage";
+import type { ChildProfile, PlannerItem, SavedWeekLog } from "@/types/planner";
+
+const alwaysFreeFeatures = [
+  "A simple parent account",
+  "Try as guest before creating an account",
+  "One child profile for basic planning",
+  "The weekly planner board",
+  "7-day planning with move, done, and skipped statuses",
+  "Custom categories for real homeschool subjects",
+  "A limited saved-week history for basic records",
+];
+
+const premiumLaterFeatures = [
+  "Multiple children and fuller family workspaces",
+  "Long-term saved week history",
+  "Printable weekly records and PDF exports",
+  "Child portfolio views and record summaries",
+  "Optional older-kid logins with limited permissions",
+  "Backed-up accounts and easier access across devices",
+  "Planning-ahead tools like month glance and duplicate week",
+];
+
+function formatDate(value?: string) {
+  if (!value) return "Not started";
+
+  return new Date(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export default function AccountOverview() {
+  const [context, setContext] = useState<AccountContext | null>(null);
+  const [children, setChildren] = useState<ChildProfile[]>([]);
+  const [plans, setPlans] = useState<PlannerItem[]>([]);
+  const [savedWeeks, setSavedWeeks] = useState<SavedWeekLog[]>([]);
+  const [accounts, setAccounts] = useState<LocalAccount[]>([]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setContext(getActiveAccountContext());
+      setChildren(getChildren().filter((child) => child.id !== "everyone"));
+      setPlans(getCurrentPlans());
+      setSavedWeeks(getSavedWeeks());
+      setAccounts(getAccountsForActiveFamily());
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  const childLogins = accounts.filter((account) => account.role === "child");
+  const doneCount = plans.filter((plan) => plan.status === "done").length;
+  const movedCount = plans.filter((plan) => plan.status === "moved").length;
+  const skippedCount = plans.filter((plan) => plan.status === "skipped").length;
+
+  const savedPlanCount = savedWeeks.reduce(
+    (total, week) => total + week.plans.length,
+    0
+  );
+
+  const latestSavedWeek = savedWeeks[0];
+
+  const accountLabel = useMemo(() => {
+    if (!context) return "Beta access";
+    if (context.isGuest) return "Guest";
+    if (context.isChild) return "Child view";
+    return "Parent beta";
+  }, [context]);
+
+  return (
+    <div className="account-overview-stack">
+      <section className="soft-card account-overview-hero">
+        <div>
+          <p className="eyebrow">Account overview</p>
+          <h2 className="section-title-sm">
+            {context?.isChild
+              ? "Your limited SoftWeek view."
+              : "Your SoftWeek family workspace."}
+          </h2>
+          <p className="section-lead">
+            {context?.isChild
+              ? "Older-kid logins are meant to help kids check their own week without giving them full parent controls."
+              : "This page gives you a quick look at your current week, saved records, child profiles, and account options."}
+          </p>
+        </div>
+
+        <div className="account-plan-card">
+          <div className="account-plan-icon">
+            {context?.isGuest ? <LuUserRound /> : <LuSparkles />}
+          </div>
+          <div>
+            <span>Current access</span>
+            <strong>{accountLabel}</strong>
+            <p>
+              {context?.isGuest
+                ? "Guest mode is for trying the planner before making an account."
+                : "Beta access is free while SoftWeek is being tested and shaped by real homeschool feedback."}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="account-stat-grid">
+        <article className="paper-card account-stat-card">
+          <LuCalendarDays />
+          <span>Current week</span>
+          <strong>{plans.length}</strong>
+          <p>{doneCount} done · {movedCount} moved · {skippedCount} skipped</p>
+        </article>
+
+        <article className="paper-card account-stat-card">
+          <LuUsersRound />
+          <span>Children</span>
+          <strong>{children.length}</strong>
+          <p>{childLogins.length} optional child logins</p>
+        </article>
+
+        <article className="paper-card account-stat-card">
+          <LuArchive />
+          <span>Saved weeks</span>
+          <strong>{savedWeeks.length}</strong>
+          <p>{savedPlanCount} saved plans in records</p>
+        </article>
+
+        <article className="paper-card account-stat-card">
+          <LuFileText />
+          <span>Latest record</span>
+          <strong>{latestSavedWeek ? latestSavedWeek.weekLabel : "None yet"}</strong>
+          <p>{latestSavedWeek ? `Saved ${formatDate(latestSavedWeek.savedAt)}` : "Save a week to start history"}</p>
+        </article>
+      </section>
+
+      <section className="account-action-grid">
+        <Link className="dashboard-link-card paper-card" href="/dashboard/planner">
+          <LuCalendarDays />
+          <h3>Open planner</h3>
+          <p>Plan this week, move what changes, mark what happened, and keep the board flexible.</p>
+          <span>Go to planner</span>
+        </Link>
+
+        <Link className="dashboard-link-card paper-card" href="/dashboard/weeks">
+          <LuArchive />
+          <h3>Saved records</h3>
+          <p>Review saved weeks and the child rundowns that will grow into printable records.</p>
+          <span>{savedWeeks.length} saved</span>
+        </Link>
+
+        <Link className="dashboard-link-card paper-card" href="/dashboard/children">
+          <LuUsersRound />
+          <h3>Family setup</h3>
+          <p>Add children, review profiles, and create limited child logins when you want them.</p>
+          <span>{children.length} children</span>
+        </Link>
+      </section>
+
+      <section className="soft-card beta-plan-section">
+        <div className="beta-plan-heading">
+          <p className="eyebrow">Free now, clear later</p>
+          <h2 className="section-title-sm">The main planner will stay useful without forcing a paid plan.</h2>
+          <p className="section-lead">
+            During beta, the larger family and record-keeping features are free to test so families can help decide what actually matters. At full launch, the core weekly planner stays useful, and deeper tools may become premium.
+          </p>
+        </div>
+
+        <div className="plan-feature-grid">
+          <article className="plan-feature-card free-feature-card">
+            <div className="plan-feature-top">
+              <LuHeartHandshake />
+              <div>
+                <span>Always useful</span>
+                <h3>Free plan foundation</h3>
+              </div>
+            </div>
+
+            <p>
+              SoftWeek should still help a small homeschool setup plan a real week, even without paying.
+            </p>
+
+            <ul>
+              {alwaysFreeFeatures.map((feature) => (
+                <li key={feature}>{feature}</li>
+              ))}
+            </ul>
+          </article>
+
+          <article className="plan-feature-card premium-feature-card">
+            <div className="plan-feature-top">
+              <LuCrown />
+              <div>
+                <span>Free during beta testing</span>
+                <h3>Premium later</h3>
+              </div>
+            </div>
+
+            <p>
+              These are the features that create more long-term value for families who want fuller records, more children, and planning tools that go beyond the basic week.
+            </p>
+
+            <ul>
+              {premiumLaterFeatures.map((feature) => (
+                <li key={feature}>{feature}</li>
+              ))}
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section className="paper-card account-beta-note">
+        <LuLock />
+        <div>
+          <p className="eyebrow">Early beta note</p>
+          <h3>This is ready for testing, but not your only permanent record yet.</h3>
+          <p>
+            Your beta account is made for trying the planner, saving sample weeks, and giving feedback. A fuller account release is planned for safer backups, easier access across devices, and better long-term records.
+          </p>
+        </div>
+        <Link className="btn btn-primary" href="/beta">
+          Send beta feedback <LuArrowRight />
+        </Link>
+      </section>
+
+      {context?.isGuest ? (
+        <section className="paper-card account-upgrade-note">
+          <LuLock />
+          <div>
+            <h3>Guest mode is temporary.</h3>
+            <p>
+              Guest access is great for trying SoftWeek, but saved records should eventually live under a family account.
+            </p>
+          </div>
+          <Link className="btn btn-secondary" href="/login?mode=create">
+            Create account
+          </Link>
+        </section>
+      ) : null}
+    </div>
+  );
+}

@@ -7,7 +7,9 @@ import {
   LuArrowRight,
   LuCalendarDays,
   LuUsersRound,
+  LuUserRound,
 } from "react-icons/lu";
+import { getActiveAccountContext, type AccountContext } from "@/lib/localAuth";
 import { getChildren, getCurrentPlans, getSavedWeeks } from "@/lib/plannerStorage";
 import type { PlannerItem, SavedWeekLog } from "@/types/planner";
 
@@ -15,9 +17,11 @@ export default function DashboardHome() {
   const [plans, setPlans] = useState<PlannerItem[]>([]);
   const [savedWeeks, setSavedWeeks] = useState<SavedWeekLog[]>([]);
   const [childCount, setChildCount] = useState(0);
+  const [context, setContext] = useState<AccountContext | null>(null);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
+      setContext(getActiveAccountContext());
       setPlans(getCurrentPlans());
       setSavedWeeks(getSavedWeeks());
       setChildCount(getChildren().filter((child) => child.id !== "everyone").length);
@@ -29,17 +33,19 @@ export default function DashboardHome() {
   const doneCount = plans.filter((plan) => plan.status === "done").length;
   const movedCount = plans.filter((plan) => plan.status === "moved").length;
   const skippedCount = plans.filter((plan) => plan.status === "skipped").length;
+
   return (
     <div className="dashboard-page-grid">
       <section className="dashboard-hero-card soft-card">
         <div>
-          <p className="eyebrow">This week</p>
+          <p className="eyebrow">{context?.isChild ? "Child dashboard" : "Family dashboard"}</p>
           <h2 className="section-title-sm">
-            Your current week is still flexible.
+            {context?.isChild ? "Your week is ready to check." : "Your family workspace is ready."}
           </h2>
           <p className="section-lead">
-            Open the planner, add your children, build this week, and save the
-            record when it feels ready.
+            {context?.isChild
+              ? "Open the planner to mark work done, skip what needs skipped, and add quick notes about what happened."
+              : "Open the planner, add children, build a soft 7-day week, and save a simple record of what happened."}
           </p>
         </div>
 
@@ -63,7 +69,7 @@ export default function DashboardHome() {
         </div>
 
         <Link className="btn btn-primary" href="/dashboard/planner">
-Open planner
+          Open planner
           <LuArrowRight />
         </Link>
       </section>
@@ -86,8 +92,15 @@ Open planner
         <Link className="dashboard-link-card paper-card" href="/dashboard/children">
           <LuUsersRound />
           <h3>Children</h3>
-          <p>See each child’s portfolio preview and saved learning history.</p>
+          <p>Manage child profiles and optional limited child logins.</p>
           <span>{childCount} profiles</span>
+        </Link>
+
+        <Link className="dashboard-link-card paper-card" href="/dashboard/account">
+          <LuUserRound />
+          <h3>Account</h3>
+          <p>Review your access, family stats, saved records, and free or premium feature direction.</p>
+          <span>Overview</span>
         </Link>
       </section>
     </div>

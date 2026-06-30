@@ -8,14 +8,16 @@ export default function Footer() {
         <div>
           <p className="footer-brand">{site.name}</p>
           <p className="text-small">
-            A softer homeschool planner for real-life weeks.
+            A softer homeschool planner for flexible weeks, simple records, and
+            real-life learning.
           </p>
         </div>
 
         <div className="footer-links">
           <Link href="/">Home</Link>
-          <Link href="/planner">Demo</Link>
-          <Link href="/beta">Beta</Link>
+          <Link href="/login?mode=create">Create account</Link>
+          <Link href="/guest">Try guest</Link>
+          <Link href="/login?mode=login">Log in</Link>
         </div>
       </div>
     </footer>

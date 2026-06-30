@@ -3,56 +3,56 @@ export const site = {
   tagline: "A softer homeschool planner for real-life weeks.",
   nav: [
     {
-      label: "Planner",
-      href: "/dashboard/planner",
+      label: "How it works",
+      href: "#how-it-works",
     },
     {
-      label: "Children",
-      href: "/dashboard/children",
+      label: "What it helps with",
+      href: "#pain-points",
     },
     {
-      label: "Saved weeks",
-      href: "/dashboard/weeks",
-    },
-    {
-      label: "Feedback",
-      href: "/beta",
+      label: "Free & premium",
+      href: "#beta-direction",
     },
   ],
   hero: {
     eyebrow: "Flexible homeschool planning",
-    title: "Plan a homeschool week that can move with real life.",
-    text: "SoftWeek Planner helps you add loose plans, place one activity on multiple days, assign plans to children, move things when the week changes, and save a simple record of what happened.",
-    primaryCta: "Open the planner",
-    secondaryCta: "Send feedback",
-    note: "The planner is usable now with browser storage while the account-backed version is being shaped from real feedback.",
+    title: "Plan the week, move what changes, save what happened.",
+    text: "SoftWeek Planner is a calm weekly planner for homeschool families who need flexibility without losing the record. Add children, plan one day or several, use custom categories, move cards when life changes, and save the week when it is ready.",
+    primaryCta: "Create beta account",
+    secondaryCta: "Try as guest",
+    note: "Early beta accounts are open now. The main weekly planner will stay useful for free, and larger family and record-keeping tools are free to test during beta.",
   },
   problems: [
     {
-      title: "Real homeschool weeks change.",
-      text: "A sick day, errands, outside time, appointments, or a lesson that turns into something else can throw off a rigid planner fast.",
+      title: "Rigid planners make real weeks feel like failures.",
+      text: "SoftWeek lets the board change with your family instead of treating every moved lesson like something went wrong.",
     },
     {
-      title: "Repeated plans should not mean repeated typing.",
-      text: "If something happens more than once a week, like swimming, reading, chores, or practice work, you can add it once and place it on several days.",
+      title: "Repeated activities should not mean repeated typing.",
+      text: "Add one activity to multiple days for reading, practice work, chores, movement, field trips, or whatever repeats in your week.",
     },
     {
-      title: "Records should feel helpful, not heavy.",
-      text: "Saved weeks and child rundowns make it easier to look back without turning homeschool into another admin job.",
+      title: "Records should be simple enough to actually keep.",
+      text: "Save weekly records and child rundowns without turning homeschool into another admin system.",
     },
   ],
   steps: [
     {
-      title: "Add your children",
-      text: "Use the children section or the planner sidebar to add the names you actually plan for.",
+      title: "Create a family workspace",
+      text: "Start with a beta account, or try the planner as a guest before setting anything up.",
     },
     {
-      title: "Build a soft week",
-      text: "Add reading, math, outings, life skills, movement, chores, or anything else, then choose one day or several.",
+      title: "Plan a flexible 7-day week",
+      text: "Add children, custom categories, weekday plans, weekend learning, and one activity across several days.",
     },
     {
-      title: "Move, mark, and save",
-      text: "Move cards when life changes, mark them done or skipped, add notes about what happened, then save the week.",
+      title: "Let kids help without handing over everything",
+      text: "Optional child logins can mark work done and add notes, while parent controls stay with the parent account.",
+    },
+    {
+      title: "Save the week as a record",
+      text: "Saved weeks help build a simple history of what your family planned, moved, finished, skipped, and learned.",
     },
   ],
 };

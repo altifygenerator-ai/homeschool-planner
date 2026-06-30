@@ -17,11 +17,7 @@ export type CategoryDefinition = {
   isCustom?: boolean;
 };
 
-export type TimeBlock =
-  | "Morning"
-  | "Midday"
-  | "Afternoon"
-  | "Anytime";
+export type TimeBlock = "Morning" | "Midday" | "Afternoon" | "Anytime";
 
 export type ChildProfile = {
   id: string;
