@@ -3935,3 +3935,34 @@ img {
     width: 100%;
   }
 }
+
+.auth-account-type-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+  padding: 0.35rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(91, 74, 136, 0.14);
+}
+
+.auth-account-type-row button {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.72rem 0.9rem;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-body), sans-serif;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.auth-account-type-row button.active {
+  background: linear-gradient(135deg, rgba(126, 91, 213, 0.94), rgba(168, 121, 255, 0.92));
+  color: white;
+  box-shadow: 0 12px 24px rgba(96, 68, 155, 0.18);
+}
+
+.account-record-grid {
+  margin-top: 1.25rem;
+}

@@ -2,9 +2,9 @@ import Link from "next/link";
 import { LuMail, LuMessageCircle } from "react-icons/lu";
 import { site } from "@/data/site";
 
-const contactEmail = "altifygenerator@gmail.com";
+const contactEmail = "support@softweekplanner.com";
 const contactHref =
-  "mailto:altifygenerator@gmail.com?subject=SoftWeek Planner Feedback";
+  "mailto:support@softweekplanner.com?subject=SoftWeek Planner Feedback";
 
 export default function Footer() {
   return (

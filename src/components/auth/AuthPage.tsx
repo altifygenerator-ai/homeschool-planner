@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -11,8 +11,8 @@ import {
   LuUserPlus,
 } from "react-icons/lu";
 import {
+  createChildSupabaseAccount,
   createParentLocalAccount,
-  getLocalAccounts,
   loginLocalAccount,
   startGuestSession,
 } from "@/lib/localAuth";
@@ -23,43 +23,61 @@ export default function AuthPage() {
   const initialMode = searchParams.get("mode") === "login" ? "login" : "create";
 
   const [mode, setMode] = useState<"create" | "login">(initialMode);
+  const [accountType, setAccountType] = useState<"parent" | "child">("parent");
   const [name, setName] = useState("");
   const [familyName, setFamilyName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [login, setLogin] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [message, setMessage] = useState("");
-
-  const existingAccounts = useMemo(() => getLocalAccounts(), []);
-  const hasLocalAccounts = existingAccounts.some((account) => !account.email.includes("guest@"));
+  const [isWorking, setIsWorking] = useState(false);
 
   function finish() {
     router.push("/dashboard/planner");
   }
 
-  function handleCreate(event: React.FormEvent<HTMLFormElement>) {
+  async function handleCreate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setMessage("");
+    setIsWorking(true);
 
-    const cleanEmail = email.trim().toLowerCase();
-    if (!cleanEmail) {
-      setMessage("Add an email so this beta account has a login name.");
+    const result =
+      accountType === "child"
+        ? await createChildSupabaseAccount({
+            name: name.trim() || "Student",
+            email,
+            password,
+            inviteCode,
+          })
+        : await createParentLocalAccount({
+            name: name.trim() || "Parent",
+            email,
+            password,
+            familyName: familyName.trim() || undefined,
+          });
+
+    setIsWorking(false);
+
+    if (!result.ok || result.needsEmailConfirm) {
+      setMessage(result.message || "Something did not finish. Try again in a minute.");
       return;
     }
-
-    createParentLocalAccount({
-      name: name.trim() || "Parent",
-      email: cleanEmail,
-      familyName: familyName.trim() || undefined,
-    });
 
     finish();
   }
 
-  function handleLogin(event: React.FormEvent<HTMLFormElement>) {
+  async function handleLogin(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setMessage("");
+    setIsWorking(true);
 
-    const result = loginLocalAccount(login);
-    if (!result) {
-      setMessage("I could not find that account on this device yet.");
+    const result = await loginLocalAccount(login, loginPassword, inviteCode);
+    setIsWorking(false);
+
+    if (!result.ok) {
+      setMessage(result.message || "I could not log in with that email and password.");
       return;
     }
 
@@ -77,23 +95,21 @@ export default function AuthPage() {
         <div className="auth-copy">
           <p className="eyebrow">SoftWeek beta accounts</p>
           <h1 className="section-title">
-            Start planning with a simple beta account.
+            Save your homeschool planner under a family account.
           </h1>
           <p className="section-lead">
-            Create a family workspace, log back into an account on this device,
-            or try SoftWeek as a guest before setting anything up. This early
-            beta is built to test the planning flow before the fuller account
-            release.
+            Create a family workspace, log back in from another device, or try
+            SoftWeek as a guest first. Beta accounts are free while SoftWeek is
+            being tested with homeschool families.
           </p>
 
           <div className="auth-promise-card soft-card">
             <LuLock />
             <div>
-              <strong>Good for testing, not your only permanent record yet.</strong>
+              <strong>Your weekly records stay with your family workspace.</strong>
               <p>
-                This beta keeps your family workspace separated on this device.
-                The full release is being built for backed-up accounts, safer
-                records, and easier access across devices.
+                Beta accounts are meant for real testing now, with better saved
+                records and fuller planning tools coming as SoftWeek grows.
               </p>
             </div>
           </div>
@@ -104,12 +120,12 @@ export default function AuthPage() {
               <span>Full planner, child profiles, saved weeks, categories.</span>
             </div>
             <div>
-              <strong>Child login option</strong>
+              <strong>Child account option</strong>
               <span>Older kids can mark work done and add notes with limits.</span>
             </div>
             <div>
               <strong>Guest mode</strong>
-              <span>Try the planner first without setting up a family account.</span>
+              <span>Try the planner first without saving to an account.</span>
             </div>
           </div>
         </div>
@@ -134,14 +150,31 @@ export default function AuthPage() {
 
           {mode === "create" ? (
             <form className="form-grid" onSubmit={handleCreate}>
+              <div className="auth-account-type-row" aria-label="Account type">
+                <button
+                  className={accountType === "parent" ? "active" : ""}
+                  type="button"
+                  onClick={() => setAccountType("parent")}
+                >
+                  Parent
+                </button>
+                <button
+                  className={accountType === "child" ? "active" : ""}
+                  type="button"
+                  onClick={() => setAccountType("child")}
+                >
+                  Child invite
+                </button>
+              </div>
+
               <div className="field-group">
                 <label className="field-label" htmlFor="name">
-                  Your name
+                  {accountType === "child" ? "Child name" : "Your name"}
                 </label>
                 <input
                   className="input"
                   id="name"
-                  placeholder="Jake, Sarah, Mom, Dad..."
+                  placeholder={accountType === "child" ? "Student name" : "Jake, Sarah, Mom, Dad..."}
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                 />
@@ -162,49 +195,99 @@ export default function AuthPage() {
               </div>
 
               <div className="field-group">
-                <label className="field-label" htmlFor="familyName">
-                  Family name, optional
+                <label className="field-label" htmlFor="password">
+                  Password
                 </label>
                 <input
                   className="input"
-                  id="familyName"
-                  placeholder="The Johnson family"
-                  value={familyName}
-                  onChange={(event) => setFamilyName(event.target.value)}
+                  id="password"
+                  placeholder="At least 6 characters"
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
                 />
               </div>
 
-              <button className="btn btn-primary" type="submit">
+              {accountType === "parent" ? (
+                <div className="field-group">
+                  <label className="field-label" htmlFor="familyName">
+                    Family name, optional
+                  </label>
+                  <input
+                    className="input"
+                    id="familyName"
+                    placeholder="The Johnson family"
+                    value={familyName}
+                    onChange={(event) => setFamilyName(event.target.value)}
+                  />
+                </div>
+              ) : (
+                <div className="field-group">
+                  <label className="field-label" htmlFor="inviteCode">
+                    Child invite code
+                  </label>
+                  <input
+                    className="input"
+                    id="inviteCode"
+                    placeholder="Code from the parent account"
+                    value={inviteCode}
+                    onChange={(event) => setInviteCode(event.target.value)}
+                  />
+                </div>
+              )}
+
+              <button className="btn btn-primary" type="submit" disabled={isWorking}>
                 <LuUserPlus />
-                Create beta account
+                {isWorking ? "Setting up..." : "Create beta account"}
               </button>
             </form>
           ) : (
             <form className="form-grid" onSubmit={handleLogin}>
               <div className="field-group">
                 <label className="field-label" htmlFor="login">
-                  Email or child login
+                  Email
                 </label>
                 <input
                   className="input"
                   id="login"
-                  placeholder="you@example.com or child login name"
+                  placeholder="you@example.com"
+                  type="email"
                   value={login}
                   onChange={(event) => setLogin(event.target.value)}
                 />
               </div>
 
-              <button className="btn btn-primary" type="submit">
-                <LuMail />
-                Log in
-              </button>
+              <div className="field-group">
+                <label className="field-label" htmlFor="loginPassword">
+                  Password
+                </label>
+                <input
+                  className="input"
+                  id="loginPassword"
+                  placeholder="Your password"
+                  type="password"
+                  value={loginPassword}
+                  onChange={(event) => setLoginPassword(event.target.value)}
+                />
+              </div>
 
-              {!hasLocalAccounts ? (
-                <p className="text-small">
-                  No accounts found on this device yet. Create one here, or try
-                  guest mode first.
-                </p>
-              ) : null}
+              <div className="field-group">
+                <label className="field-label" htmlFor="loginInviteCode">
+                  Child invite code, only if this is the first child login
+                </label>
+                <input
+                  className="input"
+                  id="loginInviteCode"
+                  placeholder="Leave blank unless needed"
+                  value={inviteCode}
+                  onChange={(event) => setInviteCode(event.target.value)}
+                />
+              </div>
+
+              <button className="btn btn-primary" type="submit" disabled={isWorking}>
+                <LuMail />
+                {isWorking ? "Logging in..." : "Log in"}
+              </button>
             </form>
           )}
 
@@ -223,8 +306,7 @@ export default function AuthPage() {
 
           <p className="text-small auth-footnote">
             Guest mode is just for trying the planner. For real use, create a
-            beta account so your family setup and saved weeks stay together on
-            this device.
+            beta account so your family setup and saved weeks can stay together.
           </p>
 
           <Link className="auth-back-link" href="/">

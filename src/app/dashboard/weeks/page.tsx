@@ -9,14 +9,17 @@ import type { SavedWeekLog } from "@/types/planner";
 export default function SavedWeeksPage() {
   const [savedWeeks, setSavedWeeks] = useState<SavedWeekLog[]>([]);
 
+  async function loadSavedWeeks() {
+    setSavedWeeks(await getSavedWeeks());
+  }
+
   useEffect(() => {
-    const timer = window.setTimeout(() => setSavedWeeks(getSavedWeeks()), 0);
-    return () => window.clearTimeout(timer);
+    void loadSavedWeeks();
   }, []);
 
-  function handleDeleteWeek(weekId: string) {
-    deleteSavedWeek(weekId);
-    setSavedWeeks(getSavedWeeks());
+  async function handleDeleteWeek(weekId: string) {
+    await deleteSavedWeek(weekId);
+    await loadSavedWeeks();
   }
 
   return (
@@ -26,12 +29,12 @@ export default function SavedWeeksPage() {
         <h1 className="section-title">Records without digging around.</h1>
         <p className="section-lead">
           Saved weeks collect plans, notes, and child rundowns so SoftWeek can
-          grow into printable records, child portfolios, exports, and backed-up
+          grow into printable records, child portfolios, exports, and saved
           homeschool history.
         </p>
       </div>
 
-      <SavedWeeksView savedWeeks={savedWeeks} onDeleteWeek={handleDeleteWeek} />
+      <SavedWeeksView savedWeeks={savedWeeks} onDeleteWeek={(weekId) => void handleDeleteWeek(weekId)} />
     </DashboardShell>
   );
 }

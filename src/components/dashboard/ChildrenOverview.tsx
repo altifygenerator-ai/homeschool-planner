@@ -15,6 +15,7 @@ import {
   getActiveAccountContext,
   getChildAccount,
   type AccountContext,
+  type LocalAccount,
 } from "@/lib/localAuth";
 import {
   deleteChildProfile,
@@ -36,15 +37,29 @@ export default function ChildrenOverview() {
   const [editingName, setEditingName] = useState("");
   const [message, setMessage] = useState("");
   const [context, setContext] = useState<AccountContext | null>(null);
+  const [childAccounts, setChildAccounts] = useState<Record<string, LocalAccount | null>>({});
+
+  async function loadChildren() {
+    const [nextContext, nextChildren, nextSavedWeeks] = await Promise.all([
+      getActiveAccountContext(),
+      getChildren(),
+      getSavedWeeks(),
+    ]);
+
+    setContext(nextContext);
+    setChildren(nextChildren);
+    setSavedWeeks(nextSavedWeeks);
+
+    const realChildren = nextChildren.filter((child) => child.id !== "everyone");
+    const entries = await Promise.all(
+      realChildren.map(async (child) => [child.id, await getChildAccount(child.id)] as const)
+    );
+
+    setChildAccounts(Object.fromEntries(entries));
+  }
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setContext(getActiveAccountContext());
-      setChildren(getChildren());
-      setSavedWeeks(getSavedWeeks());
-    }, 0);
-
-    return () => window.clearTimeout(timer);
+    void loadChildren();
   }, []);
 
   const realChildren = children
@@ -56,7 +71,7 @@ export default function ChildrenOverview() {
     );
   const canManage = context?.isParent ?? true;
 
-  function handleAddChild(event: React.FormEvent<HTMLFormElement>) {
+  async function handleAddChild(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const name = newChildName.trim();
     if (!name || !canManage) return;
@@ -67,8 +82,8 @@ export default function ChildrenOverview() {
       colorLabel: colorLabels[realChildren.length % colorLabels.length],
     };
 
-    saveChildren([...children, nextChild]);
-    setChildren(getChildren());
+    await saveChildren([...children, nextChild]);
+    await loadChildren();
     setNewChildName("");
     setMessage(`${name} added.`);
   }
@@ -78,31 +93,42 @@ export default function ChildrenOverview() {
     setEditingName(child.name);
   }
 
-  function handleRename(event: React.FormEvent<HTMLFormElement>) {
+  async function handleRename(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!editingId || !canManage) return;
 
-    setChildren(renameChildProfile(editingId, editingName));
+    setChildren(await renameChildProfile(editingId, editingName));
     setEditingId(null);
     setEditingName("");
     setMessage("Child profile updated.");
   }
 
-  function handleDelete(childId: string) {
+  async function handleDelete(childId: string) {
     if (!canManage) return;
-    setChildren(deleteChildProfile(childId));
-    setMessage("Child profile removed.");
+    setChildren(await deleteChildProfile(childId));
+    setMessage("Child profile removed from active planning. Saved records stay in your history.");
   }
 
-  function handleCreateChildLogin(child: ChildProfile) {
-    const account = createChildLocalAccount(child.id, child.name);
+  async function handleCreateChildLogin(child: ChildProfile) {
+    try {
+      const account = await createChildLocalAccount(child.id, child.name);
 
-    if (!account) {
-      setMessage("Child logins can only be created from a parent account.");
-      return;
+      if (!account) {
+        setMessage("Child accounts can only be created from a parent account.");
+        return;
+      }
+
+      await loadChildren();
+
+      if (account.loginName === "Create a parent account first") {
+        setMessage("Create a parent account first, then you can make child invite codes.");
+        return;
+      }
+
+      setMessage(`${child.name}'s child invite code is: ${account.loginName}`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "That child invite could not be created.");
     }
-
-    setMessage(`${child.name}'s child login is: ${account.loginName}`);
   }
 
   return (
@@ -114,7 +140,7 @@ export default function ChildrenOverview() {
           <p className="section-lead">
             Child profiles connect the planner, saved weeks, and portfolio views.
             Parent accounts can manage these, and older kids can have limited
-            local logins when you want them to help mark work done.
+            accounts when you want them to help mark work done.
           </p>
         </div>
 
@@ -133,7 +159,7 @@ export default function ChildrenOverview() {
           </form>
         ) : (
           <p className="text-small">
-            This child login can view records, but profile management stays with
+            This child account can view records, but profile management stays with
             the parent account.
           </p>
         )}
@@ -144,7 +170,7 @@ export default function ChildrenOverview() {
       {realChildren.length ? (
         <div className="children-page-grid">
           {realChildren.map((child) => {
-            const childLogin = getChildAccount(child.id);
+            const childLogin = childAccounts[child.id];
             const summaries = savedWeeks.flatMap((week) =>
               week.childSummaries.filter((summary) => summary.childId === child.id)
             );
@@ -173,7 +199,7 @@ export default function ChildrenOverview() {
                   <div className="pill-row">
                     <span className="pill pill-sage">{completedTotal} completed</span>
                     <span className="pill">View portfolio</span>
-                    {childLogin ? <span className="pill pill-gold">Child login ready</span> : null}
+                    {childLogin ? <span className="pill pill-gold">Child access ready</span> : null}
                   </div>
 
                   <span className="child-profile-arrow">
@@ -215,18 +241,18 @@ export default function ChildrenOverview() {
                         <button
                           className="mini-text-button"
                           type="button"
-                          onClick={() => handleCreateChildLogin(child)}
+                          onClick={() => void handleCreateChildLogin(child)}
                         >
                           <LuKeyRound />
-                          {childLogin ? childLogin.loginName : "Create child login"}
+                          {childLogin ? childLogin.loginName : "Create child invite"}
                         </button>
                         <button
                           className="mini-text-button danger"
                           type="button"
-                          onClick={() => handleDelete(child.id)}
+                          onClick={() => void handleDelete(child.id)}
                         >
                           <LuTrash2 />
-                          Delete
+                          Remove
                         </button>
                       </>
                     )}

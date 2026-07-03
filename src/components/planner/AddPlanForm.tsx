@@ -23,7 +23,7 @@ type AddPlanFormProps = {
   categories: CategoryDefinition[];
   weekStart: string;
   onAddPlans: (plans: PlannerItem[]) => void;
-  onAddCategory: (name: string) => CategoryDefinition | undefined;
+  onAddCategory: (name: string) => CategoryDefinition | undefined | Promise<CategoryDefinition | undefined>;
 };
 
 export default function AddPlanForm({
@@ -53,8 +53,8 @@ export default function AddPlanForm({
     });
   }
 
-  function handleAddCategory() {
-    const nextCategory = onAddCategory(customCategoryName);
+  async function handleAddCategory() {
+    const nextCategory = await onAddCategory(customCategoryName);
     if (!nextCategory) return;
 
     setCategory(nextCategory.id);

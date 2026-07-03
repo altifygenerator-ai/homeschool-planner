@@ -42,8 +42,8 @@ const premiumLaterFeatures = [
   "Long-term saved week history",
   "Printable weekly records and PDF exports",
   "Child portfolio views and record summaries",
-  "Optional older-kid logins with limited permissions",
-  "Backed-up accounts and easier access across devices",
+  "Optional older-kid accounts with limited permissions",
+  "Saved records across devices",
   "Planning-ahead tools like month glance and duplicate week",
 ];
 
@@ -57,6 +57,15 @@ function formatDate(value?: string) {
   });
 }
 
+function getMonthKey(value: string) {
+  const date = new Date(value);
+  return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+}
+
+function getYearKey(value: string) {
+  return String(new Date(value).getFullYear());
+}
+
 export default function AccountOverview() {
   const [context, setContext] = useState<AccountContext | null>(null);
   const [children, setChildren] = useState<ChildProfile[]>([]);
@@ -65,15 +74,29 @@ export default function AccountOverview() {
   const [accounts, setAccounts] = useState<LocalAccount[]>([]);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setContext(getActiveAccountContext());
-      setChildren(getChildren().filter((child) => child.id !== "everyone"));
-      setPlans(getCurrentPlans());
-      setSavedWeeks(getSavedWeeks());
-      setAccounts(getAccountsForActiveFamily());
-    }, 0);
+    let isMounted = true;
 
-    return () => window.clearTimeout(timer);
+    async function load() {
+      const [nextContext, nextChildren, nextPlans, nextSavedWeeks, nextAccounts] = await Promise.all([
+        getActiveAccountContext(),
+        getChildren(),
+        getCurrentPlans(),
+        getSavedWeeks(),
+        getAccountsForActiveFamily(),
+      ]);
+
+      if (!isMounted) return;
+      setContext(nextContext);
+      setChildren(nextChildren.filter((child) => child.id !== "everyone"));
+      setPlans(nextPlans);
+      setSavedWeeks(nextSavedWeeks);
+      setAccounts(nextAccounts);
+    }
+
+    void load();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const childLogins = accounts.filter((account) => account.role === "child");
@@ -88,11 +111,39 @@ export default function AccountOverview() {
 
   const latestSavedWeek = savedWeeks[0];
 
+  const monthRecords = useMemo(() => {
+    const map = new Map<string, { label: string; weeks: number; plans: number }>();
+
+    savedWeeks.forEach((week) => {
+      const label = getMonthKey(week.weekStart || week.savedAt);
+      const current = map.get(label) ?? { label, weeks: 0, plans: 0 };
+      current.weeks += 1;
+      current.plans += week.plans.length;
+      map.set(label, current);
+    });
+
+    return Array.from(map.values()).slice(0, 4);
+  }, [savedWeeks]);
+
+  const yearRecords = useMemo(() => {
+    const map = new Map<string, { label: string; weeks: number; plans: number }>();
+
+    savedWeeks.forEach((week) => {
+      const label = getYearKey(week.weekStart || week.savedAt);
+      const current = map.get(label) ?? { label, weeks: 0, plans: 0 };
+      current.weeks += 1;
+      current.plans += week.plans.length;
+      map.set(label, current);
+    });
+
+    return Array.from(map.values()).slice(0, 4);
+  }, [savedWeeks]);
+
   const accountLabel = useMemo(() => {
     if (!context) return "Beta access";
     if (context.isGuest) return "Guest";
     if (context.isChild) return "Child view";
-    return "Parent beta";
+    return context.access.label;
   }, [context]);
 
   return (
@@ -107,7 +158,7 @@ export default function AccountOverview() {
           </h2>
           <p className="section-lead">
             {context?.isChild
-              ? "Older-kid logins are meant to help kids check their own week without giving them full parent controls."
+              ? "Older-kid accounts are meant to help kids check their own week without giving them full parent controls."
               : "This page gives you a quick look at your current week, saved records, child profiles, and account options."}
           </p>
         </div>
@@ -122,7 +173,7 @@ export default function AccountOverview() {
             <p>
               {context?.isGuest
                 ? "Guest mode is for trying the planner before making an account."
-                : "Beta access is free while SoftWeek is being tested and shaped by real homeschool feedback."}
+                : context?.access.dataSafetyNote ?? "Beta access is free while SoftWeek is being tested and shaped by real homeschool feedback."}
             </p>
           </div>
         </div>
@@ -140,7 +191,7 @@ export default function AccountOverview() {
           <LuUsersRound />
           <span>Children</span>
           <strong>{children.length}</strong>
-          <p>{childLogins.length} optional child logins</p>
+          <p>{childLogins.length} optional child accounts</p>
         </article>
 
         <article className="paper-card account-stat-card">
@@ -169,16 +220,49 @@ export default function AccountOverview() {
         <Link className="dashboard-link-card paper-card" href="/dashboard/weeks">
           <LuArchive />
           <h3>Saved records</h3>
-          <p>Review saved weeks and the child rundowns that will grow into printable records.</p>
+          <p>Review saved weeks and the child rundowns that grow into printable records.</p>
           <span>{savedWeeks.length} saved</span>
         </Link>
 
         <Link className="dashboard-link-card paper-card" href="/dashboard/children">
           <LuUsersRound />
           <h3>Family setup</h3>
-          <p>Add children, review profiles, and create limited child logins when you want them.</p>
+          <p>Add children, review profiles, and create limited child accounts when you want them.</p>
           <span>{children.length} children</span>
         </Link>
+      </section>
+
+      <section className="soft-card beta-plan-section">
+        <div className="beta-plan-heading">
+          <p className="eyebrow">Weekly, monthly, yearly</p>
+          <h2 className="section-title-sm">Saved weeks now build into longer records later.</h2>
+          <p className="section-lead">
+            Each saved week adds to your child history. As records grow, SoftWeek can show quick month-to-month and year-to-year views without taking away old work.
+          </p>
+        </div>
+
+        <div className="account-stat-grid account-record-grid">
+          <article className="paper-card account-stat-card">
+            <LuArchive />
+            <span>Weekly records</span>
+            <strong>{savedWeeks.length}</strong>
+            <p>Saved week snapshots</p>
+          </article>
+
+          <article className="paper-card account-stat-card">
+            <LuCalendarDays />
+            <span>Monthly overviews</span>
+            <strong>{monthRecords.length}</strong>
+            <p>{monthRecords[0] ? `${monthRecords[0].label} has ${monthRecords[0].weeks} saved week${monthRecords[0].weeks === 1 ? "" : "s"}` : "Save weeks to build months"}</p>
+          </article>
+
+          <article className="paper-card account-stat-card">
+            <LuFileText />
+            <span>Yearly overviews</span>
+            <strong>{yearRecords.length}</strong>
+            <p>{yearRecords[0] ? `${yearRecords[0].label} has ${yearRecords[0].plans} saved plans` : "Save weeks to build years"}</p>
+          </article>
+        </div>
       </section>
 
       <section className="soft-card beta-plan-section">
@@ -236,10 +320,10 @@ export default function AccountOverview() {
       <section className="paper-card account-beta-note">
         <LuLock />
         <div>
-          <p className="eyebrow">Early beta note</p>
-          <h3>This is ready for testing, but not your only permanent record yet.</h3>
+          <p className="eyebrow">Record safety</p>
+          <h3>Saved family records should not disappear because a plan changes later.</h3>
           <p>
-            Your beta account is made for trying the planner, saving sample weeks, and giving feedback. A fuller account release is planned for safer backups, easier access across devices, and better long-term records.
+            SoftWeek is set up so saved children, weeks, months, and yearly history can stay available. If a free plan has limits later, those limits should control adding new premium records, not erase records families already saved.
           </p>
         </div>
         <Link className="btn btn-primary" href="/beta">

@@ -1,11 +1,14 @@
 import { defaultCategoryDefinitions } from "@/data/demoPlans";
-import { getActiveFamilyId } from "@/lib/localAuth";
+import { getActiveAccountContext } from "@/lib/localAuth";
+import { getSupabaseClient } from "@/lib/supabaseClient";
 import { getCurrentWeekRange } from "@/lib/week";
 import type {
   CategoryDefinition,
   ChildProfile,
+  PlanStatus,
   PlannerItem,
   SavedWeekLog,
+  WeekDay,
 } from "@/types/planner";
 
 const SAVED_WEEKS_KEY = "softweek_saved_weeks";
@@ -31,36 +34,22 @@ function safeParse<T>(value: string | null, fallback: T): T {
   }
 }
 
-function scopedKey(key: string) {
-  return `${key}:${getActiveFamilyId()}`;
+function normalizeWeekStart(weekStart: string) {
+  return weekStart.slice(0, 10);
 }
 
-function readScopedValue(key: string) {
-  if (typeof window === "undefined") return null;
-
-  const scoped = window.localStorage.getItem(scopedKey(key));
-  if (scoped !== null) return scoped;
-
-  // Let the guest/local beta keep seeing early tester data saved before accounts existed.
-  if (getActiveFamilyId() === "guest-family") {
-    return window.localStorage.getItem(key);
-  }
-
-  return null;
+function weekPlansKey(weekStart: string) {
+  return `${WEEK_PLANS_PREFIX}:${normalizeWeekStart(weekStart)}`;
 }
 
-function writeScopedValue(key: string, value: string) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(scopedKey(key), value);
-}
-
-function removeScopedValue(key: string) {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(scopedKey(key));
-
-  if (getActiveFamilyId() === "guest-family") {
-    window.localStorage.removeItem(key);
-  }
+function makeCategoryId(name: string) {
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 48);
 }
 
 function cleanChildren(children: ChildProfile[]) {
@@ -78,24 +67,6 @@ function cleanChildren(children: ChildProfile[]) {
       seen.add(child.id);
       return true;
     });
-}
-
-function normalizeWeekStart(weekStart: string) {
-  return weekStart.slice(0, 10);
-}
-
-function weekPlansKey(weekStart: string) {
-  return `${WEEK_PLANS_PREFIX}:${normalizeWeekStart(weekStart)}`;
-}
-
-function makeCategoryId(name: string) {
-  return name
-    .trim()
-    .toLowerCase()
-    .replace(/&/g, "and")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "")
-    .slice(0, 48);
 }
 
 function cleanCategories(categories: CategoryDefinition[]) {
@@ -116,137 +87,399 @@ function cleanCategories(categories: CategoryDefinition[]) {
     });
 }
 
+function localGet<T>(key: string, fallback: T) {
+  if (typeof window === "undefined") return fallback;
+  return safeParse<T>(window.localStorage.getItem(key), fallback);
+}
+
+function localSet(key: string, value: unknown) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(key, JSON.stringify(value));
+}
+
+function localRemove(key: string) {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(key);
+}
+
+async function getStorageContext() {
+  const context = await getActiveAccountContext();
+  return {
+    context,
+    supabase: context?.isGuest ? null : getSupabaseClient(),
+    familyId: context?.family.id ?? null,
+  };
+}
+
+function dbChildToProfile(row: Record<string, unknown>): ChildProfile {
+  return {
+    id: String(row.id),
+    name: String(row.name ?? "Child"),
+    colorLabel: (row.color_label as ChildProfile["colorLabel"]) ?? "sage",
+  };
+}
+
+function dbPlanToPlannerItem(row: Record<string, unknown>): PlannerItem {
+  return {
+    id: String(row.id),
+    title: String(row.title ?? "Untitled plan"),
+    day: String(row.day_of_week ?? "Monday") as WeekDay,
+    category: String(row.category_slug ?? "other"),
+    status: String(row.status ?? "planned") as PlanStatus,
+    timeBlock: (String(row.time_block ?? "Anytime") as PlannerItem["timeBlock"]),
+    assignedTo: row.assigned_to_child_id ? String(row.assigned_to_child_id) : "everyone",
+    weekStart: String(row.week_start ?? ""),
+    notes: row.notes ? String(row.notes) : "",
+    actualNotes: row.actual_notes ? String(row.actual_notes) : "",
+  };
+}
+
+function plannerItemToDb(plan: PlannerItem, familyId: string, weekStart: string) {
+  return {
+    id: plan.id,
+    family_id: familyId,
+    week_start: normalizeWeekStart(weekStart),
+    title: plan.title,
+    day_of_week: plan.day,
+    category_slug: plan.category,
+    status: plan.status,
+    time_block: plan.timeBlock,
+    assigned_to_child_id: plan.assignedTo === "everyone" ? null : plan.assignedTo,
+    notes: plan.notes ?? "",
+    actual_notes: plan.actualNotes ?? "",
+    updated_at: new Date().toISOString(),
+    deleted_at: null,
+  };
+}
+
+function savedWeekFromDb(row: Record<string, unknown>): SavedWeekLog {
+  const snapshot = (row.snapshot ?? {}) as Partial<SavedWeekLog>;
+
+  return {
+    id: String(row.id),
+    weekLabel: String(row.week_label ?? snapshot.weekLabel ?? "Saved week"),
+    weekStart: String(row.week_start ?? snapshot.weekStart ?? ""),
+    weekEnd: String(row.week_end ?? snapshot.weekEnd ?? ""),
+    savedAt: String(row.saved_at ?? snapshot.savedAt ?? new Date().toISOString()),
+    children: (snapshot.children ?? []) as ChildProfile[],
+    childSummaries: snapshot.childSummaries ?? [],
+    plans: snapshot.plans ?? [],
+  };
+}
+
 export function getActiveWeekStart() {
   if (typeof window === "undefined") return getCurrentWeekRange().weekStart;
 
-  const saved = readScopedValue(ACTIVE_WEEK_START_KEY);
+  const saved = window.localStorage.getItem(ACTIVE_WEEK_START_KEY);
   return saved || getCurrentWeekRange().weekStart;
 }
 
 export function saveActiveWeekStart(weekStart: string) {
-  writeScopedValue(ACTIVE_WEEK_START_KEY, weekStart);
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(ACTIVE_WEEK_START_KEY, normalizeWeekStart(weekStart));
 }
 
-export function getPlansForWeek(weekStart: string): PlannerItem[] {
+export async function getPlansForWeek(weekStart: string): Promise<PlannerItem[]> {
   if (typeof window === "undefined") return [];
 
-  const nextPlans = safeParse<PlannerItem[]>(
-    readScopedValue(weekPlansKey(weekStart)),
-    []
-  );
+  const { context, supabase, familyId } = await getStorageContext();
 
-  if (nextPlans.length) return nextPlans;
+  if (!context || context.isGuest || !supabase || !familyId) {
+    const nextPlans = localGet<PlannerItem[]>(weekPlansKey(weekStart), []);
+    if (nextPlans.length) return nextPlans;
 
-  const legacyPlans = safeParse<PlannerItem[]>(
-    readScopedValue(CURRENT_PLANS_KEY),
-    []
-  );
+    const legacyPlans = localGet<PlannerItem[]>(CURRENT_PLANS_KEY, []);
 
-  if (
-    legacyPlans.length &&
-    normalizeWeekStart(weekStart) === normalizeWeekStart(getCurrentWeekRange().weekStart)
-  ) {
-    return legacyPlans.map((plan) => ({ ...plan, weekStart }));
+    if (
+      legacyPlans.length &&
+      normalizeWeekStart(weekStart) === normalizeWeekStart(getCurrentWeekRange().weekStart)
+    ) {
+      return legacyPlans.map((plan) => ({ ...plan, weekStart }));
+    }
+
+    return [];
   }
 
-  return [];
+  let query = supabase
+    .from("planner_items")
+    .select("*")
+    .eq("family_id", familyId)
+    .eq("week_start", normalizeWeekStart(weekStart))
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false });
+
+  if (context.isChild && context.session.childId) {
+    query = query.or(`assigned_to_child_id.is.null,assigned_to_child_id.eq.${context.session.childId}`);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  return (data ?? []).map(dbPlanToPlannerItem);
 }
 
-export function savePlansForWeek(weekStart: string, plans: PlannerItem[]) {
+export async function savePlansForWeek(weekStart: string, plans: PlannerItem[]) {
   if (typeof window === "undefined") return;
 
-  const stampedPlans = plans.map((plan) => ({
-    ...plan,
-    weekStart,
-  }));
+  const { context, supabase, familyId } = await getStorageContext();
+  const stampedPlans = plans.map((plan) => ({ ...plan, weekStart }));
 
-  writeScopedValue(weekPlansKey(weekStart), JSON.stringify(stampedPlans));
+  if (!context || context.isGuest || !supabase || !familyId) {
+    localSet(weekPlansKey(weekStart), stampedPlans);
 
-  if (normalizeWeekStart(weekStart) === normalizeWeekStart(getCurrentWeekRange().weekStart)) {
-    writeScopedValue(CURRENT_PLANS_KEY, JSON.stringify(stampedPlans));
+    if (normalizeWeekStart(weekStart) === normalizeWeekStart(getCurrentWeekRange().weekStart)) {
+      localSet(CURRENT_PLANS_KEY, stampedPlans);
+    }
+
+    return;
   }
+
+  if (context.isChild) {
+    return;
+  }
+
+  const { error: clearExistingError } = await supabase
+    .from("planner_items")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("family_id", familyId)
+    .eq("week_start", normalizeWeekStart(weekStart));
+
+  if (clearExistingError) throw clearExistingError;
+
+  if (!stampedPlans.length) return;
+
+  const { error } = await supabase
+    .from("planner_items")
+    .upsert(stampedPlans.map((plan) => plannerItemToDb(plan, familyId, weekStart)), {
+      onConflict: "id",
+    });
+
+  if (error) throw error;
 }
 
-export function clearPlansForWeek(weekStart: string) {
-  removeScopedValue(weekPlansKey(weekStart));
+export async function updatePlanProgress({
+  id,
+  status,
+  actualNotes,
+}: {
+  id: string;
+  status?: PlanStatus;
+  actualNotes?: string;
+}) {
+  const { context, supabase, familyId } = await getStorageContext();
+  if (!context || context.isGuest || !supabase || !familyId) return;
 
-  if (normalizeWeekStart(weekStart) === normalizeWeekStart(getCurrentWeekRange().weekStart)) {
-    removeScopedValue(CURRENT_PLANS_KEY);
+  const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (status) update.status = status;
+  if (actualNotes !== undefined) update.actual_notes = actualNotes;
+
+  let query = supabase
+    .from("planner_items")
+    .update(update)
+    .eq("id", id)
+    .eq("family_id", familyId);
+
+  if (context.isChild && context.session.childId) {
+    query = query.or(`assigned_to_child_id.is.null,assigned_to_child_id.eq.${context.session.childId}`);
   }
+
+  const { error } = await query;
+  if (error) throw error;
 }
 
-export function getCurrentPlans(): PlannerItem[] {
+export async function clearPlansForWeek(weekStart: string) {
+  const { context, supabase, familyId } = await getStorageContext();
+
+  if (!context || context.isGuest || !supabase || !familyId) {
+    localRemove(weekPlansKey(weekStart));
+
+    if (normalizeWeekStart(weekStart) === normalizeWeekStart(getCurrentWeekRange().weekStart)) {
+      localRemove(CURRENT_PLANS_KEY);
+    }
+
+    return;
+  }
+
+  if (context.isChild) return;
+
+  const { error } = await supabase
+    .from("planner_items")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("family_id", familyId)
+    .eq("week_start", normalizeWeekStart(weekStart));
+
+  if (error) throw error;
+}
+
+export async function getCurrentPlans(): Promise<PlannerItem[]> {
   return getPlansForWeek(getActiveWeekStart());
 }
 
-export function saveCurrentPlans(plans: PlannerItem[]) {
-  savePlansForWeek(getActiveWeekStart(), plans);
+export async function saveCurrentPlans(plans: PlannerItem[]) {
+  return savePlansForWeek(getActiveWeekStart(), plans);
 }
 
-export function clearCurrentPlans() {
-  clearPlansForWeek(getActiveWeekStart());
+export async function clearCurrentPlans() {
+  return clearPlansForWeek(getActiveWeekStart());
 }
 
-export function getChildren(): ChildProfile[] {
+export async function getChildren(): Promise<ChildProfile[]> {
   if (typeof window === "undefined") return [EVERYONE_CHILD];
 
-  const saved = safeParse<ChildProfile[]>(readScopedValue(CHILDREN_KEY), []);
-  return [EVERYONE_CHILD, ...cleanChildren(saved)];
+  const { context, supabase, familyId } = await getStorageContext();
+
+  if (!context || context.isGuest || !supabase || !familyId) {
+    const saved = localGet<ChildProfile[]>(CHILDREN_KEY, []);
+    return [EVERYONE_CHILD, ...cleanChildren(saved)];
+  }
+
+  let query = supabase
+    .from("children")
+    .select("*")
+    .eq("family_id", familyId)
+    .is("archived_at", null)
+    .order("created_at", { ascending: true });
+
+  if (context.isChild && context.session.childId) {
+    query = query.eq("id", context.session.childId);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  return [EVERYONE_CHILD, ...(data ?? []).map(dbChildToProfile)];
 }
 
-export function saveChildren(children: ChildProfile[]) {
-  writeScopedValue(CHILDREN_KEY, JSON.stringify(cleanChildren(children)));
-}
+export async function saveChildren(children: ChildProfile[]) {
+  const cleaned = cleanChildren(children);
+  const { context, supabase, familyId } = await getStorageContext();
 
-export function renameChildProfile(childId: string, name: string) {
-  if (typeof window === "undefined") return getChildren();
+  if (!context || context.isGuest || !supabase || !familyId) {
+    localSet(CHILDREN_KEY, cleaned);
+    return;
+  }
 
-  const next = getChildren().map((child) =>
-    child.id === childId ? { ...child, name: name.trim() || child.name } : child
+  if (!context.isParent) return;
+
+  const { error } = await supabase.from("children").upsert(
+    cleaned.map((child) => ({
+      id: child.id,
+      family_id: familyId,
+      name: child.name,
+      color_label: child.colorLabel ?? "sage",
+      archived_at: null,
+      updated_at: new Date().toISOString(),
+    })),
+    { onConflict: "id" }
   );
 
-  saveChildren(next);
-  return getChildren();
+  if (error) throw error;
 }
 
-export function deleteChildProfile(childId: string) {
-  if (typeof window === "undefined" || childId === EVERYONE_CHILD.id) {
+export async function renameChildProfile(childId: string, name: string) {
+  const { context, supabase, familyId } = await getStorageContext();
+
+  if (!context || context.isGuest || !supabase || !familyId) {
+    const next = (await getChildren()).map((child) =>
+      child.id === childId ? { ...child, name: name.trim() || child.name } : child
+    );
+
+    await saveChildren(next);
     return getChildren();
   }
 
-  const nextChildren = getChildren().filter((child) => child.id !== childId);
-  saveChildren(nextChildren);
+  if (!context.isParent) return getChildren();
 
-  const activeWeekStart = getActiveWeekStart();
-  const nextPlans = getPlansForWeek(activeWeekStart).map((plan) =>
-    plan.assignedTo === childId ? { ...plan, assignedTo: EVERYONE_CHILD.id } : plan
-  );
-  savePlansForWeek(activeWeekStart, nextPlans);
+  const { error } = await supabase
+    .from("children")
+    .update({ name: name.trim(), updated_at: new Date().toISOString() })
+    .eq("id", childId)
+    .eq("family_id", familyId);
+
+  if (error) throw error;
+  return getChildren();
+}
+
+export async function deleteChildProfile(childId: string) {
+  if (childId === EVERYONE_CHILD.id) return getChildren();
+
+  const { context, supabase, familyId } = await getStorageContext();
+
+  if (!context || context.isGuest || !supabase || !familyId) {
+    const nextChildren = (await getChildren()).filter((child) => child.id !== childId);
+    await saveChildren(nextChildren);
+
+    const activeWeekStart = getActiveWeekStart();
+    const nextPlans = (await getPlansForWeek(activeWeekStart)).map((plan) =>
+      plan.assignedTo === childId ? { ...plan, assignedTo: EVERYONE_CHILD.id } : plan
+    );
+    await savePlansForWeek(activeWeekStart, nextPlans);
+
+    return getChildren();
+  }
+
+  if (!context.isParent) return getChildren();
+
+  // Archive instead of hard-deleting so saved records and future plan changes never erase a family's history.
+  const { error } = await supabase
+    .from("children")
+    .update({ archived_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .eq("id", childId)
+    .eq("family_id", familyId);
+
+  if (error) throw error;
+
+  await supabase
+    .from("planner_items")
+    .update({ assigned_to_child_id: null, updated_at: new Date().toISOString() })
+    .eq("family_id", familyId)
+    .eq("assigned_to_child_id", childId)
+    .is("deleted_at", null);
 
   return getChildren();
 }
 
-export function getCategoryDefinitions(): CategoryDefinition[] {
-  if (typeof window === "undefined") return defaultCategoryDefinitions;
+export async function getCategoryDefinitions(): Promise<CategoryDefinition[]> {
+  const { context, supabase, familyId } = await getStorageContext();
 
-  const saved = safeParse<CategoryDefinition[]>(
-    readScopedValue(CATEGORIES_KEY),
-    []
-  );
+  if (!context || context.isGuest || !supabase || !familyId) {
+    const saved = localGet<CategoryDefinition[]>(CATEGORIES_KEY, []);
 
-  const customOnly = cleanCategories(saved).filter(
-    (savedCategory) =>
-      !defaultCategoryDefinitions.some(
-        (defaultCategory) => defaultCategory.id === savedCategory.id
-      )
-  );
+    const customOnly = cleanCategories(saved).filter(
+      (savedCategory) =>
+        !defaultCategoryDefinitions.some(
+          (defaultCategory) => defaultCategory.id === savedCategory.id
+        )
+    );
+
+    return [...defaultCategoryDefinitions, ...customOnly];
+  }
+
+  const { data, error } = await supabase
+    .from("categories")
+    .select("*")
+    .eq("family_id", familyId)
+    .order("created_at", { ascending: true });
+
+  if (error) throw error;
+
+  const customOnly = (data ?? [])
+    .map((row) => ({
+      id: String(row.slug),
+      label: String(row.label),
+      isCustom: true,
+    }))
+    .filter(
+      (savedCategory) =>
+        !defaultCategoryDefinitions.some(
+          (defaultCategory) => defaultCategory.id === savedCategory.id
+        )
+    );
 
   return [...defaultCategoryDefinitions, ...customOnly];
 }
 
-export function saveCategoryDefinitions(categories: CategoryDefinition[]) {
-  if (typeof window === "undefined") return;
-
+export async function saveCategoryDefinitions(categories: CategoryDefinition[]) {
   const customOnly = cleanCategories(categories).filter(
     (category) =>
       category.isCustom &&
@@ -255,14 +488,36 @@ export function saveCategoryDefinitions(categories: CategoryDefinition[]) {
       )
   );
 
-  writeScopedValue(CATEGORIES_KEY, JSON.stringify(customOnly));
+  const { context, supabase, familyId } = await getStorageContext();
+
+  if (!context || context.isGuest || !supabase || !familyId) {
+    localSet(CATEGORIES_KEY, customOnly);
+    return;
+  }
+
+  if (!context.isParent) return;
+
+  if (!customOnly.length) return;
+
+  const { error } = await supabase.from("categories").upsert(
+    customOnly.map((category) => ({
+      family_id: familyId,
+      slug: category.id,
+      label: category.label,
+      is_custom: true,
+      updated_at: new Date().toISOString(),
+    })),
+    { onConflict: "family_id,slug" }
+  );
+
+  if (error) throw error;
 }
 
-export function addCategoryDefinition(name: string) {
+export async function addCategoryDefinition(name: string) {
   const label = name.trim();
-  if (!label) return getCategoryDefinitions()[0];
+  if (!label) return (await getCategoryDefinitions())[0];
 
-  const current = getCategoryDefinitions();
+  const current = await getCategoryDefinitions();
   const baseId = makeCategoryId(label);
   let id = baseId || "custom";
   let count = 2;
@@ -278,45 +533,120 @@ export function addCategoryDefinition(name: string) {
     isCustom: true,
   };
 
-  saveCategoryDefinitions([...current, nextCategory]);
+  await saveCategoryDefinitions([...current, nextCategory]);
   return nextCategory;
 }
 
-export function deleteCategoryDefinition(categoryId: string) {
-  if (typeof window === "undefined") return getCategoryDefinitions();
+export async function deleteCategoryDefinition(categoryId: string) {
+  const { context, supabase, familyId } = await getStorageContext();
 
-  const next = getCategoryDefinitions().filter(
-    (category) => category.id !== categoryId || !category.isCustom
-  );
+  if (!context || context.isGuest || !supabase || !familyId) {
+    const next = (await getCategoryDefinitions()).filter(
+      (category) => category.id !== categoryId || !category.isCustom
+    );
 
-  saveCategoryDefinitions(next);
+    await saveCategoryDefinitions(next);
+    return getCategoryDefinitions();
+  }
+
+  if (!context.isParent) return getCategoryDefinitions();
+
+  const { error } = await supabase
+    .from("categories")
+    .delete()
+    .eq("family_id", familyId)
+    .eq("slug", categoryId);
+
+  if (error) throw error;
   return getCategoryDefinitions();
 }
 
-export function getSavedWeeks(): SavedWeekLog[] {
+export async function getSavedWeeks(): Promise<SavedWeekLog[]> {
   if (typeof window === "undefined") return [];
-  return safeParse<SavedWeekLog[]>(readScopedValue(SAVED_WEEKS_KEY), []);
+
+  const { context, supabase, familyId } = await getStorageContext();
+
+  if (!context || context.isGuest || !supabase || !familyId) {
+    return localGet<SavedWeekLog[]>(SAVED_WEEKS_KEY, []);
+  }
+
+  const { data, error } = await supabase
+    .from("saved_weeks")
+    .select("*")
+    .eq("family_id", familyId)
+    .is("deleted_at", null)
+    .order("saved_at", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []).map(savedWeekFromDb);
 }
 
-export function saveWeekLog(log: SavedWeekLog) {
-  if (typeof window === "undefined") return;
+export async function saveWeekLog(log: SavedWeekLog) {
+  const { context, supabase, familyId } = await getStorageContext();
 
-  const current = getSavedWeeks();
-  const withoutDuplicate = current.filter((item) => item.id !== log.id);
-  const next = [log, ...withoutDuplicate];
+  if (!context || context.isGuest || !supabase || !familyId) {
+    const current = await getSavedWeeks();
+    const withoutDuplicate = current.filter((item) => item.id !== log.id);
+    localSet(SAVED_WEEKS_KEY, [log, ...withoutDuplicate]);
+    return;
+  }
 
-  writeScopedValue(SAVED_WEEKS_KEY, JSON.stringify(next));
+  if (!context.isParent) return;
+
+  const { error } = await supabase.from("saved_weeks").upsert(
+    {
+      id: log.id,
+      family_id: familyId,
+      week_label: log.weekLabel,
+      week_start: normalizeWeekStart(log.weekStart),
+      week_end: normalizeWeekStart(log.weekEnd),
+      saved_at: log.savedAt,
+      snapshot: log,
+      period_type: "week",
+      period_start: normalizeWeekStart(log.weekStart),
+      period_end: normalizeWeekStart(log.weekEnd),
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "id" }
+  );
+
+  if (error) throw error;
 }
 
-export function deleteSavedWeek(weekId: string) {
-  if (typeof window === "undefined") return;
+export async function deleteSavedWeek(weekId: string) {
+  const { context, supabase, familyId } = await getStorageContext();
 
-  const current = getSavedWeeks();
-  const next = current.filter((week) => week.id !== weekId);
+  if (!context || context.isGuest || !supabase || !familyId) {
+    const current = await getSavedWeeks();
+    localSet(SAVED_WEEKS_KEY, current.filter((week) => week.id !== weekId));
+    return;
+  }
 
-  writeScopedValue(SAVED_WEEKS_KEY, JSON.stringify(next));
+  if (!context.isParent) return;
+
+  const { error } = await supabase
+    .from("saved_weeks")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", weekId)
+    .eq("family_id", familyId);
+
+  if (error) throw error;
 }
 
-export function clearSavedWeeks() {
-  removeScopedValue(SAVED_WEEKS_KEY);
+export async function clearSavedWeeks() {
+  const { context, supabase, familyId } = await getStorageContext();
+
+  if (!context || context.isGuest || !supabase || !familyId) {
+    localRemove(SAVED_WEEKS_KEY);
+    return;
+  }
+
+  if (!context.isParent) return;
+
+  const { error } = await supabase
+    .from("saved_weeks")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("family_id", familyId);
+
+  if (error) throw error;
 }

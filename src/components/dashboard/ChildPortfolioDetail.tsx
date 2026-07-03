@@ -16,12 +16,23 @@ export default function ChildPortfolioDetail({
   const [children, setChildren] = useState<ChildProfile[]>([]);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setSavedWeeks(getSavedWeeks());
-      setChildren(getChildren());
-    }, 0);
+    let isMounted = true;
 
-    return () => window.clearTimeout(timer);
+    async function load() {
+      const [nextSavedWeeks, nextChildren] = await Promise.all([
+        getSavedWeeks(),
+        getChildren(),
+      ]);
+
+      if (!isMounted) return;
+      setSavedWeeks(nextSavedWeeks);
+      setChildren(nextChildren);
+    }
+
+    void load();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const child =

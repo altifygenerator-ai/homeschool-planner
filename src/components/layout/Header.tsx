@@ -11,13 +11,19 @@ export default function Header() {
   const [context, setContext] = useState<AccountContext | null>(null);
 
   useEffect(() => {
-    function refresh() {
-      setContext(getActiveAccountContext());
+    let isMounted = true;
+
+    async function refresh() {
+      const nextContext = await getActiveAccountContext();
+      if (isMounted) setContext(nextContext);
     }
 
-    refresh();
+    void refresh();
     window.addEventListener("softweek-session-changed", refresh);
-    return () => window.removeEventListener("softweek-session-changed", refresh);
+    return () => {
+      isMounted = false;
+      window.removeEventListener("softweek-session-changed", refresh);
+    };
   }, []);
 
   const nav = context

@@ -20,14 +20,27 @@ export default function DashboardHome() {
   const [context, setContext] = useState<AccountContext | null>(null);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setContext(getActiveAccountContext());
-      setPlans(getCurrentPlans());
-      setSavedWeeks(getSavedWeeks());
-      setChildCount(getChildren().filter((child) => child.id !== "everyone").length);
-    }, 0);
+    let isMounted = true;
 
-    return () => window.clearTimeout(timer);
+    async function load() {
+      const [nextContext, nextPlans, nextSavedWeeks, nextChildren] = await Promise.all([
+        getActiveAccountContext(),
+        getCurrentPlans(),
+        getSavedWeeks(),
+        getChildren(),
+      ]);
+
+      if (!isMounted) return;
+      setContext(nextContext);
+      setPlans(nextPlans);
+      setSavedWeeks(nextSavedWeeks);
+      setChildCount(nextChildren.filter((child) => child.id !== "everyone").length);
+    }
+
+    void load();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const doneCount = plans.filter((plan) => plan.status === "done").length;
@@ -92,7 +105,7 @@ export default function DashboardHome() {
         <Link className="dashboard-link-card paper-card" href="/dashboard/children">
           <LuUsersRound />
           <h3>Children</h3>
-          <p>Manage child profiles and optional limited child logins.</p>
+          <p>Manage child profiles and optional limited child accounts.</p>
           <span>{childCount} profiles</span>
         </Link>
 

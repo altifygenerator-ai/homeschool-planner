@@ -20,6 +20,7 @@ import {
   saveChildren,
   savePlansForWeek,
   saveWeekLog,
+  updatePlanProgress,
 } from "@/lib/plannerStorage";
 import {
   getActiveAccountContext,
@@ -60,26 +61,40 @@ export default function PlannerShell() {
   const canSaveWeeks = accountContext?.account.permissions.canSaveWeeks ?? true;
   const canEditCategories = accountContext?.account.permissions.canEditCategories ?? true;
 
+  async function loadWorkspace(weekStart = getActiveWeekStart()) {
+    const context = await getActiveAccountContext();
+    const [nextPlans, nextChildren, nextCategories] = await Promise.all([
+      getPlansForWeek(weekStart),
+      getChildren(),
+      getCategoryDefinitions(),
+    ]);
+
+    setAccountContext(context);
+    setActiveWeekStart(weekStart);
+    setPlans(nextPlans);
+    setChildren(nextChildren);
+    setCategories(nextCategories);
+    setActiveChildId(context?.isChild && context.session.childId ? context.session.childId : "all");
+    setHasLoaded(true);
+  }
+
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      const context = getActiveAccountContext();
-      const savedWeekStart = getActiveWeekStart();
+    let isMounted = true;
 
-      setAccountContext(context);
-      setActiveWeekStart(savedWeekStart);
-      setPlans(getPlansForWeek(savedWeekStart));
-      setChildren(getChildren());
-      setCategories(getCategoryDefinitions());
-      setActiveChildId(context?.isChild && context.session.childId ? context.session.childId : "all");
-      setHasLoaded(true);
-    }, 0);
+    async function initialLoad() {
+      if (!isMounted) return;
+      await loadWorkspace();
+    }
 
-    return () => window.clearTimeout(timer);
+    void initialLoad();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
-    function refreshContext() {
-      setAccountContext(getActiveAccountContext());
+    async function refreshContext() {
+      setAccountContext(await getActiveAccountContext());
     }
 
     window.addEventListener("softweek-session-changed", refreshContext);
@@ -87,9 +102,9 @@ export default function PlannerShell() {
   }, []);
 
   useEffect(() => {
-    if (!hasLoaded || !activeWeekStart) return;
-    savePlansForWeek(activeWeekStart, plans);
-  }, [plans, activeWeekStart, hasLoaded]);
+    if (!hasLoaded || !activeWeekStart || isChildView) return;
+    void savePlansForWeek(activeWeekStart, plans);
+  }, [plans, activeWeekStart, hasLoaded, isChildView]);
 
   const weekRange = useMemo(() => {
     return activeWeekStart
@@ -122,28 +137,28 @@ export default function PlannerShell() {
     );
   }, [accountContext, activeChildId, isChildView, plans]);
 
-  function reloadWeek(weekStart: string) {
+  async function reloadWeek(weekStart: string) {
     setActiveWeekStart(weekStart);
     saveActiveWeekStart(weekStart);
-    setPlans(getPlansForWeek(weekStart));
+    setPlans(await getPlansForWeek(weekStart));
     setActiveChildId(isChildView && accountContext?.session.childId ? accountContext.session.childId : "all");
     setIsAddingPlan(false);
   }
 
-  function handleSwitchWeek(direction: number) {
+  async function handleSwitchWeek(direction: number) {
     if (!activeWeekStart) return;
 
-    savePlansForWeek(activeWeekStart, plans);
+    if (!isChildView) await savePlansForWeek(activeWeekStart, plans);
     const nextWeekStart = shiftWeekStart(activeWeekStart, direction);
-    reloadWeek(nextWeekStart);
+    await reloadWeek(nextWeekStart);
     setSavedMessage(direction > 0 ? "Next week opened." : "Previous week opened.");
   }
 
-  function handleThisWeek() {
+  async function handleThisWeek() {
     if (!activeWeekStart) return;
 
-    savePlansForWeek(activeWeekStart, plans);
-    reloadWeek(getCurrentWeekRange().weekStart);
+    if (!isChildView) await savePlansForWeek(activeWeekStart, plans);
+    await reloadWeek(getCurrentWeekRange().weekStart);
     setSavedMessage("Current week opened.");
   }
 
@@ -178,6 +193,7 @@ export default function PlannerShell() {
       current.map((plan) => (plan.id === id ? { ...plan, status } : plan))
     );
 
+    void updatePlanProgress({ id, status });
     setSavedMessage("");
   }
 
@@ -198,6 +214,7 @@ export default function PlannerShell() {
       )
     );
 
+    void updatePlanProgress({ id, actualNotes: value });
     setSavedMessage("");
   }
 
@@ -208,21 +225,21 @@ export default function PlannerShell() {
     setSavedMessage("");
   }
 
-  function handleClearWeek() {
+  async function handleClearWeek() {
     if (!activeWeekStart || !canPlan) return;
 
-    clearPlansForWeek(activeWeekStart);
+    await clearPlansForWeek(activeWeekStart);
     setPlans([]);
     setActiveChildId("all");
     setSavedMessage(`${weekRange.weekLabel} cleared. You can start fresh whenever you are ready.`);
   }
 
-  function handleStartFreshWeek() {
+  async function handleStartFreshWeek() {
     if (!activeWeekStart || !canPlan) return;
 
     const nextWeekStart = shiftWeekStart(activeWeekStart, 1);
 
-    clearPlansForWeek(nextWeekStart);
+    await clearPlansForWeek(nextWeekStart);
     saveActiveWeekStart(nextWeekStart);
     setActiveWeekStart(nextWeekStart);
     setPlans([]);
@@ -231,21 +248,21 @@ export default function PlannerShell() {
     setIsAddingPlan(true);
   }
 
-  function handleSaveWeek(week: SavedWeekLog) {
+  async function handleSaveWeek(week: SavedWeekLog) {
     if (!canSaveWeeks) return;
 
-    saveWeekLog(week);
+    await saveWeekLog(week);
     setSavedMessage("Week saved. You can start a fresh week or keep editing this one.");
   }
 
-  function handleAddCategory(name: string) {
+  async function handleAddCategory(name: string) {
     if (!canEditCategories) return categories[0];
 
-    const nextCategory = addCategoryDefinition(name);
+    const nextCategory = await addCategoryDefinition(name);
 
     if (nextCategory) {
-      const nextCategories = getCategoryDefinitions();
-      saveCategoryDefinitions(nextCategories);
+      const nextCategories = await getCategoryDefinitions();
+      await saveCategoryDefinitions(nextCategories);
       setCategories(nextCategories);
       setSavedMessage(`${nextCategory.label} added as a category.`);
     }
@@ -253,7 +270,7 @@ export default function PlannerShell() {
     return nextCategory;
   }
 
-  function handleAddChild(name: string) {
+  async function handleAddChild(name: string) {
     if (!canManageChildren) return;
 
     const realChildCount = children.filter((child) => child.id !== "everyone").length;
@@ -264,30 +281,30 @@ export default function PlannerShell() {
     };
 
     const nextChildren = [...children, nextChild];
-    saveChildren(nextChildren);
-    setChildren(getChildren());
+    await saveChildren(nextChildren);
+    setChildren(await getChildren());
     setSavedMessage(`${name} added. You can assign plans to them now.`);
   }
 
-  function handleRenameChild(childId: string, name: string) {
+  async function handleRenameChild(childId: string, name: string) {
     if (!canManageChildren) return;
 
-    setChildren(renameChildProfile(childId, name));
+    setChildren(await renameChildProfile(childId, name));
     setSavedMessage("Child profile updated.");
   }
 
-  function handleDeleteChild(childId: string) {
+  async function handleDeleteChild(childId: string) {
     if (!canManageChildren) return;
 
     const childName = children.find((child) => child.id === childId)?.name ?? "Child";
-    setChildren(deleteChildProfile(childId));
-    setPlans(getPlansForWeek(activeWeekStart));
+    setChildren(await deleteChildProfile(childId));
+    setPlans(await getPlansForWeek(activeWeekStart));
 
     if (activeChildId === childId) {
       setActiveChildId("all");
     }
 
-    setSavedMessage(`${childName} removed. Any current plans for them were moved to Everyone.`);
+    setSavedMessage(`${childName} removed from active planning. Existing saved records stay in the account history.`);
   }
 
   return (
@@ -316,20 +333,20 @@ export default function PlannerShell() {
           <strong>{visiblePlans.length} plans in this view</strong>
           <span>
             {isChildView
-              ? "Parent controls are limited in this child login."
+              ? "Parent controls are limited in this child account."
               : "Open a different week if you want to plan ahead, or keep this week simple."}
           </span>
         </div>
 
         <div className="planner-control-actions planner-control-actions-expanded">
           <div className="week-switcher">
-            <button className="mini-text-button" type="button" onClick={() => handleSwitchWeek(-1)}>
+            <button className="mini-text-button" type="button" onClick={() => void handleSwitchWeek(-1)}>
               Previous week
             </button>
-            <button className="mini-text-button" type="button" onClick={handleThisWeek}>
+            <button className="mini-text-button" type="button" onClick={() => void handleThisWeek()}>
               This week
             </button>
-            <button className="mini-text-button" type="button" onClick={() => handleSwitchWeek(1)}>
+            <button className="mini-text-button" type="button" onClick={() => void handleSwitchWeek(1)}>
               Next week
             </button>
           </div>
@@ -351,7 +368,7 @@ export default function PlannerShell() {
           ) : null}
 
           {canPlan ? (
-            <button className="btn btn-secondary" type="button" onClick={handleClearWeek}>
+            <button className="btn btn-secondary" type="button" onClick={() => void handleClearWeek()}>
               Clear week
             </button>
           ) : null}
@@ -362,7 +379,7 @@ export default function PlannerShell() {
         <div className="planner-save-message-row">
           <p className="planner-save-message">{savedMessage}</p>
           {savedMessage.startsWith("Week saved") && canPlan ? (
-            <button className="mini-text-button" type="button" onClick={handleStartFreshWeek}>
+            <button className="mini-text-button" type="button" onClick={() => void handleStartFreshWeek()}>
               Start fresh week
             </button>
           ) : null}
@@ -386,9 +403,9 @@ export default function PlannerShell() {
           childProfiles={visibleChildren}
           activeChildId={isChildView && accountContext?.session.childId ? accountContext.session.childId : activeChildId}
           onChange={setActiveChildId}
-          onAddChild={canManageChildren ? handleAddChild : undefined}
-          onRenameChild={canManageChildren ? handleRenameChild : undefined}
-          onDeleteChild={canManageChildren ? handleDeleteChild : undefined}
+          onAddChild={canManageChildren ? (name) => void handleAddChild(name) : undefined}
+          onRenameChild={canManageChildren ? (childId, name) => void handleRenameChild(childId, name) : undefined}
+          onDeleteChild={canManageChildren ? (childId) => void handleDeleteChild(childId) : undefined}
         />
 
         {canSaveWeeks ? (
@@ -398,14 +415,14 @@ export default function PlannerShell() {
             weekLabel={weekRange.weekLabel}
             weekStart={weekRange.weekStart}
             weekEnd={weekRange.weekEnd}
-            onSaveWeek={handleSaveWeek}
+            onSaveWeek={(week) => void handleSaveWeek(week)}
           />
         ) : (
           <div className="week-save-card child-limited-card">
-            <p className="eyebrow">Limited child login</p>
+            <p className="eyebrow">Limited child account</p>
             <h3>Parent tools are hidden here.</h3>
             <p className="text-small">
-              This login can help mark work done and add notes, but saving weeks,
+              This account can help mark work done and add notes, but saving weeks,
               adding plans, and managing children stay with the parent account.
             </p>
           </div>

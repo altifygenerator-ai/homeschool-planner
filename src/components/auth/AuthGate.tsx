@@ -14,14 +14,21 @@ export default function AuthGate({ children }: AuthGateProps) {
   const [hasChecked, setHasChecked] = useState(false);
 
   useEffect(() => {
-    function refresh() {
-      setContext(getActiveAccountContext());
+    let isMounted = true;
+
+    async function refresh() {
+      const nextContext = await getActiveAccountContext();
+      if (!isMounted) return;
+      setContext(nextContext);
       setHasChecked(true);
     }
 
-    refresh();
+    void refresh();
     window.addEventListener("softweek-session-changed", refresh);
-    return () => window.removeEventListener("softweek-session-changed", refresh);
+    return () => {
+      isMounted = false;
+      window.removeEventListener("softweek-session-changed", refresh);
+    };
   }, []);
 
   if (!hasChecked) return null;
@@ -33,9 +40,8 @@ export default function AuthGate({ children }: AuthGateProps) {
           <p className="eyebrow">Account needed</p>
           <h1 className="section-title-sm">Open SoftWeek with a beta account or guest access.</h1>
           <p className="section-lead">
-            Create a beta account to keep your family setup and saved weeks
-            together on this device, log back in, or try the planner as a guest
-            first.
+            Create a beta account to save your family setup and weekly records,
+            log back in, or try the planner as a guest first.
           </p>
         </div>
 
@@ -49,7 +55,7 @@ export default function AuthGate({ children }: AuthGateProps) {
             type="button"
             onClick={() => {
               startGuestSession();
-              setContext(getActiveAccountContext());
+              void getActiveAccountContext().then(setContext);
             }}
           >
             <LuMousePointerClick />
