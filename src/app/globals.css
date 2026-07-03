@@ -3966,3 +3966,9 @@ img {
 .account-record-grid {
   margin-top: 1.25rem;
 }
+
+/* Header auth actions */
+.header-logout-button {
+  cursor: pointer;
+  font-family: inherit;
+}

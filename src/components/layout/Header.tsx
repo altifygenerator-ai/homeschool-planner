@@ -2,12 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { LuNotebookPen, LuUserRound } from "react-icons/lu";
+import { useRouter } from "next/navigation";
+import { LuLogIn, LuLogOut, LuNotebookPen, LuUserRound } from "react-icons/lu";
 import { site } from "@/data/site";
 import Button from "@/components/shared/Button";
-import { getActiveAccountContext, type AccountContext } from "@/lib/localAuth";
+import {
+  getActiveAccountContext,
+  signOutLocalAccount,
+  type AccountContext,
+} from "@/lib/localAuth";
 
 export default function Header() {
+  const router = useRouter();
   const [context, setContext] = useState<AccountContext | null>(null);
 
   useEffect(() => {
@@ -35,6 +41,12 @@ export default function Header() {
       ]
     : site.nav;
 
+  async function handleSignOut() {
+    await signOutLocalAccount();
+    setContext(null);
+    router.push("/login?mode=login");
+  }
+
   return (
     <header className="site-header">
       <div className="header-inner">
@@ -55,14 +67,33 @@ export default function Header() {
 
         <div className="header-actions">
           {context ? (
-            <Button href="/dashboard/account">
-              <LuUserRound />
-              Account
-            </Button>
+            <>
+              <Button href="/dashboard/account" variant="soft">
+                <LuUserRound />
+                Account
+              </Button>
+
+              <button
+                className="btn btn-primary header-logout-button"
+                type="button"
+                onClick={handleSignOut}
+              >
+                <LuLogOut />
+                Log out
+              </button>
+            </>
           ) : (
             <>
-              <Button href="/login?mode=create">Create account</Button>
-              <Button href="/guest" variant="secondary">
+              <Button href="/login?mode=login">
+                <LuLogIn />
+                Log in
+              </Button>
+
+              <Button href="/login?mode=create" variant="secondary">
+                Create account
+              </Button>
+
+              <Button href="/guest" variant="soft">
                 Try guest
               </Button>
             </>
