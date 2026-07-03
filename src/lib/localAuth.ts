@@ -63,6 +63,8 @@ export type AuthResult = {
 };
 
 const SESSION_KEY = "softweek_beta_session";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://softweekplanner.com";
+const AUTH_CONFIRM_REDIRECT = `${SITE_URL}/login?confirmed=true`;
 
 export const GUEST_FAMILY_ID = "guest-family";
 export const GUEST_ACCOUNT_ID = "guest-parent";
@@ -388,6 +390,7 @@ export async function createParentLocalAccount({
     email: cleanEmail,
     password: cleanPasswordValue,
     options: {
+      emailRedirectTo: AUTH_CONFIRM_REDIRECT,
       data: {
         role: "parent",
         display_name: name.trim() || "Parent",
@@ -454,6 +457,7 @@ export async function createChildSupabaseAccount({
     email: cleanEmail,
     password: cleanPasswordValue,
     options: {
+      emailRedirectTo: AUTH_CONFIRM_REDIRECT,
       data: {
         role: "child",
         display_name: name.trim() || "Student",
