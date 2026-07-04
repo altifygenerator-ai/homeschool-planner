@@ -2990,7 +2990,7 @@ img {
   }
 }
 
-/* Real beta account / SaaS-ready updates */
+/* Account and beta updates */
 
 .header-actions {
   display: flex;
@@ -3971,4 +3971,407 @@ img {
 .header-logout-button {
   cursor: pointer;
   font-family: inherit;
+}
+
+/* Beta 1.2 planner refinements */
+.resource-link-pill {
+  width: fit-content;
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  padding: 0.42rem 0.66rem;
+  border-radius: 999px;
+  background: rgba(223, 234, 221, 0.52);
+  border: 1px solid rgba(143, 174, 155, 0.34);
+  color: var(--sage-dark);
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.resource-link-pill:hover {
+  background: rgba(223, 234, 221, 0.82);
+}
+
+.copy-plan-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: end;
+}
+
+.copy-plan-button {
+  min-height: 40px;
+  margin-bottom: 0;
+}
+
+.resource-edit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+}
+
+.mini-field input {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.76);
+  color: var(--navy);
+  outline: none;
+  padding: 0 0.68rem;
+  font-size: 0.86rem;
+}
+
+.add-plan-resource-field {
+  grid-column: span 2;
+}
+
+.add-plan-resource-field .input + .input {
+  margin-top: 0.55rem;
+}
+
+.home-testimonial-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.testimonial-card {
+  padding: clamp(1.15rem, 3vw, 1.6rem);
+  display: grid;
+  gap: 1rem;
+}
+
+.testimonial-card blockquote {
+  margin: 0;
+  color: rgba(36, 49, 63, 0.84);
+  font-family: var(--font-heading), Georgia, serif;
+  font-size: clamp(1.35rem, 2.3vw, 2.05rem);
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+}
+
+.testimonial-card figcaption {
+  margin: 0;
+  color: var(--sage-dark);
+  font-size: 0.92rem;
+  font-weight: 900;
+}
+
+.home-preview-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-top: 2rem;
+}
+
+.home-preview-feature {
+  min-height: 150px;
+  padding: 1rem;
+  display: grid;
+  align-content: start;
+  gap: 0.6rem;
+}
+
+.home-preview-feature svg {
+  width: 34px;
+  height: 34px;
+  padding: 0.45rem;
+  border-radius: 14px;
+  background: var(--sage-soft);
+  color: var(--sage-dark);
+}
+
+.home-preview-feature h3 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 0.98rem;
+  font-weight: 950;
+  letter-spacing: -0.025em;
+}
+
+.home-preview-feature p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 980px) {
+  .home-preview-feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 780px) {
+  .home-testimonial-grid,
+  .resource-edit-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .copy-plan-row,
+  .add-plan-resource-field {
+    grid-template-columns: 1fr;
+    grid-column: span 1;
+  }
+
+  .home-preview-feature-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Beta 1.2 polished styles: testimonials, resources, and planner adjust tools */
+.home-preview-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin-top: 2.1rem;
+}
+
+.home-preview-feature {
+  position: relative;
+  min-height: 166px;
+  padding: 1.05rem;
+  overflow: hidden;
+  display: grid;
+  align-content: start;
+  gap: 0.62rem;
+  border: 1px solid rgba(234, 223, 206, 0.9);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(242, 223, 174, 0.42), transparent 7rem),
+    rgba(255, 253, 248, 0.86);
+}
+
+.home-preview-feature::after {
+  content: "";
+  position: absolute;
+  right: -2.2rem;
+  bottom: -2.2rem;
+  width: 6.4rem;
+  height: 6.4rem;
+  border-radius: 999px;
+  background: rgba(223, 234, 221, 0.42);
+  pointer-events: none;
+}
+
+.home-preview-feature svg {
+  position: relative;
+  z-index: 1;
+  width: 38px;
+  height: 38px;
+  padding: 0.48rem;
+  border-radius: 16px;
+  color: var(--sage-dark);
+  background: linear-gradient(135deg, rgba(223, 234, 221, 0.95), rgba(242, 223, 174, 0.72));
+  box-shadow: 0 12px 24px rgba(60, 47, 33, 0.07);
+}
+
+.home-preview-feature h3 {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: var(--navy);
+  font-size: 1.02rem;
+  font-weight: 950;
+  letter-spacing: -0.03em;
+}
+
+.home-preview-feature p {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.home-testimonial-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.1rem;
+  margin-top: 2rem;
+  align-items: stretch;
+}
+
+.testimonial-card {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: clamp(1.2rem, 3vw, 1.7rem);
+  overflow: hidden;
+  border: 1px solid rgba(234, 223, 206, 0.95);
+  background:
+    radial-gradient(circle at 10% 0%, rgba(223, 234, 221, 0.58), transparent 12rem),
+    radial-gradient(circle at 100% 100%, rgba(242, 223, 174, 0.42), transparent 12rem),
+    rgba(255, 253, 248, 0.94);
+}
+
+.testimonial-card::before {
+  content: "“";
+  position: absolute;
+  top: -0.35rem;
+  right: 1.1rem;
+  color: rgba(217, 182, 111, 0.28);
+  font-family: Georgia, serif;
+  font-size: 6.5rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.testimonial-card blockquote {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: rgba(36, 49, 63, 0.86);
+  font-family: var(--font-heading), Georgia, serif;
+  font-size: clamp(1.25rem, 2vw, 1.85rem);
+  line-height: 1.16;
+  letter-spacing: -0.035em;
+}
+
+.testimonial-card figcaption {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: var(--sage-dark);
+  font-size: 0.92rem;
+  font-weight: 950;
+}
+
+.resource-link-pill {
+  width: fit-content;
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  padding: 0.44rem 0.68rem;
+  border-radius: 999px;
+  background: rgba(223, 234, 221, 0.64);
+  border: 1px solid rgba(143, 174, 155, 0.38);
+  color: var(--sage-dark);
+  font-size: 0.78rem;
+  font-weight: 950;
+  line-height: 1.2;
+  box-shadow: 0 8px 18px rgba(60, 47, 33, 0.05);
+}
+
+.resource-link-pill svg {
+  flex: 0 0 auto;
+  width: 0.92rem;
+  height: 0.92rem;
+}
+
+.resource-link-pill:hover {
+  transform: translateY(-1px);
+  background: rgba(223, 234, 221, 0.88);
+  color: var(--navy);
+}
+
+.copy-plan-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  align-items: end;
+}
+
+.copy-plan-button {
+  min-height: 42px;
+  margin-bottom: 0;
+  white-space: nowrap;
+}
+
+.resource-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.mini-field input {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--navy);
+  outline: none;
+  padding: 0 0.72rem;
+  font-size: 0.88rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.mini-field input:focus,
+.mini-field select:focus,
+.mini-field textarea:focus {
+  border-color: rgba(143, 174, 155, 0.72);
+  box-shadow: 0 0 0 4px rgba(223, 234, 221, 0.58);
+}
+
+.add-plan-resource-field {
+  grid-column: span 2;
+  padding: 0.95rem;
+  border-radius: 20px;
+  background: rgba(255, 253, 248, 0.72);
+  border: 1px solid rgba(234, 223, 206, 0.82);
+}
+
+.add-plan-resource-field .input + .input {
+  margin-top: 0.6rem;
+}
+
+.add-plan-resource-field .form-helper-text {
+  margin-top: 0.55rem;
+}
+
+.account-record-grid {
+  margin-top: 1.25rem;
+}
+
+.header-logout-button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+@media (max-width: 1080px) {
+  .home-preview-feature-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .home-preview-feature-grid,
+  .home-testimonial-grid,
+  .resource-edit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .copy-plan-row {
+    grid-template-columns: 1fr;
+  }
+
+  .copy-plan-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .home-preview-feature {
+    min-height: auto;
+  }
+
+  .testimonial-card blockquote {
+    font-size: 1.24rem;
+  }
+
+  .add-plan-resource-field {
+    grid-column: span 1;
+    padding: 0.85rem;
+  }
 }

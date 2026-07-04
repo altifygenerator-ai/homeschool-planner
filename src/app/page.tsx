@@ -4,8 +4,12 @@ import {
   LuCircleCheck,
   LuCrown,
   LuHeartHandshake,
+  LuLink,
   LuLock,
   LuMousePointerClick,
+  LuMoveRight,
+  LuSave,
+  LuUserCheck,
   LuUserPlus,
 } from "react-icons/lu";
 import Footer from "@/components/layout/Footer";
@@ -21,7 +25,48 @@ const freePlanFeatures = [
 const premiumPlanFeatures = [
   "Multiple children and optional older-kid logins",
   "Longer saved history, child portfolios, printables, and exports",
-  "Backed-up accounts, month glance, and planning-ahead tools",
+  "Cross-device accounts, month glance, and planning-ahead tools",
+];
+
+const previewFeatures = [
+  {
+    icon: LuMoveRight,
+    title: "Move one plan",
+    text: "Shift one subject to another day without rebuilding the whole week.",
+  },
+  {
+    icon: LuCircleCheck,
+    title: "Pick several days",
+    text: "Add reading, practice, chores, outings, or projects to more than one day at once.",
+  },
+  {
+    icon: LuLink,
+    title: "Attach a link",
+    text: "Keep a video, class link, worksheet, PDF, or website right on the plan card.",
+  },
+  {
+    icon: LuUserCheck,
+    title: "Older-kid view",
+    text: "Kids can check their own plans, mark work done, and add notes with parent controls protected.",
+  },
+  {
+    icon: LuSave,
+    title: "Save the record",
+    text: "Save what actually happened so weekly records can build into month and year history.",
+  },
+];
+
+const testimonials = [
+  {
+    quote:
+      "SoftWeek Planner was one app that finally did not overwhelm me. My older kids could use it themselves with minimal help. I really enjoyed the simplicity. It felt nice and rewarding to use.",
+    name: "Miss Elise’s Art House",
+  },
+  {
+    quote:
+      "SoftWeek feels like it is being built for the real homeschool week, not the perfect one. It gives families room to plan loosely, move what changes, and save what actually happened.",
+    name: "Untethered — Learning, Without Limits",
+  },
 ];
 
 export default function Home() {
@@ -75,7 +120,35 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="section-paper" id="pain-points">
+      <section className="section-paper" id="app-preview">
+        <div className="container">
+          <div className="section-center">
+            <p className="eyebrow">What it does now</p>
+            <h2 className="section-title">A real planner families can use this week.</h2>
+            <p className="section-lead">
+              SoftWeek is live in beta with accounts, child profiles, 7-day planning,
+              movable cards, resource links, saved weeks, and optional older-kid access.
+              It is made to stay simple while still giving families a useful record.
+            </p>
+          </div>
+
+          <div className="home-preview-feature-grid">
+            {previewFeatures.map((feature) => {
+              const Icon = feature.icon;
+
+              return (
+                <article className="paper-card home-preview-feature" key={feature.title}>
+                  <Icon />
+                  <h3>{feature.title}</h3>
+                  <p>{feature.text}</p>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="section" id="pain-points">
         <div className="container">
           <div className="section-center">
             <p className="eyebrow">What it helps with</p>
@@ -133,6 +206,28 @@ export default function Home() {
                   <p>{step.text}</p>
                 </div>
               </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section-soft" id="testimonials">
+        <div className="container">
+          <div className="section-center">
+            <p className="eyebrow">Early feedback</p>
+            <h2 className="section-title">Simple enough to come back to.</h2>
+            <p className="section-lead">
+              SoftWeek is being shaped by homeschool families who want light structure,
+              calmer planning, and records that do not turn into another full-time job.
+            </p>
+          </div>
+
+          <div className="home-testimonial-grid">
+            {testimonials.map((testimonial) => (
+              <figure className="paper-card testimonial-card" key={testimonial.name}>
+                <blockquote>“{testimonial.quote}”</blockquote>
+                <figcaption>— {testimonial.name}</figcaption>
+              </figure>
             ))}
           </div>
         </div>

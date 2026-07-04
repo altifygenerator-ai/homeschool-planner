@@ -59,7 +59,26 @@ export default function ChildrenOverview() {
   }
 
   useEffect(() => {
-    void loadChildren();
+    let isMounted = true;
+
+    Promise.all([getActiveAccountContext(), getChildren(), getSavedWeeks()])
+      .then(async ([nextContext, nextChildren, nextSavedWeeks]) => {
+        const realChildren = nextChildren.filter((child) => child.id !== "everyone");
+        const entries = await Promise.all(
+          realChildren.map(async (child) => [child.id, await getChildAccount(child.id)] as const)
+        );
+
+        if (!isMounted) return;
+
+        setContext(nextContext);
+        setChildren(nextChildren);
+        setSavedWeeks(nextSavedWeeks);
+        setChildAccounts(Object.fromEntries(entries));
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const realChildren = children

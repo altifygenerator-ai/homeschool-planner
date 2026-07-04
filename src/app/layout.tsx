@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
-import { Fraunces, Manrope } from "next/font/google";
+import { Lora, Manrope } from "next/font/google";
 import "./globals.css";
 
-const heading = Fraunces({
+const heading = Lora({
   subsets: ["latin"],
   variable: "--font-heading",
   display: "swap",
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     template: "%s | SoftWeek Planner",
   },
   description:
-    "SoftWeek Planner is a softer homeschool planner for real-life weeks. Plan flexible activities, move lessons when life changes, save weekly records, and keep simple child profiles.",
+    "SoftWeek Planner is a softer homeschool planner for real-life weeks. Create a free beta account, plan flexible 7-day weeks, move lessons when life changes, attach resource links, save weekly records, and keep simple child profiles.",
 
   keywords: [
     "homeschool planner",
@@ -34,6 +34,9 @@ export const metadata: Metadata = {
     "flexible homeschool planner",
     "homeschool schedule planner",
     "homeschool record keeping",
+    "homeschool planner for multiple kids",
+    "student homeschool planner",
+    "homeschool resource planner",
     "homeschool portfolio",
     "homeschool weekly records",
     "relaxed homeschool planner",
@@ -64,7 +67,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "SoftWeek Planner | A Softer Homeschool Planner",
     description:
-      "Plan real-life homeschool weeks with flexible activities, multi-day plans, child profiles, saved week records, and a calmer weekly flow.",
+      "Plan real-life homeschool weeks with flexible activities, multi-day plans, child profiles, resource links, saved week records, and a calmer weekly flow.",
     url: siteUrl,
     siteName: "SoftWeek Planner",
     type: "website",
@@ -83,7 +86,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "SoftWeek Planner | A Softer Homeschool Planner",
     description:
-      "A flexible homeschool planner for real-life weeks, with multi-day plans, saved records, child profiles, and a calm weekly planning flow.",
+      "A flexible homeschool planner for real-life weeks, with multi-day plans, resource links, saved records, child profiles, and a calm weekly planning flow.",
     images: ["/og-image.png"],
   },
 

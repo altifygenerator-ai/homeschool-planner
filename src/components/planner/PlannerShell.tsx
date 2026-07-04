@@ -188,6 +188,28 @@ export default function PlannerShell() {
     setSavedMessage("");
   }
 
+  function handleCopyPlan(id: string, day: WeekDay) {
+    if (!canPlan) return;
+
+    setPlans((current) => {
+      const original = current.find((plan) => plan.id === id);
+      if (!original) return current;
+
+      const copiedPlan: PlannerItem = {
+        ...original,
+        id: createId("plan"),
+        day,
+        status: "planned",
+        weekStart: activeWeekStart || original.weekStart,
+        actualNotes: "",
+      };
+
+      return [copiedPlan, ...current];
+    });
+
+    setSavedMessage(`Copied to ${day}.`);
+  }
+
   function handleStatusChange(id: string, status: PlanStatus) {
     setPlans((current) =>
       current.map((plan) => (plan.id === id ? { ...plan, status } : plan))
@@ -215,6 +237,26 @@ export default function PlannerShell() {
     );
 
     void updatePlanProgress({ id, actualNotes: value });
+    setSavedMessage("");
+  }
+
+  function handleResourceChange(
+    id: string,
+    values: { resourceTitle?: string; resourceUrl?: string }
+  ) {
+    if (!canPlan) return;
+
+    setPlans((current) =>
+      current.map((plan) =>
+        plan.id === id
+          ? {
+              ...plan,
+              ...values,
+            }
+          : plan
+      )
+    );
+
     setSavedMessage("");
   }
 
@@ -437,9 +479,11 @@ export default function PlannerShell() {
           weekLabel={weekRange.weekLabel}
           canEditStructure={canPlan}
           onMove={handleMove}
+          onCopy={handleCopyPlan}
           onStatusChange={handleStatusChange}
           onCategoryChange={handleCategoryChange}
           onActualNotesChange={handleActualNotesChange}
+          onResourceChange={handleResourceChange}
           onDelete={handleDelete}
         />
       </section>

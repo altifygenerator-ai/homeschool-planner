@@ -131,6 +131,8 @@ function dbPlanToPlannerItem(row: Record<string, unknown>): PlannerItem {
     weekStart: String(row.week_start ?? ""),
     notes: row.notes ? String(row.notes) : "",
     actualNotes: row.actual_notes ? String(row.actual_notes) : "",
+    resourceTitle: row.resource_title ? String(row.resource_title) : "",
+    resourceUrl: row.resource_url ? String(row.resource_url) : "",
   };
 }
 
@@ -147,6 +149,8 @@ function plannerItemToDb(plan: PlannerItem, familyId: string, weekStart: string)
     assigned_to_child_id: plan.assignedTo === "everyone" ? null : plan.assignedTo,
     notes: plan.notes ?? "",
     actual_notes: plan.actualNotes ?? "",
+    resource_title: plan.resourceTitle ?? "",
+    resource_url: plan.resourceUrl ?? "",
     updated_at: new Date().toISOString(),
     deleted_at: null,
   };

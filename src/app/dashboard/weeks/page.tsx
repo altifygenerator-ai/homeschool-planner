@@ -14,7 +14,15 @@ export default function SavedWeeksPage() {
   }
 
   useEffect(() => {
-    void loadSavedWeeks();
+    let isMounted = true;
+
+    getSavedWeeks().then((nextSavedWeeks) => {
+      if (isMounted) setSavedWeeks(nextSavedWeeks);
+    });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   async function handleDeleteWeek(weekId: string) {

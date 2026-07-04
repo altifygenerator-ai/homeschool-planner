@@ -41,6 +41,8 @@ export default function AddPlanForm({
   const [timeBlock, setTimeBlock] = useState<TimeBlock>("Anytime");
   const [assignedTo, setAssignedTo] = useState("everyone");
   const [notes, setNotes] = useState("");
+  const [resourceTitle, setResourceTitle] = useState("");
+  const [resourceUrl, setResourceUrl] = useState("");
 
   function toggleDay(day: WeekDay) {
     setSelectedDays((current) => {
@@ -76,12 +78,16 @@ export default function AddPlanForm({
       status: "planned",
       weekStart,
       notes: notes.trim(),
+      resourceTitle: resourceTitle.trim(),
+      resourceUrl: resourceUrl.trim(),
     }));
 
     onAddPlans(newPlans);
 
     setTitle("");
     setNotes("");
+    setResourceTitle("");
+    setResourceUrl("");
     setTimeBlock("Anytime");
     setAssignedTo("everyone");
     setSelectedDays(["Monday"]);
@@ -96,6 +102,8 @@ export default function AddPlanForm({
     setNotes(
       "Add it once, pick the days that fit this week, and move it later if life changes."
     );
+    setResourceTitle("Optional lesson link");
+    setResourceUrl("");
   }
 
   const safeCategory = categories.some((item) => item.id === category)
@@ -254,6 +262,31 @@ export default function AddPlanForm({
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
           />
+        </div>
+
+        <div className="field-group add-plan-resource-field">
+          <label className="field-label" htmlFor="resourceTitle">
+            Resource, optional
+          </label>
+          <input
+            className="input"
+            id="resourceTitle"
+            placeholder="Video, worksheet, class link, PDF..."
+            value={resourceTitle}
+            onChange={(event) => setResourceTitle(event.target.value)}
+          />
+
+          <input
+            className="input"
+            id="resourceUrl"
+            placeholder="Paste a link if there is one"
+            value={resourceUrl}
+            onChange={(event) => setResourceUrl(event.target.value)}
+          />
+
+          <p className="form-helper-text">
+            Add a website, video, online class, PDF, or Google Drive link without turning SoftWeek into a full classroom system.
+          </p>
         </div>
 
         <div className="add-plan-submit-row">

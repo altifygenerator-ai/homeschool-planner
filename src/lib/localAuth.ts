@@ -371,11 +371,11 @@ export async function createParentLocalAccount({
   familyName?: string;
 }): Promise<AuthResult> {
   if (!isSupabaseConfigured()) {
-    return { ok: false, message: "Supabase is not configured yet. Add your environment variables first." };
+    return { ok: false, message: "Account access is not available right now. Please try again later or email support@softweekplanner.com." };
   }
 
   const supabase = getSupabaseClient();
-  if (!supabase) return { ok: false, message: "Supabase is not available." };
+  if (!supabase) return { ok: false, message: "Account access is not available right now. Please try again later or email support@softweekplanner.com." };
 
   const cleanEmail = normalizeEmail(email);
   const cleanPasswordValue = cleanPassword(password);
@@ -437,11 +437,11 @@ export async function createChildSupabaseAccount({
   inviteCode: string;
 }): Promise<AuthResult> {
   if (!isSupabaseConfigured()) {
-    return { ok: false, message: "Supabase is not configured yet. Add your environment variables first." };
+    return { ok: false, message: "Account access is not available right now. Please try again later or email support@softweekplanner.com." };
   }
 
   const supabase = getSupabaseClient();
-  if (!supabase) return { ok: false, message: "Supabase is not available." };
+  if (!supabase) return { ok: false, message: "Account access is not available right now. Please try again later or email support@softweekplanner.com." };
 
   const cleanEmail = normalizeEmail(email);
   const cleanPasswordValue = cleanPassword(password);
@@ -494,11 +494,11 @@ export async function createChildSupabaseAccount({
 
 export async function loginLocalAccount(login: string, password: string, inviteCode?: string): Promise<AuthResult> {
   if (!isSupabaseConfigured()) {
-    return { ok: false, message: "Supabase is not configured yet. Add your environment variables first." };
+    return { ok: false, message: "Account access is not available right now. Please try again later or email support@softweekplanner.com." };
   }
 
   const supabase = getSupabaseClient();
-  if (!supabase) return { ok: false, message: "Supabase is not available." };
+  if (!supabase) return { ok: false, message: "Account access is not available right now. Please try again later or email support@softweekplanner.com." };
 
   const cleanEmail = normalizeEmail(login);
   const cleanPasswordValue = cleanPassword(password);

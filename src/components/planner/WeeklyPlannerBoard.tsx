@@ -17,9 +17,11 @@ type WeeklyPlannerBoardProps = {
   categories: CategoryDefinition[];
   weekLabel: string;
   onMove: (id: string, day: WeekDay) => void;
+  onCopy: (id: string, day: WeekDay) => void;
   onStatusChange: (id: string, status: PlanStatus) => void;
   onCategoryChange: (id: string, category: PlanCategory) => void;
   onActualNotesChange: (id: string, value: string) => void;
+  onResourceChange: (id: string, values: { resourceTitle?: string; resourceUrl?: string }) => void;
   onDelete: (id: string) => void;
   canEditStructure?: boolean;
 };
@@ -30,9 +32,11 @@ export default function WeeklyPlannerBoard({
   categories,
   weekLabel,
   onMove,
+  onCopy,
   onStatusChange,
   onCategoryChange,
   onActualNotesChange,
+  onResourceChange,
   onDelete,
   canEditStructure = true,
 }: WeeklyPlannerBoardProps) {
@@ -67,9 +71,11 @@ export default function WeeklyPlannerBoard({
             childProfiles={childProfiles}
             categories={categories}
             onMove={onMove}
+            onCopy={onCopy}
             onStatusChange={onStatusChange}
             onCategoryChange={onCategoryChange}
             onActualNotesChange={onActualNotesChange}
+            onResourceChange={onResourceChange}
             onDelete={onDelete}
             canEditStructure={canEditStructure}
           />

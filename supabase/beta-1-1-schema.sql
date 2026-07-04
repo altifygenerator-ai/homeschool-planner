@@ -72,6 +72,8 @@ create table if not exists public.planner_items (
   assigned_to_child_id text references public.children(id) on delete set null,
   notes text default '',
   actual_notes text default '',
+  resource_title text default '',
+  resource_url text default '',
   created_by uuid references auth.users(id) on delete set null,
   updated_by uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default now(),
@@ -124,6 +126,11 @@ create index if not exists children_family_id_idx on public.children(family_id);
 create index if not exists planner_items_family_week_idx on public.planner_items(family_id, week_start);
 create index if not exists saved_weeks_family_week_idx on public.saved_weeks(family_id, week_start);
 create index if not exists child_invites_family_child_idx on public.child_account_invites(family_id, child_id);
+
+-- Safe additions for Beta 1.2 planner resources.
+alter table public.planner_items
+  add column if not exists resource_title text default '',
+  add column if not exists resource_url text default '';
 
 create or replace function public.touch_updated_at()
 returns trigger

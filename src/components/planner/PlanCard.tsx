@@ -7,6 +7,8 @@ import {
   LuCheck,
   LuChevronDown,
   LuChevronUp,
+  LuCopyPlus,
+  LuExternalLink,
   LuGraduationCap,
   LuLandmark,
   LuLeaf,
@@ -35,9 +37,11 @@ type PlanCardProps = {
   childProfiles: ChildProfile[];
   categories: CategoryDefinition[];
   onMove: (id: string, day: WeekDay) => void;
+  onCopy: (id: string, day: WeekDay) => void;
   onStatusChange: (id: string, status: PlanStatus) => void;
   onCategoryChange: (id: string, category: PlanCategory) => void;
   onActualNotesChange: (id: string, value: string) => void;
+  onResourceChange: (id: string, values: { resourceTitle?: string; resourceUrl?: string }) => void;
   onDelete: (id: string) => void;
   canEditStructure?: boolean;
 };
@@ -62,21 +66,34 @@ function getStatusLabel(status: PlanStatus) {
   return "Skipped";
 }
 
+function safeResourceHref(value?: string) {
+  const trimmed = value?.trim();
+  if (!trimmed) return "";
+
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
 export default function PlanCard({
   plan,
   childProfiles,
   categories,
   onMove,
+  onCopy,
   onStatusChange,
   onCategoryChange,
   onActualNotesChange,
+  onResourceChange,
   onDelete,
   canEditStructure = true,
 }: PlanCardProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [copyDay, setCopyDay] = useState<WeekDay>(plan.day);
   const Icon = categoryIcons[plan.category] ?? LuMoveRight;
   const assignedChild =
     childProfiles.find((child) => child.id === plan.assignedTo)?.name ?? "Everyone";
+  const resourceHref = safeResourceHref(plan.resourceUrl);
+  const resourceLabel = plan.resourceTitle?.trim() || "Open resource";
 
   return (
     <article className={`plan-card plan-card-${plan.status}`}>
@@ -103,6 +120,18 @@ export default function PlanCard({
       <div className="assigned-pill">For {assignedChild}</div>
 
       {plan.notes ? <p className="plan-notes">{plan.notes}</p> : null}
+
+      {resourceHref ? (
+        <a
+          className="resource-link-pill"
+          href={resourceHref}
+          target="_blank"
+          rel="noreferrer"
+        >
+          <LuExternalLink />
+          {resourceLabel}
+        </a>
+      ) : null}
 
       {plan.actualNotes ? (
         <div className="actual-note">
@@ -145,7 +174,7 @@ export default function PlanCard({
           {canEditStructure ? (
             <div className="adjust-control-grid">
               <label className="mini-field">
-                <span>Move to</span>
+                <span>Move this plan</span>
                 <select
                   value={plan.day}
                   onChange={(event) =>
@@ -174,6 +203,59 @@ export default function PlanCard({
                     </option>
                   ))}
                 </select>
+              </label>
+            </div>
+          ) : null}
+
+          {canEditStructure ? (
+            <div className="copy-plan-row">
+              <label className="mini-field">
+                <span>Copy or add to another day</span>
+                <select
+                  value={copyDay}
+                  onChange={(event) => setCopyDay(event.target.value as WeekDay)}
+                >
+                  {weekDays.map((day) => (
+                    <option key={day} value={day}>
+                      {dayLabels[day]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <button
+                className="soft-action copy-plan-button"
+                type="button"
+                onClick={() => onCopy(plan.id, copyDay)}
+              >
+                <LuCopyPlus />
+                Copy
+              </button>
+            </div>
+          ) : null}
+
+          {canEditStructure ? (
+            <div className="resource-edit-grid">
+              <label className="mini-field">
+                <span>Resource label</span>
+                <input
+                  value={plan.resourceTitle ?? ""}
+                  placeholder="Video, worksheet, class link..."
+                  onChange={(event) =>
+                    onResourceChange(plan.id, { resourceTitle: event.target.value })
+                  }
+                />
+              </label>
+
+              <label className="mini-field">
+                <span>Resource link</span>
+                <input
+                  value={plan.resourceUrl ?? ""}
+                  placeholder="https://..."
+                  onChange={(event) =>
+                    onResourceChange(plan.id, { resourceUrl: event.target.value })
+                  }
+                />
               </label>
             </div>
           ) : null}

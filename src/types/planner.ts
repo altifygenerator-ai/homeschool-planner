@@ -36,6 +36,8 @@ export type PlannerItem = {
   weekStart?: string;
   notes?: string;
   actualNotes?: string;
+  resourceTitle?: string;
+  resourceUrl?: string;
 };
 
 export type ChildWeeklySummary = {

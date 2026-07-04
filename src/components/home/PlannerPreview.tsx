@@ -26,7 +26,7 @@ export default function PlannerPreview() {
         <div className="pill-row">
           <span className="pill pill-sage">This week</span>
           <span className="pill">Moveable cards</span>
-          <span className="pill pill-gold">Local save for now</span>
+          <span className="pill pill-gold">Beta account saving</span>
         </div>
 
         <div className="activity-row">
