@@ -36,9 +36,9 @@ export default function SavedWeeksPage() {
         <p className="eyebrow">Saved weeks</p>
         <h1 className="section-title">Records without digging around.</h1>
         <p className="section-lead">
-          Saved weeks collect plans, notes, and child rundowns so SoftWeek can
-          grow into printable records, child portfolios, exports, and saved
-          homeschool history.
+          Saved weeks collect plans, notes, resource links, and child rundowns so
+          you can print clean weekly, monthly, or yearly records for a notebook
+          or folder.
         </p>
       </div>
 

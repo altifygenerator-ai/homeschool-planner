@@ -1,6 +1,7 @@
 "use client";
 
-import { LuTrash2 } from "react-icons/lu";
+import Link from "next/link";
+import { LuCalendarDays, LuPrinter, LuTrash2 } from "react-icons/lu";
 import type { SavedWeekLog } from "@/types/planner";
 
 type SavedWeeksViewProps = {
@@ -8,17 +9,41 @@ type SavedWeeksViewProps = {
   onDeleteWeek?: (weekId: string) => void;
 };
 
+function dateOnly(value: string) {
+  return value.slice(0, 10);
+}
+
+function getMonthParam(value: string) {
+  const date = new Date(value);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function getYearParam(value: string) {
+  return String(new Date(value).getFullYear());
+}
+
+function formatMonth(value: string) {
+  return new Date(`${value}-01T12:00:00`).toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
+}
+
 export default function SavedWeeksView({
   savedWeeks,
   onDeleteWeek,
 }: SavedWeeksViewProps) {
+  const latestWeek = savedWeeks[0];
+  const latestMonth = latestWeek ? getMonthParam(latestWeek.weekStart) : "";
+  const latestYear = latestWeek ? getYearParam(latestWeek.weekStart) : "";
+
   if (!savedWeeks.length) {
     return (
       <section className="paper-card saved-weeks-card">
         <p className="eyebrow">Saved weeks</p>
         <h2 className="section-title-sm">No saved weeks yet.</h2>
         <p className="text-soft">
-          Once you save a week, it will show here with short child rundowns.
+          Once you save a week, it will show here with short child rundowns and simple print options.
         </p>
       </section>
     );
@@ -26,9 +51,30 @@ export default function SavedWeeksView({
 
   return (
     <section className="paper-card saved-weeks-card">
-      <div>
-        <p className="eyebrow">Saved weeks</p>
-        <h2 className="section-title-sm">Your weekly records</h2>
+      <div className="saved-weeks-topline">
+        <div>
+          <p className="eyebrow">Saved weeks</p>
+          <h2 className="section-title-sm">Your weekly records</h2>
+          <p className="text-small">
+            Print one week for a notebook, or print a gentle month or year overview from your saved weeks.
+          </p>
+        </div>
+
+        <div className="record-print-actions">
+          {latestMonth ? (
+            <Link className="soft-action soft-action-filled" href={`/dashboard/print?period=month&month=${latestMonth}`}>
+              <LuCalendarDays />
+              Print {formatMonth(latestMonth)}
+            </Link>
+          ) : null}
+
+          {latestYear ? (
+            <Link className="soft-action" href={`/dashboard/print?period=year&year=${latestYear}`}>
+              <LuPrinter />
+              Print {latestYear}
+            </Link>
+          ) : null}
+        </div>
       </div>
 
       <div className="saved-week-list">
@@ -48,6 +94,11 @@ export default function SavedWeeksView({
 
               <div className="saved-week-actions">
                 <span>{week.plans.length} plans</span>
+
+                <Link className="print-week-button" href={`/dashboard/print?period=week&weekStart=${dateOnly(week.weekStart)}`}>
+                  <LuPrinter />
+                  Print
+                </Link>
 
                 {onDeleteWeek ? (
                   <button

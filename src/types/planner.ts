@@ -61,3 +61,11 @@ export type SavedWeekLog = {
   childSummaries: ChildWeeklySummary[];
   plans: PlannerItem[];
 };
+
+export type WeekTemplate = {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt?: string;
+  plans: PlannerItem[];
+};

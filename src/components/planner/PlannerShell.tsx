@@ -10,16 +10,19 @@ import {
   addCategoryDefinition,
   clearPlansForWeek,
   deleteChildProfile,
+  deleteWeekTemplate,
   getActiveWeekStart,
   getCategoryDefinitions,
   getChildren,
   getPlansForWeek,
+  getWeekTemplates,
   renameChildProfile,
   saveActiveWeekStart,
   saveCategoryDefinitions,
   saveChildren,
   savePlansForWeek,
   saveWeekLog,
+  saveWeekTemplate,
   updatePlanProgress,
 } from "@/lib/plannerStorage";
 import {
@@ -29,6 +32,7 @@ import {
 import {
   getCurrentWeekRange,
   getWeekRangeFromStart,
+  getWeekStartIso,
   shiftWeekStart,
 } from "@/lib/week";
 import { createId } from "@/lib/utils";
@@ -40,20 +44,44 @@ import type {
   PlanStatus,
   SavedWeekLog,
   WeekDay,
+  WeekTemplate,
 } from "@/types/planner";
 
 const colorLabels: ChildProfile["colorLabel"][] = ["sage", "gold", "clay", "blue"];
+
+function toDateInputValue(isoDate: string) {
+  return isoDate ? isoDate.slice(0, 10) : "";
+}
+
+function weekStartFromDateInput(value: string) {
+  return getWeekStartIso(new Date(`${value}T12:00:00`));
+}
+
+function resetPlanForAnotherWeek(plan: PlannerItem, weekStart: string): PlannerItem {
+  return {
+    ...plan,
+    id: createId("plan"),
+    weekStart,
+    status: "planned",
+    actualNotes: "",
+  };
+}
 
 export default function PlannerShell() {
   const [plans, setPlans] = useState<PlannerItem[]>([]);
   const [children, setChildren] = useState<ChildProfile[]>([]);
   const [categories, setCategories] = useState<CategoryDefinition[]>([]);
+  const [templates, setTemplates] = useState<WeekTemplate[]>([]);
   const [activeChildId, setActiveChildId] = useState("all");
   const [activeWeekStart, setActiveWeekStart] = useState("");
   const [hasLoaded, setHasLoaded] = useState(false);
   const [savedMessage, setSavedMessage] = useState("");
   const [isAddingPlan, setIsAddingPlan] = useState(false);
   const [accountContext, setAccountContext] = useState<AccountContext | null>(null);
+  const [jumpDate, setJumpDate] = useState("");
+  const [copyDate, setCopyDate] = useState("");
+  const [templateName, setTemplateName] = useState("");
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
 
   const isChildView = accountContext?.isChild ?? false;
   const canPlan = accountContext?.account.permissions.canPlan ?? true;
@@ -63,17 +91,22 @@ export default function PlannerShell() {
 
   async function loadWorkspace(weekStart = getActiveWeekStart()) {
     const context = await getActiveAccountContext();
-    const [nextPlans, nextChildren, nextCategories] = await Promise.all([
+    const [nextPlans, nextChildren, nextCategories, nextTemplates] = await Promise.all([
       getPlansForWeek(weekStart),
       getChildren(),
       getCategoryDefinitions(),
+      getWeekTemplates(),
     ]);
 
     setAccountContext(context);
     setActiveWeekStart(weekStart);
+    setJumpDate(toDateInputValue(weekStart));
+    setCopyDate(toDateInputValue(shiftWeekStart(weekStart, 1)));
     setPlans(nextPlans);
     setChildren(nextChildren);
     setCategories(nextCategories);
+    setTemplates(nextTemplates);
+    setSelectedTemplateId(nextTemplates[0]?.id ?? "");
     setActiveChildId(context?.isChild && context.session.childId ? context.session.childId : "all");
     setHasLoaded(true);
   }
@@ -137,9 +170,15 @@ export default function PlannerShell() {
     );
   }, [accountContext, activeChildId, isChildView, plans]);
 
+  const selectedTemplate = useMemo(() => {
+    return templates.find((template) => template.id === selectedTemplateId);
+  }, [selectedTemplateId, templates]);
+
   async function reloadWeek(weekStart: string) {
     setActiveWeekStart(weekStart);
     saveActiveWeekStart(weekStart);
+    setJumpDate(toDateInputValue(weekStart));
+    setCopyDate(toDateInputValue(shiftWeekStart(weekStart, 1)));
     setPlans(await getPlansForWeek(weekStart));
     setActiveChildId(isChildView && accountContext?.session.childId ? accountContext.session.childId : "all");
     setIsAddingPlan(false);
@@ -160,6 +199,15 @@ export default function PlannerShell() {
     if (!isChildView) await savePlansForWeek(activeWeekStart, plans);
     await reloadWeek(getCurrentWeekRange().weekStart);
     setSavedMessage("Current week opened.");
+  }
+
+  async function handlePickWeek() {
+    if (!jumpDate || !canPlan) return;
+
+    if (!isChildView && activeWeekStart) await savePlansForWeek(activeWeekStart, plans);
+    const pickedWeekStart = weekStartFromDateInput(jumpDate);
+    await reloadWeek(pickedWeekStart);
+    setSavedMessage(`Opened week of ${getWeekRangeFromStart(pickedWeekStart).weekLabel}.`);
   }
 
   function handleAddPlans(newPlans: PlannerItem[]) {
@@ -284,17 +332,79 @@ export default function PlannerShell() {
     await clearPlansForWeek(nextWeekStart);
     saveActiveWeekStart(nextWeekStart);
     setActiveWeekStart(nextWeekStart);
+    setJumpDate(toDateInputValue(nextWeekStart));
+    setCopyDate(toDateInputValue(shiftWeekStart(nextWeekStart, 1)));
     setPlans([]);
     setActiveChildId("all");
     setSavedMessage("Fresh week started.");
     setIsAddingPlan(true);
   }
 
+  async function handleCopyWeekToDate(dateValue = copyDate) {
+    if (!activeWeekStart || !dateValue || !plans.length || !canPlan) return;
+
+    const targetWeekStart = weekStartFromDateInput(dateValue);
+    const targetLabel = getWeekRangeFromStart(targetWeekStart).weekLabel;
+
+    if (targetWeekStart.slice(0, 10) === activeWeekStart.slice(0, 10)) {
+      setSavedMessage("Pick a different week before copying this week.");
+      return;
+    }
+
+    await savePlansForWeek(activeWeekStart, plans);
+    const targetPlans = await getPlansForWeek(targetWeekStart);
+    const copiedPlans = plans.map((plan) => resetPlanForAnotherWeek(plan, targetWeekStart));
+    await savePlansForWeek(targetWeekStart, [...copiedPlans, ...targetPlans]);
+    setSavedMessage(`Copied ${copiedPlans.length} plan${copiedPlans.length === 1 ? "" : "s"} to ${targetLabel}.`);
+  }
+
+  async function handleSaveTemplate() {
+    if (!plans.length || !canPlan) return;
+
+    const name = templateName.trim() || `${weekRange.weekLabel} rhythm`;
+    const template: WeekTemplate = {
+      id: createId("template"),
+      name,
+      createdAt: new Date().toISOString(),
+      plans: plans.map((plan) => ({
+        ...plan,
+        status: "planned",
+        actualNotes: "",
+        weekStart: undefined,
+      })),
+    };
+
+    await saveWeekTemplate(template);
+    const nextTemplates = await getWeekTemplates();
+    setTemplates(nextTemplates);
+    setSelectedTemplateId(template.id);
+    setTemplateName("");
+    setSavedMessage(`${name} saved as a reusable week template.`);
+  }
+
+  function handleUseTemplate() {
+    if (!selectedTemplate || !canPlan || !activeWeekStart) return;
+
+    const copiedPlans = selectedTemplate.plans.map((plan) => resetPlanForAnotherWeek(plan, activeWeekStart));
+    setPlans((current) => [...copiedPlans, ...current]);
+    setSavedMessage(`${selectedTemplate.name} added to this week.`);
+  }
+
+  async function handleDeleteTemplate() {
+    if (!selectedTemplate || !canPlan) return;
+
+    await deleteWeekTemplate(selectedTemplate.id);
+    const nextTemplates = await getWeekTemplates();
+    setTemplates(nextTemplates);
+    setSelectedTemplateId(nextTemplates[0]?.id ?? "");
+    setSavedMessage(`${selectedTemplate.name} removed from templates.`);
+  }
+
   async function handleSaveWeek(week: SavedWeekLog) {
     if (!canSaveWeeks) return;
 
     await saveWeekLog(week);
-    setSavedMessage("Week saved. You can start a fresh week or keep editing this one.");
+    setSavedMessage("Week saved. You can print it, start a fresh week, or keep editing this one.");
   }
 
   async function handleAddCategory(name: string) {
@@ -364,7 +474,7 @@ export default function PlannerShell() {
           <p className="section-lead">
             {isChildView
               ? "This limited view lets an older child mark work done, skip what needs skipped, and add notes without changing the whole family planner."
-              : "Plan weekdays or weekends, add your own categories, move cards when life changes, and save the record when the week feels ready."}
+              : "Plan weekdays or weekends, add your own categories, move cards when life changes, save a record for the notebook, and copy useful rhythms forward."}
           </p>
         </div>
       </section>
@@ -376,7 +486,7 @@ export default function PlannerShell() {
           <span>
             {isChildView
               ? "Parent controls are limited in this child account."
-              : "Open a different week if you want to plan ahead, or keep this week simple."}
+              : "Open a different week to plan ahead, print the current week, or keep the board simple."}
           </span>
         </div>
 
@@ -404,6 +514,12 @@ export default function PlannerShell() {
           ) : null}
 
           {canSaveWeeks ? (
+            <Link className="btn btn-secondary" href={`/dashboard/print?period=week&weekStart=${weekRange.weekStart.slice(0, 10)}`}>
+              Print week
+            </Link>
+          ) : null}
+
+          {canSaveWeeks ? (
             <Link className="btn btn-secondary" href="/dashboard/weeks">
               Saved weeks
             </Link>
@@ -416,6 +532,89 @@ export default function PlannerShell() {
           ) : null}
         </div>
       </section>
+
+      {canPlan ? (
+        <section className="soft-card planner-advanced-tools">
+          <div className="planner-advanced-heading">
+            <div>
+              <p className="eyebrow">Plan ahead</p>
+              <h2 className="section-title-sm">Copy useful rhythms without making the planner heavy.</h2>
+              <p className="text-small">
+                Jump to a future week, copy this week forward, or save a gentle template for routines you use often.
+              </p>
+            </div>
+          </div>
+
+          <div className="planner-advanced-grid">
+            <div className="planner-tool-card">
+              <span>Open a week</span>
+              <label className="mini-field">
+                <span>Pick any date in the week</span>
+                <input type="date" value={jumpDate} onChange={(event) => setJumpDate(event.target.value)} />
+              </label>
+              <button className="soft-action soft-action-filled" type="button" onClick={() => void handlePickWeek()}>
+                Open week
+              </button>
+            </div>
+
+            <div className="planner-tool-card">
+              <span>Copy this week</span>
+              <label className="mini-field">
+                <span>Copy plans to week of</span>
+                <input type="date" value={copyDate} onChange={(event) => setCopyDate(event.target.value)} />
+              </label>
+              <div className="planner-tool-button-row">
+                <button className="soft-action soft-action-filled" type="button" onClick={() => void handleCopyWeekToDate()} disabled={!plans.length}>
+                  Copy to picked week
+                </button>
+                <button className="mini-text-button" type="button" onClick={() => void handleCopyWeekToDate(toDateInputValue(shiftWeekStart(activeWeekStart, 1)))} disabled={!plans.length}>
+                  Copy to next week
+                </button>
+              </div>
+            </div>
+
+            <div className="planner-tool-card planner-tool-card-wide">
+              <span>Week template</span>
+              <div className="template-save-row">
+                <label className="mini-field">
+                  <span>Template name</span>
+                  <input
+                    value={templateName}
+                    placeholder="Normal school week, Co-op week..."
+                    onChange={(event) => setTemplateName(event.target.value)}
+                  />
+                </label>
+                <button className="soft-action soft-action-filled" type="button" onClick={() => void handleSaveTemplate()} disabled={!plans.length}>
+                  Save template
+                </button>
+              </div>
+
+              {templates.length ? (
+                <div className="template-use-row">
+                  <label className="mini-field">
+                    <span>Use a saved template</span>
+                    <select value={selectedTemplateId} onChange={(event) => setSelectedTemplateId(event.target.value)}>
+                      {templates.map((template) => (
+                        <option key={template.id} value={template.id}>
+                          {template.name} · {template.plans.length} plans
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button className="soft-action" type="button" onClick={handleUseTemplate}>
+                    Add to this week
+                  </button>
+                  <button className="mini-text-button" type="button" onClick={() => void handleDeleteTemplate()}>
+                    Delete template
+                  </button>
+                </div>
+              ) : (
+                <p className="template-empty-note">Save a week as a template when you have a rhythm you want to reuse.</p>
+              )}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       {savedMessage ? (
         <div className="planner-save-message-row">

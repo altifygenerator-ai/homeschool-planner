@@ -9,6 +9,7 @@ import type {
   PlannerItem,
   SavedWeekLog,
   WeekDay,
+  WeekTemplate,
 } from "@/types/planner";
 
 const SAVED_WEEKS_KEY = "softweek_saved_weeks";
@@ -17,6 +18,7 @@ const CHILDREN_KEY = "softweek_children";
 const ACTIVE_WEEK_START_KEY = "softweek_active_week_start";
 const WEEK_PLANS_PREFIX = "softweek_week_plans";
 const CATEGORIES_KEY = "softweek_categories";
+const WEEK_TEMPLATES_KEY = "softweek_week_templates";
 
 export const EVERYONE_CHILD: ChildProfile = {
   id: "everyone",
@@ -169,6 +171,28 @@ function savedWeekFromDb(row: Record<string, unknown>): SavedWeekLog {
     childSummaries: snapshot.childSummaries ?? [],
     plans: snapshot.plans ?? [],
   };
+}
+
+function dbTemplateToWeekTemplate(row: Record<string, unknown>): WeekTemplate {
+  const plans = Array.isArray(row.plans) ? row.plans : [];
+
+  return {
+    id: String(row.id),
+    name: String(row.name ?? "Saved week template"),
+    createdAt: String(row.created_at ?? new Date().toISOString()),
+    updatedAt: row.updated_at ? String(row.updated_at) : undefined,
+    plans: plans as PlannerItem[],
+  };
+}
+
+function cleanTemplatePlans(plans: PlannerItem[]) {
+  return plans.map((plan) => ({
+    ...plan,
+    id: plan.id || makeCategoryId(plan.title) || "plan",
+    status: "planned" as PlanStatus,
+    actualNotes: "",
+    weekStart: undefined,
+  }));
 }
 
 export function getActiveWeekStart() {
@@ -632,6 +656,85 @@ export async function deleteSavedWeek(weekId: string) {
     .from("saved_weeks")
     .update({ deleted_at: new Date().toISOString() })
     .eq("id", weekId)
+    .eq("family_id", familyId);
+
+  if (error) throw error;
+}
+
+export async function getWeekTemplates(): Promise<WeekTemplate[]> {
+  if (typeof window === "undefined") return [];
+
+  const { context, supabase, familyId } = await getStorageContext();
+
+  if (!context || context.isGuest || !supabase || !familyId) {
+    return localGet<WeekTemplate[]>(WEEK_TEMPLATES_KEY, []);
+  }
+
+  const { data, error } = await supabase
+    .from("week_templates")
+    .select("*")
+    .eq("family_id", familyId)
+    .is("deleted_at", null)
+    .order("updated_at", { ascending: false });
+
+  if (error) {
+    // Keeps the planner usable if the Beta 1.3 template migration has not been run yet.
+    if (error.message.toLowerCase().includes("week_templates")) return [];
+    throw error;
+  }
+
+  return (data ?? []).map(dbTemplateToWeekTemplate);
+}
+
+export async function saveWeekTemplate(template: WeekTemplate) {
+  const cleanedTemplate: WeekTemplate = {
+    ...template,
+    name: template.name.trim() || "Saved week template",
+    plans: cleanTemplatePlans(template.plans),
+    updatedAt: new Date().toISOString(),
+  };
+
+  const { context, supabase, familyId } = await getStorageContext();
+
+  if (!context || context.isGuest || !supabase || !familyId) {
+    const current = await getWeekTemplates();
+    const withoutDuplicate = current.filter((item) => item.id !== cleanedTemplate.id);
+    localSet(WEEK_TEMPLATES_KEY, [cleanedTemplate, ...withoutDuplicate]);
+    return;
+  }
+
+  if (!context.isParent) return;
+
+  const { error } = await supabase.from("week_templates").upsert(
+    {
+      id: cleanedTemplate.id,
+      family_id: familyId,
+      name: cleanedTemplate.name,
+      plans: cleanedTemplate.plans,
+      updated_at: new Date().toISOString(),
+      deleted_at: null,
+    },
+    { onConflict: "id" }
+  );
+
+  if (error) throw error;
+}
+
+export async function deleteWeekTemplate(templateId: string) {
+  const { context, supabase, familyId } = await getStorageContext();
+
+  if (!context || context.isGuest || !supabase || !familyId) {
+    const current = await getWeekTemplates();
+    localSet(WEEK_TEMPLATES_KEY, current.filter((template) => template.id !== templateId));
+    return;
+  }
+
+  if (!context.isParent) return;
+
+  const { error } = await supabase
+    .from("week_templates")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", templateId)
     .eq("family_id", familyId);
 
   if (error) throw error;

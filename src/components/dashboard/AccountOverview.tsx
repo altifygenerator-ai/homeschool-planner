@@ -10,6 +10,7 @@ import {
   LuFileText,
   LuHeartHandshake,
   LuLock,
+  LuPrinter,
   LuSparkles,
   LuUserRound,
   LuUsersRound,
@@ -35,12 +36,15 @@ const alwaysFreeFeatures = [
   "7-day planning with move, done, and skipped statuses",
   "Custom categories for real homeschool subjects",
   "A limited saved-week history for basic records",
+  "A simple print view for the current week",
 ];
 
 const premiumLaterFeatures = [
   "Multiple children and fuller family workspaces",
   "Long-term saved week history",
-  "Printable weekly records and PDF exports",
+  "Printable month and year summaries",
+  "Reusable week templates and copy-week tools",
+  "PDF exports",
   "Child portfolio views and record summaries",
   "Optional older-kid accounts with limited permissions",
   "Saved records across devices",
@@ -64,6 +68,11 @@ function getMonthKey(value: string) {
 
 function getYearKey(value: string) {
   return String(new Date(value).getFullYear());
+}
+
+function getMonthParam(value: string) {
+  const date = new Date(value);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
 
 export default function AccountOverview() {
@@ -110,6 +119,8 @@ export default function AccountOverview() {
   );
 
   const latestSavedWeek = savedWeeks[0];
+  const latestMonthParam = latestSavedWeek ? getMonthParam(latestSavedWeek.weekStart) : "";
+  const latestYearParam = latestSavedWeek ? getYearKey(latestSavedWeek.weekStart) : "";
 
   const monthRecords = useMemo(() => {
     const map = new Map<string, { label: string; weeks: number; plans: number }>();
@@ -224,6 +235,13 @@ export default function AccountOverview() {
           <span>{savedWeeks.length} saved</span>
         </Link>
 
+        <Link className="dashboard-link-card paper-card" href={latestMonthParam ? `/dashboard/print?period=month&month=${latestMonthParam}` : "/dashboard/weeks"}>
+          <LuPrinter />
+          <h3>Print records</h3>
+          <p>Print a week, month, or year overview for a physical homeschool folder.</p>
+          <span>{latestYearParam ? `Latest year: ${latestYearParam}` : "Save a week first"}</span>
+        </Link>
+
         <Link className="dashboard-link-card paper-card" href="/dashboard/children">
           <LuUsersRound />
           <h3>Family setup</h3>
@@ -235,9 +253,9 @@ export default function AccountOverview() {
       <section className="soft-card beta-plan-section">
         <div className="beta-plan-heading">
           <p className="eyebrow">Weekly, monthly, yearly</p>
-          <h2 className="section-title-sm">Saved weeks now build into longer records later.</h2>
+          <h2 className="section-title-sm">Saved weeks build into printable month and year records.</h2>
           <p className="section-lead">
-            Each saved week adds to your child history. As records grow, SoftWeek can show quick month-to-month and year-to-year views without taking away old work.
+            Each saved week adds to your family history. You can print a single week for a notebook, or print a simple month-to-month or year overview from the records you have saved.
           </p>
         </div>
 
