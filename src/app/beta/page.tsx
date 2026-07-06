@@ -1,11 +1,5 @@
 import Link from "next/link";
-import {
-  LuArrowRight,
-  LuCircleCheck,
-  LuMail,
-  LuMessageSquareText,
-  LuMousePointerClick,
-} from "react-icons/lu";
+import { LuArrowRight, LuMail, LuMessageSquareText } from "react-icons/lu";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
@@ -17,19 +11,16 @@ const feedbackEmail =
 
 const feedbackPoints = [
   {
-    icon: LuMousePointerClick,
-    title: "Try the weekly planner",
-    text: "Add a plan, choose one or several days, move cards around, mark things done or skipped, and see if the flow makes sense.",
+    title: "Try one normal week",
+    text: "Add a few real plans, move one, copy one, and see if it feels quicker than rewriting your week somewhere else.",
   },
   {
-    icon: LuCircleCheck,
-    title: "Save a week",
-    text: "Use the save-week button and check whether the child rundowns feel helpful or if they need to work differently.",
+    title: "Save and review the week",
+    text: "Use the save-week button and check whether the record is actually useful for a binder, portfolio, or later review.",
   },
   {
-    icon: LuMessageSquareText,
-    title: "Tell me what felt off",
-    text: "The most helpful feedback is what felt confusing, cramped, too rigid, or missing for your actual homeschool week.",
+    title: "Tell me what feels off",
+    text: "The best notes are plain ones: confusing, too hidden, too busy, missing, slow, or not how your family would use it.",
   },
 ];
 
@@ -45,11 +36,14 @@ export default function BetaPage() {
               <p className="eyebrow">Feedback</p>
 
               <h1 className="section-title">
-                Tell me what would make SoftWeek Planner more useful.
+                I’m building SoftWeek and need honest homeschool feedback.
               </h1>
 
               <p className="section-lead">
-                SoftWeek Planner is usable now for weekly planning, multi-day activities, child profiles, saved weeks, and simple records. I’m still using real feedback to decide what needs to be clearer, calmer, or more useful next.
+                SoftWeek is usable now for weekly planning, multi-day activities,
+                child profiles, saved weeks, and simple records. It is still beta,
+                so I’m trying to find what feels helpful, confusing, or unnecessary
+                before I polish the wrong things.
               </p>
 
               <div className="btn-row beta-actions">
@@ -65,23 +59,24 @@ export default function BetaPage() {
               </div>
 
               <p className="hero-note">
-                Create a free beta account, open it from another device, or use guest mode if you want to try the planner first.
+                You can also use guest mode if you want to look around before making an account.
               </p>
             </div>
 
             <div className="form-card beta-feedback-card">
               <p className="eyebrow">What I’m looking for</p>
-              <h2 className="section-title-sm">Tell me what actually helps and what doesn’t.</h2>
+              <h2 className="section-title-sm">Plain feedback beats polite feedback.</h2>
 
               <p className="text-soft">
-                I’m looking for notes on whether the planner feels clear, calm, useful, and easy enough to come back to during a real homeschool week.
+                Tell me where it feels clunky, fake, confusing, too pretty, too
+                hidden, or not useful for a normal homeschool week.
               </p>
 
               <div className="beta-question-list">
                 <p>Does adding plans feel easy?</p>
-                <p>Would multi-day plans save you time?</p>
-                <p>Do saved weeks and child rundowns feel useful?</p>
-                <p>What feels cramped, confusing, or unnecessary?</p>
+                <p>Would multi-day plans save time?</p>
+                <p>Do saved weeks feel useful?</p>
+                <p>What should be removed, renamed, or moved?</p>
               </div>
 
               <Link className="btn btn-primary" href={feedbackEmail}>
@@ -91,31 +86,25 @@ export default function BetaPage() {
             </div>
           </div>
 
-          <div className="beta-card-grid">
-            {feedbackPoints.map((item) => {
-              const Icon = item.icon;
-
-              return (
-                <article className="feature-card" key={item.title}>
-                  <div className="feature-icon">
-                    <Icon />
-                  </div>
-
-                  <h3 className="feature-title">{item.title}</h3>
-                  <p className="feature-text">{item.text}</p>
-                </article>
-              );
-            })}
+          <div className="beta-card-grid human-beta-points">
+            {feedbackPoints.map((item) => (
+              <article className="feature-card human-feature-card" key={item.title}>
+                <h3 className="feature-title">{item.title}</h3>
+                <p className="feature-text">{item.text}</p>
+              </article>
+            ))}
           </div>
 
-          <div className="soft-card beta-note-card">
+          <div className="soft-card beta-note-card human-beta-card">
             <div>
               <p className="eyebrow">Quick note</p>
               <h2 className="section-title-sm">
-                Your feedback shapes the next version.
+                The beta does not need to look perfect. It needs to work.
               </h2>
               <p className="section-lead">
-                This beta is meant for real weekly use now while SoftWeek keeps growing around family setup, saved records, child logins, resources, and future print and export tools.
+                I’m keeping the planner focused on the weekly flow, saved records,
+                child logins, resource links, templates, and print records. Feedback
+                helps decide what gets simplified next.
               </p>
             </div>
 

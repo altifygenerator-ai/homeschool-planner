@@ -1,6 +1,6 @@
 export const site = {
   name: "SoftWeek Planner",
-  tagline: "A softer homeschool planner for real-life weeks.",
+  tagline: "Simple weekly planning for homeschool weeks that change.",
   nav: [
     {
       label: "How it works",
@@ -11,64 +11,60 @@ export const site = {
       href: "#pain-points",
     },
     {
-      label: "Free & premium",
+      label: "Beta notes",
       href: "#beta-direction",
     },
   ],
   hero: {
-    eyebrow: "Flexible homeschool planning",
-    title: "Plan the week, move what changes, save what happened.",
-    text: "SoftWeek Planner is a calm weekly planner for homeschool families who need flexibility without losing the record. Create an account, add children, plan one day or several, move cards when life changes, attach helpful links, and save the week when it is ready.",
+    eyebrow: "Built in beta with parent feedback",
+    title: "Plan the week. Move what changes. Save the record.",
+    text: "SoftWeek is a weekly planner I’m building for homeschool families who need a little structure without turning the week into a spreadsheet. Add children, add plans to one day or several, move cards when life changes, attach useful links, and save the week when it is done.",
     primaryCta: "Create free beta account",
     secondaryCta: "Try as guest",
-    note: "SoftWeek is live in beta now. The main weekly planner will stay useful for free, and larger family and record-keeping tools are free to test during beta.",
+    note: "SoftWeek is still in beta. The planner works now, and I’m tightening it with real feedback from homeschool families.",
   },
   problems: [
     {
-      title: "Rigid planners make real weeks feel like failures.",
-      text: "SoftWeek lets the board change with your family instead of treating every moved lesson like something went wrong.",
+      title: "The week changes and the planner should handle that.",
+      text: "Move a lesson, chore, outing, or reading block without rebuilding the whole week.",
     },
     {
-      title: "Repeated activities should not mean repeated typing.",
-      text: "Add one activity to multiple days for reading, practice work, chores, movement, field trips, or whatever repeats in your week.",
+      title: "Repeating work should not mean typing it five times.",
+      text: "Add one activity to several days for reading, practice, outside time, projects, or anything else that repeats.",
     },
     {
-      title: "One subject should move without shifting everything.",
-      text: "Move or copy a single plan to another day, keep the rest of the week steady, and adjust without rebuilding the whole schedule.",
+      title: "Links and notes need to stay with the plan.",
+      text: "Keep a video, class link, PDF, worksheet, website, or short note right on the card where it belongs.",
     },
     {
-      title: "Online lessons and worksheets need a home.",
-      text: "Add a resource link to a plan so videos, class pages, PDFs, worksheets, and websites stay easy to open when it is time to work.",
+      title: "Older kids can have a simple view of their own.",
+      text: "Optional child logins let older kids see assigned work, open links, mark work done, and add notes.",
     },
     {
-      title: "Older kids can use a simple view of their own.",
-      text: "Optional child accounts let older kids see assigned plans, open links, mark work done, and add notes without full parent controls.",
+      title: "Records should be easy enough to keep.",
+      text: "Save weekly records and print weekly, monthly, or yearly records for a binder or folder.",
     },
     {
-      title: "Records should be simple enough to actually keep.",
-      text: "Save weekly records and child rundowns without turning homeschool into another admin system.",
+      title: "It should not feel like another school admin system.",
+      text: "The focus is weekly planning, small adjustments, and useful records. Not a giant setup maze.",
     },
   ],
   steps: [
     {
-      title: "Create a family workspace",
-      text: "Start with a free beta account, or try the planner as a guest before setting anything up.",
+      title: "Start with a family account or guest mode",
+      text: "Create a free beta account, or open guest mode first and look around without setting anything up.",
     },
     {
-      title: "Plan a flexible 7-day week",
-      text: "Add children, custom categories, weekday plans, weekend learning, and one activity across several days.",
+      title: "Add children and plan the week",
+      text: "Build a 7-day week with child assignments, categories, notes, and multi-day plans.",
     },
     {
-      title: "Attach what helps",
-      text: "Keep a video, worksheet, PDF, website, online class, or quick note attached to the plan card where it belongs.",
+      title: "Move, copy, or attach what helps",
+      text: "Shift plans when the week changes, copy a rhythm forward, and keep resource links with the right card.",
     },
     {
-      title: "Let kids help without handing over everything",
-      text: "Optional child logins can mark work done and add notes, while parent controls stay with the parent account.",
-    },
-    {
-      title: "Save the week as a record",
-      text: "Saved weeks help build a simple history of what your family planned, moved, finished, skipped, and learned.",
+      title: "Save what actually happened",
+      text: "Mark done, skipped, or moved, add quick notes, then save the week as a simple record.",
     },
   ],
 };

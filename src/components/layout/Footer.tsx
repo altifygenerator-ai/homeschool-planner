@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LuMail, LuMessageCircle } from "react-icons/lu";
+import { LuMail } from "react-icons/lu";
 import { site } from "@/data/site";
 
 const contactEmail = "support@softweekplanner.com";
@@ -13,19 +13,17 @@ export default function Footer() {
         <div className="footer-main">
           <p className="footer-brand">{site.name}</p>
           <p className="footer-copy">
-            A softer homeschool planner for flexible weeks, simple records, and
-            real-life learning.
+            A simple weekly planner for homeschool plans, moved lessons, useful
+            links, saved records, and binder-friendly printouts.
           </p>
         </div>
 
         <div className="footer-contact-card">
           <div>
-            <p className="footer-contact-title">
-              Have a comment or suggestion?
-            </p>
+            <p className="footer-contact-title">Have a comment or suggestion?</p>
             <p className="footer-contact-text">
               SoftWeek is still being shaped with homeschool family feedback.
-              Send over what feels helpful, confusing, or missing.
+              Send what feels helpful, confusing, unnecessary, or missing.
             </p>
 
             <a className="footer-email" href={contactHref}>
@@ -35,7 +33,6 @@ export default function Footer() {
           </div>
 
           <a className="footer-contact-btn" href={contactHref}>
-            <LuMessageCircle />
             Send feedback
           </a>
         </div>

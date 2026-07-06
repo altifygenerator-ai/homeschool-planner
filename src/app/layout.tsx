@@ -1,19 +1,6 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
-import { Lora, Manrope } from "next/font/google";
 import "./globals.css";
-
-const heading = Lora({
-  subsets: ["latin"],
-  variable: "--font-heading",
-  display: "swap",
-});
-
-const body = Manrope({
-  subsets: ["latin"],
-  variable: "--font-body",
-  display: "swap",
-});
 
 const siteUrl = "https://softweekplanner.com";
 
@@ -21,25 +8,22 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   applicationName: "SoftWeek Planner",
   title: {
-    default: "SoftWeek Planner | Flexible Homeschool Planning",
+    default: "SoftWeek Planner | Simple Homeschool Weekly Planning",
     template: "%s | SoftWeek Planner",
   },
   description:
-    "SoftWeek Planner is a softer homeschool planner for real-life weeks. Create a free beta account, plan flexible 7-day weeks, move lessons when life changes, attach resource links, save weekly records, and keep simple child profiles.",
+    "SoftWeek Planner is a simple homeschool weekly planner in beta. Plan a real week, move what changes, attach resource links, save weekly records, and print records for your binder.",
 
   keywords: [
     "homeschool planner",
-    "homeschool planning app",
+    "homeschool weekly planner",
     "weekly homeschool planner",
+    "homeschool planning app",
     "flexible homeschool planner",
-    "homeschool schedule planner",
     "homeschool record keeping",
     "homeschool planner for multiple kids",
-    "student homeschool planner",
     "homeschool resource planner",
-    "homeschool portfolio",
     "homeschool weekly records",
-    "relaxed homeschool planner",
     "SoftWeek Planner",
   ],
 
@@ -65,9 +49,9 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: "SoftWeek Planner | A Softer Homeschool Planner",
+    title: "SoftWeek Planner | Simple Homeschool Weekly Planning",
     description:
-      "Plan real-life homeschool weeks with flexible activities, multi-day plans, child profiles, resource links, saved week records, and a calmer weekly flow.",
+      "A beta homeschool planner for planning the week, moving what changes, saving records, and printing binder-friendly records.",
     url: siteUrl,
     siteName: "SoftWeek Planner",
     type: "website",
@@ -77,16 +61,16 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "SoftWeek Planner flexible homeschool planning app",
+        alt: "SoftWeek Planner weekly homeschool planning app",
       },
     ],
   },
 
   twitter: {
     card: "summary_large_image",
-    title: "SoftWeek Planner | A Softer Homeschool Planner",
+    title: "SoftWeek Planner | Simple Homeschool Weekly Planning",
     description:
-      "A flexible homeschool planner for real-life weeks, with multi-day plans, resource links, saved records, child profiles, and a calm weekly planning flow.",
+      "Plan the week, move what changes, save the record, and print records for your homeschool binder.",
     images: ["/og-image.png"],
   },
 
@@ -110,10 +94,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
-      <body className={`${heading.variable} ${body.variable}`}>
-        {children}
-        <Analytics />
-      </body>
+      <body>{children}<Analytics /></body>
     </html>
   );
 }
