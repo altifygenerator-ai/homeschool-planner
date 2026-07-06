@@ -1,6 +1,7 @@
 import { createId } from "@/lib/utils";
 import { getFeatureAccess, type SoftWeekAccess, type SoftWeekPlanTier } from "@/lib/featureAccess";
 import { getSupabaseClient, getSupabaseSession, isSupabaseConfigured } from "@/lib/supabaseClient";
+import { trackSoftWeekEvent } from "@/lib/usageTracking";
 
 export type LocalAccountRole = "parent" | "child";
 
@@ -411,6 +412,10 @@ export async function createParentLocalAccount({
 
   try {
     await createParentWorkspace({ displayName: name, familyName });
+    await trackSoftWeekEvent("account_created", {
+      source: "auth",
+      incrementLoginCount: true,
+    });
   } catch (error) {
     return {
       ok: false,
@@ -478,6 +483,10 @@ export async function createChildSupabaseAccount({
 
   try {
     await acceptChildInvite({ displayName: name, inviteCode: cleanInviteCode });
+    await trackSoftWeekEvent("child_account_created", {
+      source: "auth",
+      incrementLoginCount: true,
+    });
   } catch (error) {
     return {
       ok: false,
@@ -518,6 +527,10 @@ export async function loginLocalAccount(login: string, password: string, inviteC
 
   try {
     await ensureCurrentProfile({ inviteCode });
+    await trackSoftWeekEvent("login", {
+      source: "auth",
+      incrementLoginCount: true,
+    });
   } catch (error) {
     return {
       ok: false,

@@ -7,6 +7,7 @@ import { LuArrowLeft, LuPrinter } from "react-icons/lu";
 import { getCategoryLabel, weekDays } from "@/data/demoPlans";
 import { getCategoryDefinitions, getChildren, getPlansForWeek, getSavedWeeks } from "@/lib/plannerStorage";
 import { getCurrentWeekRange, getWeekRangeFromStart } from "@/lib/week";
+import { trackSoftWeekEvent } from "@/lib/usageTracking";
 import { generateChildWeeklySummaries } from "@/lib/weeklySummary";
 import type { CategoryDefinition, ChildProfile, PlannerItem, SavedWeekLog } from "@/types/planner";
 
@@ -100,13 +101,17 @@ export default function PrintRecordView() {
       setCategories(nextCategories);
       setSavedWeeks(nextSavedWeeks);
       setHasLoaded(true);
+      void trackSoftWeekEvent("print_opened", {
+        source: "print",
+        metadata: { period, weekStart: normalizedWeekStart, month: requestedMonth, year: requestedYear },
+      });
     }
 
     void load();
     return () => {
       isMounted = false;
     };
-  }, [normalizedWeekStart]);
+  }, [normalizedWeekStart, period, requestedMonth, requestedYear]);
 
   const savedWeekForPrint = useMemo(() => {
     return savedWeeks.find((week) => dateOnly(week.weekStart) === dateOnly(normalizedWeekStart));
@@ -305,7 +310,17 @@ export default function PrintRecordView() {
             <LuArrowLeft />
             Back to records
           </Link>
-          <button className="btn btn-primary" type="button" onClick={() => window.print()}>
+          <button
+            className="btn btn-primary"
+            type="button"
+            onClick={() => {
+              void trackSoftWeekEvent("print_clicked", {
+                source: "print",
+                metadata: { period, weekStart: normalizedWeekStart, month: requestedMonth, year: requestedYear },
+              });
+              window.print();
+            }}
+          >
             <LuPrinter />
             Print record
           </button>

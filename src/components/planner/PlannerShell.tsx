@@ -36,6 +36,7 @@ import {
   shiftWeekStart,
 } from "@/lib/week";
 import { createId } from "@/lib/utils";
+import { trackSoftWeekEvent } from "@/lib/usageTracking";
 import type {
   CategoryDefinition,
   ChildProfile,
@@ -117,6 +118,7 @@ export default function PlannerShell() {
     async function initialLoad() {
       if (!isMounted) return;
       await loadWorkspace();
+      void trackSoftWeekEvent("planner_opened", { source: "planner" });
     }
 
     void initialLoad();
@@ -182,6 +184,10 @@ export default function PlannerShell() {
     setPlans(await getPlansForWeek(weekStart));
     setActiveChildId(isChildView && accountContext?.session.childId ? accountContext.session.childId : "all");
     setIsAddingPlan(false);
+    void trackSoftWeekEvent("week_opened", {
+      source: "planner",
+      metadata: { weekStart },
+    });
   }
 
   async function handleSwitchWeek(direction: number) {
@@ -216,6 +222,10 @@ export default function PlannerShell() {
     setPlans((current) => [...newPlans, ...current]);
     setSavedMessage("");
     setIsAddingPlan(false);
+    void trackSoftWeekEvent("plan_added", {
+      source: "planner",
+      metadata: { count: newPlans.length, weekStart: activeWeekStart },
+    });
   }
 
   function handleMove(id: string, day: WeekDay) {
@@ -234,6 +244,10 @@ export default function PlannerShell() {
     );
 
     setSavedMessage("");
+    void trackSoftWeekEvent("plan_moved", {
+      source: "planner",
+      metadata: { day, weekStart: activeWeekStart },
+    });
   }
 
   function handleCopyPlan(id: string, day: WeekDay) {
@@ -256,6 +270,10 @@ export default function PlannerShell() {
     });
 
     setSavedMessage(`Copied to ${day}.`);
+    void trackSoftWeekEvent("plan_copied", {
+      source: "planner",
+      metadata: { day, weekStart: activeWeekStart },
+    });
   }
 
   function handleStatusChange(id: string, status: PlanStatus) {
@@ -265,6 +283,10 @@ export default function PlannerShell() {
 
     void updatePlanProgress({ id, status });
     setSavedMessage("");
+    void trackSoftWeekEvent("plan_status_updated", {
+      source: "planner",
+      metadata: { status, weekStart: activeWeekStart },
+    });
   }
 
   function handleCategoryChange(id: string, category: PlanCategory) {
@@ -306,6 +328,10 @@ export default function PlannerShell() {
     );
 
     setSavedMessage("");
+    void trackSoftWeekEvent("resource_updated", {
+      source: "planner",
+      metadata: { hasResourceUrl: Boolean(values.resourceUrl), weekStart: activeWeekStart },
+    });
   }
 
   function handleDelete(id: string) {
@@ -322,6 +348,10 @@ export default function PlannerShell() {
     setPlans([]);
     setActiveChildId("all");
     setSavedMessage(`${weekRange.weekLabel} cleared. You can start fresh whenever you are ready.`);
+    void trackSoftWeekEvent("week_opened", {
+      source: "planner",
+      metadata: { action: "cleared", weekStart: activeWeekStart },
+    });
   }
 
   async function handleStartFreshWeek() {
@@ -356,6 +386,10 @@ export default function PlannerShell() {
     const copiedPlans = plans.map((plan) => resetPlanForAnotherWeek(plan, targetWeekStart));
     await savePlansForWeek(targetWeekStart, [...copiedPlans, ...targetPlans]);
     setSavedMessage(`Copied ${copiedPlans.length} plan${copiedPlans.length === 1 ? "" : "s"} to ${targetLabel}.`);
+    void trackSoftWeekEvent("week_copied", {
+      source: "planner",
+      metadata: { count: copiedPlans.length, fromWeekStart: activeWeekStart, targetWeekStart },
+    });
   }
 
   async function handleSaveTemplate() {
@@ -380,6 +414,10 @@ export default function PlannerShell() {
     setSelectedTemplateId(template.id);
     setTemplateName("");
     setSavedMessage(`${name} saved as a reusable week template.`);
+    void trackSoftWeekEvent("template_saved", {
+      source: "planner",
+      metadata: { planCount: template.plans.length },
+    });
   }
 
   function handleUseTemplate() {
@@ -388,6 +426,10 @@ export default function PlannerShell() {
     const copiedPlans = selectedTemplate.plans.map((plan) => resetPlanForAnotherWeek(plan, activeWeekStart));
     setPlans((current) => [...copiedPlans, ...current]);
     setSavedMessage(`${selectedTemplate.name} added to this week.`);
+    void trackSoftWeekEvent("template_used", {
+      source: "planner",
+      metadata: { planCount: copiedPlans.length, weekStart: activeWeekStart },
+    });
   }
 
   async function handleDeleteTemplate() {
@@ -398,6 +440,9 @@ export default function PlannerShell() {
     setTemplates(nextTemplates);
     setSelectedTemplateId(nextTemplates[0]?.id ?? "");
     setSavedMessage(`${selectedTemplate.name} removed from templates.`);
+    void trackSoftWeekEvent("template_deleted", {
+      source: "planner",
+    });
   }
 
   async function handleSaveWeek(week: SavedWeekLog) {
@@ -405,6 +450,10 @@ export default function PlannerShell() {
 
     await saveWeekLog(week);
     setSavedMessage("Week saved. You can print it, start a fresh week, or keep editing this one.");
+    void trackSoftWeekEvent("week_saved", {
+      source: "planner",
+      metadata: { weekStart: week.weekStart, planCount: week.plans.length },
+    });
   }
 
   async function handleAddCategory(name: string) {
@@ -417,6 +466,9 @@ export default function PlannerShell() {
       await saveCategoryDefinitions(nextCategories);
       setCategories(nextCategories);
       setSavedMessage(`${nextCategory.label} added as a category.`);
+      void trackSoftWeekEvent("category_added", {
+        source: "planner",
+      });
     }
 
     return nextCategory;
@@ -436,6 +488,9 @@ export default function PlannerShell() {
     await saveChildren(nextChildren);
     setChildren(await getChildren());
     setSavedMessage(`${name} added. You can assign plans to them now.`);
+    void trackSoftWeekEvent("child_added", {
+      source: "planner",
+    });
   }
 
   async function handleRenameChild(childId: string, name: string) {
@@ -443,6 +498,10 @@ export default function PlannerShell() {
 
     setChildren(await renameChildProfile(childId, name));
     setSavedMessage("Child profile updated.");
+    void trackSoftWeekEvent("child_updated", {
+      source: "planner",
+      childId,
+    });
   }
 
   async function handleDeleteChild(childId: string) {
@@ -457,6 +516,10 @@ export default function PlannerShell() {
     }
 
     setSavedMessage(`${childName} removed from active planning. Existing saved records stay in the account history.`);
+    void trackSoftWeekEvent("child_removed", {
+      source: "planner",
+      childId,
+    });
   }
 
   return (

@@ -25,6 +25,7 @@ import {
   saveChildren,
 } from "@/lib/plannerStorage";
 import { createId } from "@/lib/utils";
+import { trackSoftWeekEvent } from "@/lib/usageTracking";
 import type { ChildProfile, SavedWeekLog } from "@/types/planner";
 
 const colorLabels: ChildProfile["colorLabel"][] = ["sage", "gold", "clay", "blue"];
@@ -105,6 +106,7 @@ export default function ChildrenOverview() {
     await loadChildren();
     setNewChildName("");
     setMessage(`${name} added.`);
+    void trackSoftWeekEvent("child_added", { source: "children" });
   }
 
   function startRename(child: ChildProfile) {
@@ -120,12 +122,20 @@ export default function ChildrenOverview() {
     setEditingId(null);
     setEditingName("");
     setMessage("Child profile updated.");
+    void trackSoftWeekEvent("child_updated", {
+      source: "children",
+      childId: editingId,
+    });
   }
 
   async function handleDelete(childId: string) {
     if (!canManage) return;
     setChildren(await deleteChildProfile(childId));
     setMessage("Child profile removed from active planning. Saved records stay in your history.");
+    void trackSoftWeekEvent("child_removed", {
+      source: "children",
+      childId,
+    });
   }
 
   async function handleCreateChildLogin(child: ChildProfile) {
@@ -145,6 +155,10 @@ export default function ChildrenOverview() {
       }
 
       setMessage(`${child.name}'s child invite code is: ${account.loginName}`);
+      void trackSoftWeekEvent("child_invite_created", {
+        source: "children",
+        childId: child.id,
+      });
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "That child invite could not be created.");
     }
