@@ -1,12 +1,24 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
-import { LuCalendarDays, LuPrinter, LuTrash2 } from "react-icons/lu";
-import type { SavedWeekLog } from "@/types/planner";
+import {
+  LuCalendarDays,
+  LuChevronDown,
+  LuExternalLink,
+  LuPrinter,
+  LuTrash2,
+} from "react-icons/lu";
+import type { PlannerItem, SavedWeekLog } from "@/types/planner";
 
 type SavedWeeksViewProps = {
   savedWeeks: SavedWeekLog[];
   onDeleteWeek?: (weekId: string) => void;
+};
+
+type SavedPlanItem = PlannerItem & {
+  resourceUrl?: string;
+  resourceTitle?: string;
+  actualNotes?: string;
 };
 
 function dateOnly(value: string) {
@@ -29,6 +41,18 @@ function formatMonth(value: string) {
   });
 }
 
+function getAssignedName(week: SavedWeekLog, plan: SavedPlanItem) {
+  if (plan.assignedTo === "everyone") return "Everyone";
+  return week.children.find((child) => child.id === plan.assignedTo)?.name ?? "Child";
+}
+
+function planStatusLabel(status?: PlannerItem["status"]) {
+  if (status === "done") return "Done";
+  if (status === "moved") return "Moved";
+  if (status === "skipped") return "Skipped";
+  return "Planned";
+}
+
 export default function SavedWeeksView({
   savedWeeks,
   onDeleteWeek,
@@ -43,7 +67,8 @@ export default function SavedWeeksView({
         <p className="eyebrow">Saved weeks</p>
         <h2 className="section-title-sm">No saved weeks yet.</h2>
         <p className="text-soft">
-          Once you save a week, it will show here with short child rundowns and simple print options.
+          Once you save a week, it will show here with child rundowns, saved
+          plans, notes, resources, and simple print options.
         </p>
       </section>
     );
@@ -56,20 +81,27 @@ export default function SavedWeeksView({
           <p className="eyebrow">Saved weeks</p>
           <h2 className="section-title-sm">Your weekly records</h2>
           <p className="text-small">
-            Print one week for a notebook, or print a gentle month or year overview from your saved weeks.
+            Open a saved week to review the plans, notes, resources, and child
+            rundowns before printing for your notebook or folder.
           </p>
         </div>
 
         <div className="record-print-actions">
           {latestMonth ? (
-            <Link className="soft-action soft-action-filled" href={`/dashboard/print?period=month&month=${latestMonth}`}>
+            <Link
+              className="soft-action soft-action-filled"
+              href={`/dashboard/print?period=month&month=${latestMonth}`}
+            >
               <LuCalendarDays />
               Print {formatMonth(latestMonth)}
             </Link>
           ) : null}
 
           {latestYear ? (
-            <Link className="soft-action" href={`/dashboard/print?period=year&year=${latestYear}`}>
+            <Link
+              className="soft-action"
+              href={`/dashboard/print?period=year&year=${latestYear}`}
+            >
               <LuPrinter />
               Print {latestYear}
             </Link>
@@ -95,7 +127,12 @@ export default function SavedWeeksView({
               <div className="saved-week-actions">
                 <span>{week.plans.length} plans</span>
 
-                <Link className="print-week-button" href={`/dashboard/print?period=week&weekStart=${dateOnly(week.weekStart)}`}>
+                <Link
+                  className="print-week-button"
+                  href={`/dashboard/print?period=week&weekStart=${dateOnly(
+                    week.weekStart
+                  )}`}
+                >
                   <LuPrinter />
                   Print
                 </Link>
@@ -134,6 +171,81 @@ export default function SavedWeeksView({
                 </div>
               ))}
             </div>
+
+            <details className="saved-week-detail">
+              <summary className="saved-week-detail-toggle">
+                <span>
+                  <LuChevronDown />
+                  View saved plans
+                </span>
+                <small>{week.plans.length} saved plans</small>
+              </summary>
+
+              {week.plans.length ? (
+                <div className="saved-plan-list">
+                  {week.plans.map((savedPlan) => {
+                    const plan = savedPlan as SavedPlanItem;
+                    const status = plan.status ?? "planned";
+
+                    return (
+                      <div className="saved-plan-card" key={plan.id}>
+                        <div className="saved-plan-card-top">
+                          <div>
+                            <p className="saved-plan-day">{plan.day}</p>
+                            <h4>{plan.title}</h4>
+                          </div>
+
+                          <span
+                            className={`saved-plan-status saved-plan-status-${status}`}
+                          >
+                            {planStatusLabel(status)}
+                          </span>
+                        </div>
+
+                        <div className="saved-plan-meta">
+                          <span>{getAssignedName(week, plan)}</span>
+                          <span>{plan.timeBlock}</span>
+                          <span>{plan.category}</span>
+                        </div>
+
+                        {plan.notes || plan.actualNotes ? (
+                          <div className="saved-plan-notes">
+                            {plan.notes ? (
+                              <p>
+                                <strong>Plan note:</strong> {plan.notes}
+                              </p>
+                            ) : null}
+
+                            {plan.actualNotes ? (
+                              <p>
+                                <strong>Record note:</strong> {plan.actualNotes}
+                              </p>
+                            ) : null}
+                          </div>
+                        ) : null}
+
+                        {plan.resourceUrl ? (
+                          <a
+                            className="saved-plan-resource"
+                            href={plan.resourceUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            <LuExternalLink />
+                            {plan.resourceTitle || "Open resource"}
+                          </a>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="template-empty-note">
+                  This saved week has a record, but no plan details were saved
+                  with it.
+                </p>
+              )}
+            </details>
           </article>
         ))}
       </div>

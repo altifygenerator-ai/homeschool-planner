@@ -83,7 +83,6 @@ export default function PlannerShell() {
   const [jumpDate, setJumpDate] = useState("");
   const [copyDate, setCopyDate] = useState("");
   const [templateName, setTemplateName] = useState("");
-  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const addPlanPanelRef = useRef<HTMLElement | null>(null);
 
@@ -436,7 +435,6 @@ export default function PlannerShell() {
     setTemplates(nextTemplates);
     setSelectedTemplateId(template.id);
     setTemplateName("");
-    setIsSavingTemplate(false);
     setSavedMessage(`${name} saved as a reusable week template.`);
     void trackSoftWeekEvent("template_saved", {
       source: "planner",
@@ -643,115 +641,71 @@ export default function PlannerShell() {
             </div>
           </div>
 
-          <div className="planner-advanced-grid planner-advanced-grid-simple">
-            <div className="planner-tool-card planner-tool-primary">
+          <div className="planner-advanced-grid">
+            <div className="planner-tool-card">
               <span>Open a week</span>
-              <p className="planner-tool-note">
-                Jump to any week when you want to plan ahead or look back.
-              </p>
-
               <label className="mini-field">
                 <span>Pick any date in the week</span>
                 <input type="date" value={jumpDate} onChange={(event) => setJumpDate(event.target.value)} />
               </label>
-
               <button className="soft-action soft-action-filled" type="button" onClick={() => void handlePickWeek()}>
-                Open picked week
+                Open week
               </button>
-
-              <div className="planner-tool-divider" />
-
-              <button
-                className="soft-action"
-                type="button"
-                onClick={() => setIsSavingTemplate((current) => !current)}
-                disabled={!plans.length}
-              >
-                Save this week as a template
-              </button>
-
-              {isSavingTemplate ? (
-                <div className="template-inline-form">
-                  <label className="mini-field">
-                    <span>Template name</span>
-                    <input
-                      value={templateName}
-                      placeholder="Normal week, co-op week, light week..."
-                      onChange={(event) => setTemplateName(event.target.value)}
-                    />
-                  </label>
-
-                  <div className="template-inline-actions">
-                    <button className="soft-action soft-action-filled" type="button" onClick={() => void handleSaveTemplate()} disabled={!plans.length}>
-                      Save template
-                    </button>
-                    <button
-                      className="mini-text-button"
-                      type="button"
-                      onClick={() => {
-                        setTemplateName("");
-                        setIsSavingTemplate(false);
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : null}
             </div>
 
             <div className="planner-tool-card">
               <span>Copy this week</span>
-              <p className="planner-tool-note">
-                Reuse this week somewhere else without changing the week you are on now.
-              </p>
-
-              <button className="soft-action soft-action-filled" type="button" onClick={() => void handleCopyWeekToDate(toDateInputValue(shiftWeekStart(activeWeekStart, 1)))} disabled={!plans.length}>
-                Copy to next week
-              </button>
-
               <label className="mini-field">
-                <span>Or copy to week of</span>
+                <span>Copy plans to week of</span>
                 <input type="date" value={copyDate} onChange={(event) => setCopyDate(event.target.value)} />
               </label>
-
-              <button className="soft-action" type="button" onClick={() => void handleCopyWeekToDate()} disabled={!plans.length}>
-                Copy to picked week
-              </button>
+              <div className="planner-tool-button-row">
+                <button className="soft-action soft-action-filled" type="button" onClick={() => void handleCopyWeekToDate()} disabled={!plans.length}>
+                  Copy to picked week
+                </button>
+                <button className="mini-text-button" type="button" onClick={() => void handleCopyWeekToDate(toDateInputValue(shiftWeekStart(activeWeekStart, 1)))} disabled={!plans.length}>
+                  Copy to next week
+                </button>
+              </div>
             </div>
 
-            <div className="planner-tool-card">
-              <span>Use a template</span>
-              <p className="planner-tool-note">
-                Start this week from a saved rhythm instead of rebuilding it by hand.
-              </p>
+            <div className="planner-tool-card planner-tool-card-wide">
+              <span>Week template</span>
+              <div className="template-save-row">
+                <label className="mini-field">
+                  <span>Template name</span>
+                  <input
+                    value={templateName}
+                    placeholder="Normal school week, Co-op week..."
+                    onChange={(event) => setTemplateName(event.target.value)}
+                  />
+                </label>
+                <button className="soft-action soft-action-filled" type="button" onClick={() => void handleSaveTemplate()} disabled={!plans.length}>
+                  Save template
+                </button>
+              </div>
 
               {templates.length ? (
-                <div className="template-use-row template-use-row-simple">
+                <div className="template-use-row">
                   <label className="mini-field">
-                    <span>Saved templates</span>
+                    <span>Use a saved template</span>
                     <select value={selectedTemplateId} onChange={(event) => setSelectedTemplateId(event.target.value)}>
                       {templates.map((template) => (
                         <option key={template.id} value={template.id}>
-                          {template.name} - {template.plans.length} plans
+                          {template.name} · {template.plans.length} plans
                         </option>
                       ))}
                     </select>
                   </label>
-
-                  <div className="template-inline-actions">
-                    <button className="soft-action soft-action-filled" type="button" onClick={handleUseTemplate}>
-                      Add template to this week
-                    </button>
-                    <button className="mini-text-button" type="button" onClick={() => void handleDeleteTemplate()}>
-                      Delete template
-                    </button>
-                  </div>
+                  <button className="soft-action" type="button" onClick={handleUseTemplate}>
+                    Add to this week
+                  </button>
+                  <button className="mini-text-button" type="button" onClick={() => void handleDeleteTemplate()}>
+                    Delete template
+                  </button>
                 </div>
               ) : (
-                <p className="template-empty-note">
-                  No templates yet. Open another week or save the current week as a template when you have a rhythm you want to reuse.
-                </p>
+                <p className="template-empty-note">Save a week as a template when you have a rhythm you want to reuse.</p>
               )}
             </div>
           </div>
