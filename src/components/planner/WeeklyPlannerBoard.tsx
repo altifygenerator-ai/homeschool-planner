@@ -62,6 +62,8 @@ export default function WeeklyPlannerBoard({
         </div>
       </div>
 
+      <p className="mobile-board-hint">Swipe sideways to see the whole week.</p>
+
       <div className="weekly-board">
         {weekDays.map((day) => (
           <DayColumn

@@ -1,13 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import BetaFeedbackWidget from "@/components/shared/BetaFeedbackWidget";
+import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
 import "./globals.css";
 
 const siteUrl = "https://softweekplanner.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  applicationName: "SoftWeek Planner",
+  applicationName: "Softweek",
+  manifest: "/manifest.webmanifest",
   title: {
     default: "SoftWeek Planner | Simple Homeschool Weekly Planning",
     template: "%s | SoftWeek Planner",
@@ -43,10 +45,17 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.ico" },
-      { url: "/icon.png", type: "image/png" },
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
     ],
-    apple: [{ url: "/apple-icon.png", type: "image/png" }],
+    apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }],
     shortcut: "/favicon.ico",
+  },
+
+  appleWebApp: {
+    capable: true,
+    title: "Softweek",
+    statusBarStyle: "default",
   },
 
   openGraph: {
@@ -88,6 +97,14 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+  themeColor: "#fbf6ec",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -95,7 +112,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
-      <body>{children}<BetaFeedbackWidget /><Analytics /></body>
+      <body>{children}<BetaFeedbackWidget /><ServiceWorkerRegister /><Analytics /></body>
     </html>
   );
 }

@@ -9,6 +9,7 @@ import {
   LuUsersRound,
   LuUserRound,
 } from "react-icons/lu";
+import PwaInstallPrompt from "@/components/pwa/PwaInstallPrompt";
 import { getActiveAccountContext, type AccountContext } from "@/lib/localAuth";
 import { getChildren, getCurrentPlans, getSavedWeeks } from "@/lib/plannerStorage";
 import type { PlannerItem, SavedWeekLog } from "@/types/planner";
@@ -113,6 +114,8 @@ export default function DashboardHome() {
           <LuArrowRight />
         </Link>
       </section>
+
+      <PwaInstallPrompt compact className="dashboard-install-card" />
 
       {context?.isParent ? (
         <section className="paper-card parent-start-card">

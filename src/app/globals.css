@@ -6460,3 +6460,407 @@ a[role="button"]:active {
     padding: 0;
   }
 }
+
+/* SoftWeek PWA and mobile shell pass */
+html {
+  -webkit-text-size-adjust: 100%;
+  touch-action: manipulation;
+}
+
+input,
+textarea,
+select,
+button {
+  font-size: 16px;
+}
+
+.pwa-install-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: clamp(0.95rem, 3vw, 1.35rem);
+  align-items: start;
+  padding: clamp(1.05rem, 3vw, 1.55rem);
+  border-radius: var(--radius-lg);
+  background: #fffdf8;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+
+.pwa-install-card-compact {
+  padding: 1rem;
+}
+
+.pwa-install-icon {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  color: var(--sage-dark);
+  background: #e5ede2;
+  border: 1px solid rgba(127, 155, 135, 0.34);
+}
+
+.pwa-install-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.pwa-install-copy {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.pwa-install-copy h2 {
+  margin: 0.1rem 0 0;
+  color: var(--navy);
+  font-family: var(--font-heading), Georgia, serif;
+  font-size: clamp(1.55rem, 4vw, 2.25rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+}
+
+.pwa-install-copy p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.58;
+}
+
+.pwa-install-actions {
+  display: grid;
+  gap: 0.65rem;
+  align-items: start;
+  margin-top: 0.15rem;
+}
+
+.pwa-install-actions .btn {
+  width: fit-content;
+}
+
+.pwa-install-note,
+.pwa-install-status {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  max-width: 820px;
+  padding: 0.7rem 0.8rem;
+  border-radius: 12px;
+  color: var(--muted);
+  background: rgba(251, 246, 236, 0.72);
+  border: 1px solid rgba(226, 214, 196, 0.9);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.pwa-install-note svg,
+.pwa-install-status svg {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  margin-top: 0.12rem;
+  color: var(--sage-dark);
+}
+
+.pwa-install-status {
+  color: var(--sage-dark);
+  background: rgba(229, 237, 226, 0.7);
+  border-color: rgba(127, 155, 135, 0.35);
+}
+
+.dashboard-install-card {
+  margin-top: 0;
+}
+
+.mobile-dashboard-nav {
+  display: none;
+}
+
+.mobile-board-hint {
+  display: none;
+  margin: -0.2rem 0 0.7rem;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 750;
+  line-height: 1.4;
+}
+
+@media (max-width: 780px) {
+  .site-header {
+    position: sticky;
+  }
+
+  .header-inner {
+    min-height: 64px;
+    gap: 0.65rem;
+  }
+
+  .logo-mark {
+    min-width: 0;
+    gap: 0.55rem;
+  }
+
+  .logo-mark > span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .header-actions {
+    gap: 0.4rem;
+  }
+
+  .header-actions .btn {
+    min-height: 40px;
+    padding: 0.65rem 0.72rem;
+    font-size: 0.8rem;
+  }
+
+  .header-actions .btn svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .dashboard-section {
+    padding-bottom: calc(7.8rem + env(safe-area-inset-bottom));
+  }
+
+  .dashboard-topbar {
+    border-radius: 18px;
+  }
+
+  .dashboard-nav {
+    display: none;
+  }
+
+  .account-bar {
+    padding-top: 0.6rem;
+  }
+
+  .mobile-dashboard-nav {
+    position: fixed;
+    left: 0.65rem;
+    right: 0.65rem;
+    bottom: calc(0.65rem + env(safe-area-inset-bottom));
+    z-index: 70;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.25rem;
+    padding: 0.38rem;
+    border-radius: 22px;
+    background: rgba(255, 253, 248, 0.96);
+    border: 1px solid rgba(226, 214, 196, 0.95);
+    box-shadow: 0 12px 34px rgba(60, 47, 33, 0.16);
+    backdrop-filter: blur(14px);
+  }
+
+  .mobile-dashboard-nav a {
+    min-width: 0;
+    min-height: 54px;
+    display: grid;
+    place-items: center;
+    gap: 0.2rem;
+    border-radius: 16px;
+    color: rgba(38, 49, 58, 0.62);
+    font-size: 0.68rem;
+    font-weight: 850;
+    line-height: 1;
+  }
+
+  .mobile-dashboard-nav a svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .mobile-dashboard-nav a.is-active {
+    color: var(--sage-dark);
+    background: #e5ede2;
+  }
+
+  .mobile-board-hint {
+    display: block;
+  }
+
+  .planner-board-shell {
+    margin-left: -0.2rem;
+    margin-right: -0.2rem;
+  }
+
+  .weekly-board {
+    grid-auto-columns: minmax(250px, 84vw);
+    padding-bottom: 0.85rem;
+    scroll-snap-type: x mandatory;
+  }
+
+  .day-column {
+    scroll-snap-align: center;
+  }
+
+  .planner-advanced-grid-simple .soft-action,
+  .planner-tool-card .soft-action,
+  .planner-tool-card .mini-text-button,
+  .record-print-actions .soft-action,
+  .saved-week-actions .print-week-button,
+  .saved-week-actions .delete-week-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .feedback-corner-button {
+    bottom: auto;
+  }
+
+  .beta-feedback-widget {
+    bottom: calc(5.35rem + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 640px) {
+  body {
+    background: #fbf6ec;
+  }
+
+  .container,
+  .header-inner,
+  .footer-inner {
+    width: min(var(--max-width), calc(100% - 1.1rem));
+  }
+
+  .section,
+  .section-soft,
+  .section-paper,
+  .home-hero-section {
+    padding-top: 2.8rem;
+    padding-bottom: 3rem;
+  }
+
+  .header-actions .btn-soft,
+  .header-actions .btn-secondary {
+    display: none;
+  }
+
+  .logo-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  .logo-mark > span:last-child {
+    max-width: 9rem;
+    font-size: 0.95rem;
+  }
+
+  .dashboard-page-heading {
+    text-align: left;
+    margin-bottom: 1.2rem;
+  }
+
+  .dashboard-page-heading .section-title,
+  .dashboard-page-heading .section-lead {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .dashboard-card-grid,
+  .account-action-grid,
+  .account-stat-grid,
+  .plan-feature-grid,
+  .marketing-plan-grid,
+  .children-page-grid,
+  .child-summary-list,
+  .saved-week-list {
+    gap: 0.75rem;
+  }
+
+  .dashboard-link-card,
+  .account-stat-card,
+  .plan-feature-card,
+  .saved-week-item,
+  .child-card,
+  .child-detail-card,
+  .paper-card,
+  .soft-card {
+    border-radius: 16px;
+  }
+
+  .pwa-install-card {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+    border-radius: 16px;
+  }
+
+  .pwa-install-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .pwa-install-actions .btn,
+  .pwa-install-note,
+  .pwa-install-status {
+    width: 100%;
+  }
+
+  .pwa-install-actions .btn {
+    justify-content: center;
+  }
+
+  .add-plan-card,
+  .planner-board-shell,
+  .planner-tool-card,
+  .saved-weeks-card,
+  .week-save-card,
+  .child-selector-card,
+  .portfolio-preview-card,
+  .account-overview-hero,
+  .beta-plan-section,
+  .account-beta-note,
+  .account-upgrade-note {
+    padding: 0.9rem;
+    border-radius: 16px;
+  }
+
+  .planner-board-subtitle {
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  .plan-card-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-card-actions button:last-child {
+    grid-column: auto;
+  }
+
+  .saved-week-header,
+  .saved-week-actions,
+  .saved-week-detail-toggle,
+  .saved-plan-card-top,
+  .record-print-actions,
+  .child-invite-actions,
+  .template-inline-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .saved-week-actions span,
+  .saved-week-detail-toggle small {
+    justify-self: start;
+  }
+
+  .feedback-side-panel {
+    width: min(100vw - 0.8rem, 430px);
+    border-radius: 18px 0 0 18px;
+  }
+
+  .feedback-corner-button {
+    width: 46px;
+    height: 46px;
+  }
+}
+
+@media (display-mode: standalone) {
+  .pwa-install-card .pwa-install-note {
+    display: none;
+  }
+}

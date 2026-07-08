@@ -14,6 +14,10 @@ export const site = {
       label: "Beta notes",
       href: "#beta-direction",
     },
+    {
+      label: "Mobile app",
+      href: "#mobile-app",
+    },
   ],
   hero: {
     eyebrow: "Built in beta with parent feedback",

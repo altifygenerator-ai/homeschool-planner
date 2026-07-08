@@ -4,6 +4,7 @@ import AccountBar from "@/components/auth/AccountBar";
 import AuthGate from "@/components/auth/AuthGate";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import MobileDashboardNav from "@/components/pwa/MobileDashboardNav";
 
 const dashboardLinks = [
   { label: "Home", href: "/dashboard" },
@@ -48,6 +49,7 @@ export default function DashboardShell({ children }: DashboardShellProps) {
       </section>
 
       <Footer />
+      <MobileDashboardNav />
     </main>
   );
 }

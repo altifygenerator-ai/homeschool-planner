@@ -2,6 +2,7 @@ import Link from "next/link";
 import { LuArrowRight, LuLock, LuMousePointerClick, LuUserPlus } from "react-icons/lu";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
+import PwaInstallPrompt from "@/components/pwa/PwaInstallPrompt";
 import { site } from "@/data/site";
 
 const plannerNow = [
@@ -221,6 +222,12 @@ export default function Home() {
               </figure>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="section-paper" id="mobile-app">
+        <div className="container">
+          <PwaInstallPrompt />
         </div>
       </section>
 
