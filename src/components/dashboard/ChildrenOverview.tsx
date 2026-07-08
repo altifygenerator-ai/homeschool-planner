@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   LuArrowRight,
+  LuCopy,
+  LuExternalLink,
   LuKeyRound,
   LuPencil,
   LuPlus,
@@ -30,6 +32,24 @@ import type { ChildProfile, SavedWeekLog } from "@/types/planner";
 
 const colorLabels: ChildProfile["colorLabel"][] = ["sage", "gold", "clay", "blue"];
 
+function childSignupHref(child: ChildProfile, account: LocalAccount | null) {
+  const params = new URLSearchParams({
+    mode: "create",
+    role: "child",
+    name: child.name,
+  });
+
+  if (account?.loginName && account.loginName !== "Create a parent account first") {
+    params.set("invite", account.loginName);
+  }
+
+  return `/login?${params.toString()}`;
+}
+
+function isInviteAccount(account: LocalAccount | null) {
+  return account?.authProvider === "child-invite" && account.loginName !== "Create a parent account first";
+}
+
 export default function ChildrenOverview() {
   const [children, setChildren] = useState<ChildProfile[]>([]);
   const [savedWeeks, setSavedWeeks] = useState<SavedWeekLog[]>([]);
@@ -39,6 +59,9 @@ export default function ChildrenOverview() {
   const [message, setMessage] = useState("");
   const [context, setContext] = useState<AccountContext | null>(null);
   const [childAccounts, setChildAccounts] = useState<Record<string, LocalAccount | null>>({});
+  const [openChildAccessId, setOpenChildAccessId] = useState<string | null>(null);
+  const [creatingAccessId, setCreatingAccessId] = useState<string | null>(null);
+  const [copiedChildId, setCopiedChildId] = useState<string | null>(null);
 
   async function loadChildren() {
     const [nextContext, nextChildren, nextSavedWeeks] = await Promise.all([
@@ -105,7 +128,7 @@ export default function ChildrenOverview() {
     await saveChildren([...children, nextChild]);
     await loadChildren();
     setNewChildName("");
-    setMessage(`${name} added.`);
+    setMessage(`${name} added. You can assign plans to them from the planner.`);
     void trackSoftWeekEvent("child_added", { source: "children" });
   }
 
@@ -138,8 +161,25 @@ export default function ChildrenOverview() {
     });
   }
 
-  async function handleCreateChildLogin(child: ChildProfile) {
+  async function handleChildAccess(child: ChildProfile) {
+    if (!canManage) return;
+
+    const existing = childAccounts[child.id];
+
+    if (existing) {
+      setOpenChildAccessId((current) => (current === child.id ? null : child.id));
+      setMessage("");
+      return;
+    }
+
+    if (context?.isGuest) {
+      setOpenChildAccessId(child.id);
+      setMessage("Create a parent account first, then you can make child invite codes.");
+      return;
+    }
+
     try {
+      setCreatingAccessId(child.id);
       const account = await createChildLocalAccount(child.id, child.name);
 
       if (!account) {
@@ -148,19 +188,36 @@ export default function ChildrenOverview() {
       }
 
       await loadChildren();
+      setOpenChildAccessId(child.id);
 
       if (account.loginName === "Create a parent account first") {
         setMessage("Create a parent account first, then you can make child invite codes.");
         return;
       }
 
-      setMessage(`${child.name}'s child invite code is: ${account.loginName}`);
+      setMessage(`${child.name}'s child invite is ready.`);
       void trackSoftWeekEvent("child_invite_created", {
         source: "children",
         childId: child.id,
       });
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "That child invite could not be created.");
+    } finally {
+      setCreatingAccessId(null);
+    }
+  }
+
+  async function copyInviteCode(child: ChildProfile, account: LocalAccount | null) {
+    const inviteCode = account?.loginName ?? "";
+    if (!isInviteAccount(account) || !inviteCode) return;
+
+    try {
+      await navigator.clipboard.writeText(inviteCode);
+      setCopiedChildId(child.id);
+      setMessage(`${child.name}'s invite code copied.`);
+      window.setTimeout(() => setCopiedChildId(null), 1800);
+    } catch {
+      setMessage("Could not copy the code. You can still highlight it and copy it manually.");
     }
   }
 
@@ -171,9 +228,9 @@ export default function ChildrenOverview() {
           <p className="eyebrow">Child profiles</p>
           <h2 className="section-title-sm">Add the children you plan for.</h2>
           <p className="section-lead">
-            Child profiles connect the planner, saved weeks, and portfolio views.
-            Parent accounts can manage these, and older kids can have limited
-            accounts when you want them to help mark work done.
+            Start with the names you want to assign plans to. Child logins are
+            optional and can be set up later for older kids who are ready to mark
+            work done or add notes.
           </p>
         </div>
 
@@ -192,8 +249,8 @@ export default function ChildrenOverview() {
           </form>
         ) : (
           <p className="text-small">
-            This child account can view records, but profile management stays with
-            the parent account.
+            This child account can view records, mark work, and add notes. Profile
+            management stays with the parent account.
           </p>
         )}
 
@@ -212,6 +269,9 @@ export default function ChildrenOverview() {
               (total, summary) => total + summary.completedCount,
               0
             );
+            const panelOpen = openChildAccessId === child.id;
+            const inviteReady = isInviteAccount(childLogin);
+            const childLoginActive = childLogin?.authProvider === "supabase";
 
             return (
               <article className="child-profile-card paper-card" key={child.id}>
@@ -232,7 +292,8 @@ export default function ChildrenOverview() {
                   <div className="pill-row">
                     <span className="pill pill-sage">{completedTotal} completed</span>
                     <span className="pill">View portfolio</span>
-                    {childLogin ? <span className="pill pill-gold">Child access ready</span> : null}
+                    {childLoginActive ? <span className="pill pill-gold">Child login active</span> : null}
+                    {inviteReady ? <span className="pill pill-gold">Invite ready</span> : null}
                   </div>
 
                   <span className="child-profile-arrow">
@@ -241,55 +302,126 @@ export default function ChildrenOverview() {
                 </Link>
 
                 {canManage ? (
-                  <div className="child-card-actions">
-                    {editingId === child.id ? (
-                      <form className="child-edit-row" onSubmit={handleRename}>
-                        <input
-                          className="input"
-                          value={editingName}
-                          onChange={(event) => setEditingName(event.target.value)}
-                          aria-label={`Rename ${child.name}`}
-                        />
-                        <button className="mini-text-button" type="submit">
-                          Save
-                        </button>
-                        <button
-                          className="mini-text-button"
-                          type="button"
-                          onClick={() => setEditingId(null)}
-                        >
-                          Cancel
-                        </button>
-                      </form>
-                    ) : (
-                      <>
-                        <button
-                          className="mini-text-button"
-                          type="button"
-                          onClick={() => startRename(child)}
-                        >
-                          <LuPencil />
-                          Rename
-                        </button>
-                        <button
-                          className="mini-text-button"
-                          type="button"
-                          onClick={() => void handleCreateChildLogin(child)}
-                        >
-                          <LuKeyRound />
-                          {childLogin ? childLogin.loginName : "Create child invite"}
-                        </button>
-                        <button
-                          className="mini-text-button danger"
-                          type="button"
-                          onClick={() => void handleDelete(child.id)}
-                        >
-                          <LuTrash2 />
-                          Remove
-                        </button>
-                      </>
-                    )}
-                  </div>
+                  <>
+                    <div className="child-card-actions">
+                      {editingId === child.id ? (
+                        <form className="child-edit-row" onSubmit={handleRename}>
+                          <input
+                            className="input"
+                            value={editingName}
+                            onChange={(event) => setEditingName(event.target.value)}
+                            aria-label={`Rename ${child.name}`}
+                          />
+                          <button className="mini-text-button" type="submit">
+                            Save
+                          </button>
+                          <button
+                            className="mini-text-button"
+                            type="button"
+                            onClick={() => setEditingId(null)}
+                          >
+                            Cancel
+                          </button>
+                        </form>
+                      ) : (
+                        <>
+                          <button
+                            className="mini-text-button"
+                            type="button"
+                            onClick={() => startRename(child)}
+                          >
+                            <LuPencil />
+                            Rename
+                          </button>
+                          <button
+                            className="mini-text-button"
+                            type="button"
+                            onClick={() => void handleChildAccess(child)}
+                            disabled={creatingAccessId === child.id}
+                          >
+                            <LuKeyRound />
+                            {creatingAccessId === child.id
+                              ? "Setting up..."
+                              : childLoginActive
+                                ? "Child login active"
+                                : inviteReady
+                                  ? "View child invite"
+                                  : "Set up child access"}
+                          </button>
+                          <button
+                            className="mini-text-button danger"
+                            type="button"
+                            onClick={() => void handleDelete(child.id)}
+                          >
+                            <LuTrash2 />
+                            Remove
+                          </button>
+                        </>
+                      )}
+                    </div>
+
+                    {panelOpen ? (
+                      <div className="child-access-panel">
+                        <div>
+                          <p className="eyebrow">Optional child access</p>
+                          <h3>{child.name}&apos;s child login</h3>
+                          <p>
+                            Child access is for older kids who can help check their
+                            own week. They can mark plans done, skipped, or moved and
+                            add notes. Parent controls stay with you.
+                          </p>
+                        </div>
+
+                        {context?.isGuest ? (
+                          <div className="child-access-empty">
+                            <p>
+                              Guest mode cannot create child logins. Create a free
+                              parent account first so the invite can be saved.
+                            </p>
+                            <Link className="btn btn-secondary" href="/login?mode=create">
+                              Create parent account
+                            </Link>
+                          </div>
+                        ) : childLoginActive ? (
+                          <div className="child-access-empty">
+                            <p>
+                              A child login is already linked to this profile.
+                              {childLogin?.email ? ` Login email: ${childLogin.email}.` : ""}
+                            </p>
+                          </div>
+                        ) : inviteReady ? (
+                          <div className="child-invite-box">
+                            <label className="field-group">
+                              <span className="field-label">Invite code</span>
+                              <input className="input" value={childLogin?.loginName ?? ""} readOnly />
+                            </label>
+
+                            <div className="child-invite-actions">
+                              <button
+                                className="mini-text-button"
+                                type="button"
+                                onClick={() => void copyInviteCode(child, childLogin)}
+                              >
+                                <LuCopy />
+                                {copiedChildId === child.id ? "Copied" : "Copy code"}
+                              </button>
+                              <Link className="mini-text-button" href={childSignupHref(child, childLogin)}>
+                                <LuExternalLink />
+                                Open child signup
+                              </Link>
+                            </div>
+
+                            <p className="text-small">
+                              Use the signup link with the child, or copy the code and
+                              paste it into the Child invite field on the create account page.
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-small">No invite has been created yet.</p>
+                        )}
+                      </div>
+                    ) : null}
+                  </>
                 ) : null}
               </article>
             );

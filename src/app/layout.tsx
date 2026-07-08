@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import BetaFeedbackWidget from "@/components/shared/BetaFeedbackWidget";
 import "./globals.css";
 
 const siteUrl = "https://softweekplanner.com";
@@ -94,7 +95,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
-      <body>{children}<Analytics /></body>
+      <body>{children}<BetaFeedbackWidget /><Analytics /></body>
     </html>
   );
 }

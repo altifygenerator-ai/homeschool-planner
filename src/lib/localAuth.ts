@@ -96,6 +96,26 @@ function cleanPassword(value: string) {
   return value.trim();
 }
 
+function getSupabaseErrorMessage(error: unknown, fallback: string) {
+  if (error && typeof error === "object") {
+    const record = error as { message?: unknown; details?: unknown; hint?: unknown; code?: unknown };
+    const parts = [record.message, record.details, record.hint]
+      .filter((part): part is string => typeof part === "string" && part.trim().length > 0)
+      .map((part) => part.trim());
+
+    if (parts.length) return parts.join(" ");
+
+    if (typeof record.code === "string") return `${fallback} (${record.code})`;
+  }
+
+  if (error instanceof Error && error.message) return error.message;
+  return fallback;
+}
+
+function createChildInviteCode() {
+  return `SW-${Math.random().toString(16).slice(2, 10).toUpperCase()}`;
+}
+
 function guestFamily(): LocalFamily {
   return {
     id: GUEST_FAMILY_ID,
@@ -545,6 +565,57 @@ export async function loginLocalAccount(login: string, password: string, inviteC
   return { ok: true };
 }
 
+async function createChildInviteWithTableFallback({
+  childId,
+  childName,
+  context,
+}: {
+  childId: string;
+  childName: string;
+  context: AccountContext;
+}) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return null;
+
+  const { data: existing, error: existingError } = await supabase
+    .from("child_account_invites")
+    .select("id, invite_code")
+    .eq("family_id", context.family.id)
+    .eq("child_id", childId)
+    .is("accepted_at", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!existingError && existing?.invite_code) return existing;
+
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 30);
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const { data, error } = await supabase
+      .from("child_account_invites")
+      .insert({
+        family_id: context.family.id,
+        child_id: childId,
+        child_name: childName.trim() || "Student",
+        invite_code: createChildInviteCode(),
+        created_by: context.account.id,
+        expires_at: expiresAt.toISOString(),
+      })
+      .select("id, invite_code")
+      .single();
+
+    if (!error) return data;
+
+    const message = getSupabaseErrorMessage(error, "That child invite could not be created.");
+    const looksLikeDuplicate = message.toLowerCase().includes("duplicate") || message.includes("23505");
+    if (!looksLikeDuplicate) throw new Error(message);
+  }
+
+  throw new Error("That child invite could not be created. Please try again.");
+}
+
 export async function createChildLocalAccount(childId: string, childName: string) {
   const context = await getActiveAccountContext();
   if (!context || !context.isParent) return null;
@@ -567,15 +638,24 @@ export async function createChildLocalAccount(childId: string, childName: string
   const supabase = getSupabaseClient();
   if (!supabase) return null;
 
+  let row: { id?: unknown; invite_code?: unknown } | null = null;
+
   const { data, error } = await supabase.rpc("create_child_account_invite", {
     p_child_id: childId,
     p_child_name: childName,
   });
 
-  if (error) throw error;
+  if (!error) {
+    row = (Array.isArray(data) ? data[0] : data) as typeof row;
+  } else {
+    row = await createChildInviteWithTableFallback({ childId, childName, context });
+  }
 
-  const row = Array.isArray(data) ? data[0] : data;
-  const inviteCode = String(row?.invite_code ?? "");
+  const inviteCode = String(row?.invite_code ?? "").trim();
+
+  if (!inviteCode) {
+    throw new Error("That child invite could not be created. The invite code came back empty.");
+  }
 
   return {
     id: String(row?.id ?? createId("child-invite")),

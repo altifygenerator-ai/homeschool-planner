@@ -21,16 +21,20 @@ export default function AuthPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialMode = searchParams.get("mode") === "login" ? "login" : "create";
+  const initialAccountType =
+    searchParams.get("role") === "child" || searchParams.get("invite") ? "child" : "parent";
+  const initialInviteCode = searchParams.get("invite") ?? "";
+  const initialName = initialAccountType === "child" ? searchParams.get("name") ?? "" : "";
 
   const [mode, setMode] = useState<"create" | "login">(initialMode);
-  const [accountType, setAccountType] = useState<"parent" | "child">("parent");
-  const [name, setName] = useState("");
+  const [accountType, setAccountType] = useState<"parent" | "child">(initialAccountType);
+  const [name, setName] = useState(initialName);
   const [familyName, setFamilyName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [login, setLogin] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
-  const [inviteCode, setInviteCode] = useState("");
+  const [inviteCode, setInviteCode] = useState(initialInviteCode);
   const [message, setMessage] = useState("");
   const [isWorking, setIsWorking] = useState(false);
 

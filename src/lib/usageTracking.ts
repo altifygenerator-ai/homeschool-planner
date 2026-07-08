@@ -22,7 +22,8 @@ export type SoftWeekEventName =
   | "child_removed"
   | "child_invite_created"
   | "print_opened"
-  | "print_clicked";
+  | "print_clicked"
+  | "feedback_submitted";
 
 type TrackSoftWeekEventOptions = {
   source?: string;

@@ -46,6 +46,33 @@ export default function DashboardHome() {
   const doneCount = plans.filter((plan) => plan.status === "done").length;
   const movedCount = plans.filter((plan) => plan.status === "moved").length;
   const skippedCount = plans.filter((plan) => plan.status === "skipped").length;
+  const quickStartSteps = [
+    {
+      label: "Add children",
+      text: "Add the kids you want to plan for.",
+      href: "/dashboard/children",
+      done: childCount > 0,
+    },
+    {
+      label: "Add a plan",
+      text: "Put one real thing on the week.",
+      href: "/dashboard/planner",
+      done: plans.length > 0,
+    },
+    {
+      label: "Mark what happened",
+      text: "Try done, moved, skipped, or a short note.",
+      href: "/dashboard/planner",
+      done: doneCount + movedCount + skippedCount > 0,
+    },
+    {
+      label: "Save the week",
+      text: "Save a record when the week is ready.",
+      href: "/dashboard/planner",
+      done: savedWeeks.length > 0,
+    },
+  ];
+  const nextStep = quickStartSteps.find((step) => !step.done);
 
   return (
     <div className="dashboard-page-grid">
@@ -86,6 +113,40 @@ export default function DashboardHome() {
           <LuArrowRight />
         </Link>
       </section>
+
+      {context?.isParent ? (
+        <section className="paper-card parent-start-card">
+          <div>
+            <p className="eyebrow">Quick start</p>
+            <h2>Keep it simple the first time through.</h2>
+            <p>
+              You do not need to set everything up at once. Add a child, add a
+              plan, move or mark something, then save the week when it makes sense.
+            </p>
+          </div>
+
+          <div className="parent-start-steps">
+            {quickStartSteps.map((step, index) => (
+              <Link
+                className={`parent-start-step ${step.done ? "is-done" : ""}`}
+                href={step.href}
+                key={step.label}
+              >
+                <span>{step.done ? "✓" : index + 1}</span>
+                <div>
+                  <strong>{step.label}</strong>
+                  <small>{step.text}</small>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          <Link className="mini-text-button parent-next-step" href={nextStep?.href || "/dashboard/weeks"}>
+            {nextStep ? `Next: ${nextStep.label}` : "Review saved weeks"}
+            <LuArrowRight />
+          </Link>
+        </section>
+      ) : null}
 
       <section className="dashboard-card-grid">
         <Link className="dashboard-link-card paper-card" href="/dashboard/planner">
