@@ -29,7 +29,8 @@ type WeeklyPlannerBoardProps = {
 };
 
 function dateForDay(weekStart: string, index: number) {
-  const start = new Date(`${weekStart.slice(0, 10)}T12:00:00`);
+  const [year, month, date] = weekStart.slice(0, 10).split("-").map(Number);
+  const start = new Date(year, month - 1, date, 12, 0, 0, 0);
   const next = new Date(start);
   next.setDate(start.getDate() + index);
   return next;

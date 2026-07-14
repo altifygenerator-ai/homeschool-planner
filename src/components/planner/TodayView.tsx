@@ -30,7 +30,8 @@ type TodayViewProps = {
 };
 
 function dateForDay(weekStart: string, day: WeekDay) {
-  const start = new Date(`${weekStart.slice(0, 10)}T12:00:00`);
+  const [year, month, date] = weekStart.slice(0, 10).split("-").map(Number);
+  const start = new Date(year, month - 1, date, 12, 0, 0, 0);
   const index = weekDays.indexOf(day);
   const next = new Date(start);
   next.setDate(start.getDate() + Math.max(index, 0));
