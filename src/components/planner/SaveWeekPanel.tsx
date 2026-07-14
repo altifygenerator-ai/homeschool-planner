@@ -45,9 +45,9 @@ export default function SaveWeekPanel({
     <section className="paper-card week-save-card week-save-compact">
       <div className="week-save-copy">
         <p className="eyebrow">Week record</p>
-        <h2 className="week-save-title">Save {weekLabel} when it’s ready.</h2>
+        <h2 className="week-save-title">Record for {weekLabel}</h2>
         <p className="text-small">
-          Creates a saved week with child rundowns from this board.
+          SoftWeek updates records automatically. Use this if you want to update it right now before printing or reviewing.
         </p>
       </div>
 
@@ -72,7 +72,7 @@ export default function SaveWeekPanel({
 
       <button className="btn btn-primary" type="button" onClick={handleSaveWeek} disabled={!plans.length}>
         <LuArchive />
-        Save week
+        Update record now
       </button>
     </section>
   );

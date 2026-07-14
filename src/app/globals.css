@@ -6864,3 +6864,952 @@ button {
     display: none;
   }
 }
+
+/* SoftWeek planner Today / Plan Week redesign */
+.planner-workspace-redesigned {
+  gap: 1rem;
+}
+
+.planner-view-tabs {
+  width: fit-content;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.35rem;
+  border-radius: 999px;
+  background: rgba(255, 253, 248, 0.86);
+  border: 1px solid rgba(226, 214, 196, 0.92);
+  box-shadow: 0 10px 24px rgba(60, 47, 33, 0.055);
+}
+
+.planner-view-tabs button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(36, 49, 63, 0.68);
+  padding: 0.55rem 0.9rem;
+  font-weight: 950;
+  font-size: 0.86rem;
+}
+
+.planner-view-tabs button.is-active {
+  background: var(--sage-soft);
+  color: var(--sage-dark);
+  box-shadow: 0 8px 18px rgba(79, 115, 95, 0.09);
+}
+
+.planner-control-strip-redesigned .planner-control-copy span {
+  color: var(--sage-dark);
+  font-weight: 850;
+}
+
+.today-shell {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.today-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: start;
+}
+
+.today-header h2 {
+  margin: 0.25rem 0 0;
+  color: var(--navy);
+  font-size: clamp(1.55rem, 3vw, 2.6rem);
+  letter-spacing: -0.045em;
+}
+
+.today-count-card {
+  min-width: 96px;
+  min-height: 78px;
+  display: grid;
+  place-items: center;
+  gap: 0.05rem;
+  padding: 0.75rem;
+  border-radius: 20px;
+  background: rgba(223, 234, 221, 0.72);
+  border: 1px solid rgba(143, 174, 155, 0.3);
+  color: var(--sage-dark);
+}
+
+.today-count-card strong {
+  font-size: 1.8rem;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.today-count-card span {
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.today-picker-row,
+.today-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.today-day-button {
+  min-height: 54px;
+  min-width: 78px;
+  display: grid;
+  gap: 0.1rem;
+  place-items: center;
+  border: 1px solid rgba(226, 214, 196, 0.95);
+  border-radius: 16px;
+  background: rgba(255, 253, 248, 0.88);
+  color: rgba(36, 49, 63, 0.72);
+  padding: 0.55rem 0.7rem;
+  font-weight: 950;
+}
+
+.today-day-button small {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 850;
+}
+
+.today-day-button.is-active {
+  background: var(--sage-soft);
+  color: var(--sage-dark);
+  border-color: rgba(143, 174, 155, 0.42);
+}
+
+.today-plan-panel {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.today-time-block {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.today-time-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: fit-content;
+  border-radius: 999px;
+  background: rgba(244, 234, 219, 0.56);
+  border: 1px solid rgba(218, 200, 175, 0.78);
+  color: var(--navy);
+  padding: 0.45rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.today-plan-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+
+.today-empty-card {
+  display: grid;
+  gap: 0.65rem;
+  max-width: 560px;
+  padding: 1rem;
+  border-radius: 20px;
+  background: rgba(251, 247, 239, 0.76);
+  border: 1px dashed rgba(218, 200, 175, 0.95);
+}
+
+.today-empty-card h3 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 1.08rem;
+}
+
+.today-empty-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.planner-week-filter-row {
+  grid-template-columns: minmax(260px, 0.82fr) minmax(260px, 0.78fr);
+}
+
+.planner-week-note-card {
+  align-content: center;
+}
+
+.planner-week-note-card h3 {
+  margin: 0.2rem 0 0;
+  color: var(--navy);
+  font-size: 1.05rem;
+}
+
+.planner-board-shell-calendar .planner-board-header {
+  align-items: start;
+}
+
+.weekly-board-calendar {
+  grid-auto-columns: minmax(245px, 270px);
+}
+
+.day-column-dated {
+  display: flex;
+  flex-direction: column;
+}
+
+.day-column-header-dated {
+  align-items: flex-start;
+}
+
+.day-column-header-dated div {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.day-column-header-dated small {
+  color: var(--sage-dark);
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.day-add-button {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin: 0.65rem 0.7rem 0;
+  border: 1px solid rgba(143, 174, 155, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 253, 248, 0.92);
+  color: var(--sage-dark);
+  padding: 0.45rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 950;
+}
+
+.add-plan-card-calendar {
+  border: 1px solid rgba(143, 174, 155, 0.24);
+}
+
+.add-plan-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.add-plan-form-grid-calendar {
+  grid-template-columns: minmax(260px, 1.15fr) minmax(260px, 1fr) minmax(220px, 0.8fr) minmax(150px, 0.65fr) minmax(150px, 0.65fr);
+}
+
+.add-plan-form-grid-calendar .add-plan-resource-field {
+  grid-column: 1 / 4;
+}
+
+.planner-tools-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.planner-record-row {
+  grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.75fr);
+}
+
+.planner-advanced-tools-simplified {
+  margin-top: 0;
+}
+
+.planner-clear-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 1180px) {
+  .planner-week-filter-row,
+  .planner-record-row,
+  .add-plan-form-grid-calendar {
+    grid-template-columns: 1fr;
+  }
+
+  .add-plan-form-grid-calendar .add-plan-notes-field,
+  .add-plan-form-grid-calendar .add-plan-resource-field {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 780px) {
+  .planner-view-tabs {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-radius: 20px;
+  }
+
+  .planner-view-tabs button {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    font-size: 0.78rem;
+  }
+
+  .today-shell {
+    padding: 0.9rem;
+    border-radius: 22px;
+  }
+
+  .today-header {
+    grid-template-columns: 1fr;
+  }
+
+  .today-count-card {
+    width: 100%;
+    min-height: 64px;
+    grid-template-columns: auto auto;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .today-picker-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .today-day-button {
+    min-width: 0;
+    padding: 0.5rem 0.35rem;
+  }
+
+  .today-plan-list {
+    grid-template-columns: 1fr;
+  }
+
+  .weekly-board-calendar {
+    grid-auto-columns: minmax(260px, 86vw);
+  }
+
+  .add-plan-header-actions,
+  .planner-clear-row {
+    justify-content: stretch;
+  }
+
+  .add-plan-header-actions .mini-helper-button,
+  .planner-clear-row .mini-text-button,
+  .day-add-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 440px) {
+  .planner-view-tabs {
+    grid-template-columns: 1fr;
+    border-radius: 18px;
+  }
+
+  .today-picker-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* SoftWeek simple calendar planner pass */
+.planner-workspace-calendar-simple {
+  gap: 0.85rem;
+}
+
+.planner-page-heading-simple {
+  padding-bottom: 0.2rem;
+}
+
+.planner-view-tabs-simple {
+  margin-top: -0.2rem;
+}
+
+.planner-quiet-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  border-radius: 18px;
+}
+
+.planner-quiet-status div {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.planner-quiet-status span {
+  color: var(--sage-dark);
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.calendar-planner-shell {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.calendar-week-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 24px;
+}
+
+.calendar-week-header h2 {
+  margin: 0.2rem 0 0;
+  color: var(--navy);
+  font-size: clamp(1.45rem, 2.7vw, 2.15rem);
+  letter-spacing: -0.035em;
+}
+
+.calendar-week-controls {
+  display: grid;
+  gap: 0.65rem;
+  justify-items: end;
+}
+
+.calendar-week-buttons,
+.calendar-date-jump,
+.calendar-filter-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.calendar-week-buttons .mini-text-button {
+  min-height: 38px;
+}
+
+.calendar-date-jump {
+  justify-content: flex-end;
+}
+
+.calendar-date-jump .mini-field {
+  min-width: 170px;
+}
+
+.calendar-filter-bar {
+  padding: 0.65rem 0.75rem;
+  border-radius: 18px;
+}
+
+.calendar-filter-bar > span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.calendar-day-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.calendar-day-tile {
+  min-height: 150px;
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+  gap: 0.3rem;
+  text-align: left;
+  border: 1px solid rgba(226, 214, 196, 0.9);
+  border-radius: 22px;
+  background: rgba(255, 253, 248, 0.86);
+  color: var(--navy);
+  padding: 0.85rem;
+  box-shadow: 0 14px 30px rgba(60, 47, 33, 0.045);
+}
+
+.calendar-day-tile:hover,
+.calendar-day-tile.is-active {
+  border-color: rgba(143, 174, 155, 0.44);
+  background: rgba(243, 248, 241, 0.94);
+  box-shadow: 0 16px 32px rgba(79, 115, 95, 0.09);
+}
+
+.calendar-day-name {
+  color: var(--sage-dark);
+  font-size: 0.74rem;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.calendar-day-tile strong {
+  font-size: 1.25rem;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+}
+
+.calendar-day-tile small {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.calendar-day-preview {
+  display: grid;
+  align-content: end;
+  gap: 0.25rem;
+  margin-top: 0.35rem;
+}
+
+.calendar-day-preview span,
+.calendar-day-preview em {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  border-radius: 999px;
+  background: rgba(244, 234, 219, 0.52);
+  color: var(--muted);
+  padding: 0.28rem 0.5rem;
+  font-size: 0.75rem;
+  font-style: normal;
+  font-weight: 850;
+}
+
+.calendar-day-preview em {
+  background: transparent;
+  padding-left: 0;
+  color: rgba(86, 99, 109, 0.78);
+}
+
+.calendar-day-detail {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 26px;
+}
+
+.calendar-day-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.calendar-day-detail-header h2 {
+  margin: 0.2rem 0 0;
+  color: var(--navy);
+  font-size: clamp(1.35rem, 2.5vw, 2rem);
+  letter-spacing: -0.035em;
+}
+
+.calendar-day-add-slot {
+  display: grid;
+}
+
+.calendar-add-row-inline {
+  margin: 0;
+}
+
+.calendar-day-plan-groups,
+.calendar-time-group {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.calendar-day-plan-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0.75rem;
+}
+
+.planner-more-tools {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 24px;
+}
+
+.planner-more-tools summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  cursor: pointer;
+  list-style: none;
+  padding: 1rem;
+  color: var(--navy);
+  font-weight: 950;
+}
+
+.planner-more-tools summary::-webkit-details-marker {
+  display: none;
+}
+
+.planner-more-tools summary small {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.planner-more-tools-grid {
+  padding: 0 1rem 1rem;
+}
+
+.planner-more-tools .planner-clear-row {
+  padding: 0 1rem 1rem;
+}
+
+@media (max-width: 1120px) {
+  .calendar-week-header,
+  .calendar-day-detail-header {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-week-controls {
+    justify-items: stretch;
+  }
+
+  .calendar-date-jump,
+  .calendar-week-buttons {
+    justify-content: flex-start;
+  }
+
+  .calendar-day-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 780px) {
+  .planner-quiet-status,
+  .calendar-day-detail-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .calendar-day-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .calendar-day-tile {
+    min-height: 130px;
+    border-radius: 18px;
+    padding: 0.75rem;
+  }
+
+  .calendar-week-buttons,
+  .calendar-date-jump,
+  .calendar-filter-bar {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .calendar-day-detail,
+  .calendar-week-header {
+    border-radius: 22px;
+    padding: 0.9rem;
+  }
+
+  .calendar-day-plan-list {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-day-detail-header .btn,
+  .planner-quiet-status .mini-text-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 460px) {
+  .calendar-day-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* SoftWeek calendar redesign CSS repair */
+.planner-workspace-calendar-simple {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.planner-workspace-calendar-simple .planner-page-heading-simple {
+  margin-bottom: 0;
+}
+
+.planner-view-tabs-simple,
+.planner-workspace-calendar-simple .planner-view-tabs {
+  position: sticky;
+  top: 0.5rem;
+  z-index: 8;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0.35rem;
+  border: 1px solid rgba(226, 214, 196, 0.92);
+  border-radius: 999px;
+  background: rgba(255, 253, 248, 0.9);
+  box-shadow: 0 14px 28px rgba(60, 47, 33, 0.06);
+  backdrop-filter: blur(12px);
+}
+
+.planner-view-tabs-simple button,
+.planner-workspace-calendar-simple .planner-view-tabs button {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.42rem;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.65rem 0.95rem;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.planner-view-tabs-simple button.is-active,
+.planner-workspace-calendar-simple .planner-view-tabs button.is-active {
+  background: var(--sage-dark);
+  color: #fffdf8;
+  box-shadow: 0 10px 20px rgba(79, 115, 95, 0.18);
+}
+
+.planner-quiet-status {
+  border: 1px solid rgba(143, 174, 155, 0.18);
+  background: rgba(246, 241, 232, 0.72);
+}
+
+.today-shell {
+  overflow: hidden;
+}
+
+.today-plan-panel,
+.calendar-day-detail,
+.calendar-week-header,
+.calendar-filter-bar,
+.planner-more-tools,
+.planner-records-page-simple .week-save-card {
+  border: 1px solid rgba(226, 214, 196, 0.86);
+  background: rgba(255, 253, 248, 0.88);
+  box-shadow: 0 18px 40px rgba(60, 47, 33, 0.055);
+}
+
+.today-picker-row,
+.today-filter-row,
+.calendar-filter-bar {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.today-day-button,
+.calendar-day-tile {
+  appearance: none;
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    border-color 140ms ease,
+    background-color 140ms ease;
+}
+
+.today-day-button:active,
+.calendar-day-tile:active {
+  transform: translateY(1px) scale(0.992);
+}
+
+.calendar-planner-shell {
+  align-items: start;
+}
+
+.calendar-day-grid {
+  align-items: stretch;
+}
+
+.calendar-day-tile {
+  width: 100%;
+  font-family: inherit;
+}
+
+.calendar-day-tile.is-active {
+  outline: 2px solid rgba(143, 174, 155, 0.28);
+  outline-offset: 2px;
+}
+
+.calendar-day-preview span {
+  max-width: 100%;
+}
+
+.calendar-day-detail-header .btn {
+  flex: 0 0 auto;
+}
+
+.calendar-day-add-slot .planner-add-row,
+.calendar-add-row-inline {
+  width: 100%;
+}
+
+.add-plan-card-calendar {
+  margin: 0;
+  border-radius: 22px;
+  border: 1px solid rgba(143, 174, 155, 0.2);
+  background: rgba(246, 241, 232, 0.64);
+  box-shadow: none;
+}
+
+.add-plan-card-calendar .add-plan-card-header {
+  align-items: flex-start;
+}
+
+.add-plan-card-calendar .add-plan-form-grid,
+.add-plan-form-grid-calendar {
+  align-items: end;
+}
+
+.planner-records-page-simple {
+  display: grid;
+  gap: 1rem;
+}
+
+.planner-records-page-simple .planner-tools-row,
+.planner-record-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  align-items: stretch;
+  gap: 1rem;
+}
+
+.planner-records-page-simple .week-save-card,
+.planner-week-note-card {
+  min-height: 100%;
+  display: grid;
+  align-content: start;
+  gap: 0.75rem;
+}
+
+.planner-more-tools {
+  background: rgba(255, 253, 248, 0.82);
+}
+
+.planner-more-tools[open] summary {
+  border-bottom: 1px solid rgba(226, 214, 196, 0.72);
+}
+
+.planner-more-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.planner-more-tools-grid .planner-tool-card {
+  min-width: 0;
+}
+
+.planner-more-tools .planner-tool-primary {
+  border-color: rgba(143, 174, 155, 0.24);
+  background: rgba(243, 248, 241, 0.68);
+}
+
+.planner-more-tools .template-inline-actions,
+.planner-more-tools .template-use-row,
+.planner-more-tools .planner-clear-row {
+  flex-wrap: wrap;
+}
+
+@media (min-width: 1121px) {
+  .calendar-day-detail {
+    padding: 1.15rem;
+  }
+
+  .calendar-day-plan-list {
+    grid-template-columns: repeat(2, minmax(260px, 1fr));
+  }
+}
+
+@media (max-width: 1120px) {
+  .planner-records-page-simple .planner-tools-row,
+  .planner-record-row,
+  .planner-more-tools-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 780px) {
+  .planner-workspace-calendar-simple {
+    max-width: 100%;
+  }
+
+  .planner-view-tabs-simple,
+  .planner-workspace-calendar-simple .planner-view-tabs {
+    width: 100%;
+    justify-content: space-between;
+    border-radius: 22px;
+    position: relative;
+    top: auto;
+  }
+
+  .planner-view-tabs-simple button,
+  .planner-workspace-calendar-simple .planner-view-tabs button {
+    flex: 1 1 0;
+    padding-inline: 0.65rem;
+  }
+
+  .calendar-week-header {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-week-controls,
+  .calendar-date-jump,
+  .calendar-week-buttons,
+  .calendar-filter-bar {
+    width: 100%;
+  }
+
+  .calendar-date-jump .mini-field,
+  .calendar-date-jump .soft-action,
+  .calendar-week-buttons .mini-text-button,
+  .calendar-day-detail-header .btn {
+    width: 100%;
+  }
+
+  .calendar-day-detail-header {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .add-plan-card-calendar .add-plan-form-grid,
+  .add-plan-form-grid-calendar {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .planner-view-tabs-simple,
+  .planner-workspace-calendar-simple .planner-view-tabs {
+    gap: 0.25rem;
+    padding: 0.28rem;
+  }
+
+  .planner-view-tabs-simple button,
+  .planner-workspace-calendar-simple .planner-view-tabs button {
+    font-size: 0.82rem;
+  }
+
+  .calendar-day-tile {
+    min-height: auto;
+  }
+
+  .calendar-day-preview {
+    align-content: start;
+  }
+
+  .planner-more-tools summary {
+    display: grid;
+  }
+}

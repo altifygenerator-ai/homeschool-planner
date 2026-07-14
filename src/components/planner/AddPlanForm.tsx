@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LuPlus, LuRotateCcw, LuTag } from "react-icons/lu";
+import { LuPlus, LuRotateCcw, LuTag, LuX } from "react-icons/lu";
 import {
   dayLabels,
   getCategoryLabel,
@@ -22,21 +22,36 @@ type AddPlanFormProps = {
   childProfiles: ChildProfile[];
   categories: CategoryDefinition[];
   weekStart: string;
+  initialDays?: WeekDay[];
+  titlePrefix?: string;
   onAddPlans: (plans: PlannerItem[]) => void;
-  onAddCategory: (name: string) => CategoryDefinition | undefined | Promise<CategoryDefinition | undefined>;
+  onAddCategory: (
+    name: string,
+  ) => CategoryDefinition | undefined | Promise<CategoryDefinition | undefined>;
+  onCancel?: () => void;
 };
 
 export default function AddPlanForm({
   childProfiles,
   categories,
   weekStart,
+  initialDays = ["Monday"],
+  titlePrefix,
   onAddPlans,
   onAddCategory,
+  onCancel,
 }: AddPlanFormProps) {
   const firstCategory = categories[0]?.id ?? "reading";
+  const defaultCategory = categories.some(
+    (item) => item.id === "chores-routines",
+  )
+    ? "chores-routines"
+    : firstCategory;
   const [title, setTitle] = useState("");
-  const [selectedDays, setSelectedDays] = useState<WeekDay[]>(["Monday"]);
-  const [category, setCategory] = useState<PlanCategory>(firstCategory);
+  const [selectedDays, setSelectedDays] = useState<WeekDay[]>(
+    initialDays.length ? initialDays : ["Monday"],
+  );
+  const [category, setCategory] = useState<PlanCategory>(defaultCategory);
   const [customCategoryName, setCustomCategoryName] = useState("");
   const [timeBlock, setTimeBlock] = useState<TimeBlock>("Anytime");
   const [assignedTo, setAssignedTo] = useState("everyone");
@@ -90,19 +105,23 @@ export default function AddPlanForm({
     setResourceUrl("");
     setTimeBlock("Anytime");
     setAssignedTo("everyone");
-    setSelectedDays(["Monday"]);
+    setSelectedDays(initialDays.length ? initialDays : ["Monday"]);
   }
 
   function loadExample() {
-    setTitle("Swimming / movement time");
-    setSelectedDays(["Tuesday", "Wednesday", "Thursday", "Friday", "Sunday"]);
-    setCategory(categories.some((item) => item.id === "life-skills") ? "life-skills" : firstCategory);
-    setTimeBlock("Afternoon");
+    setTitle("Feed animals / quick chore");
+    setSelectedDays(
+      initialDays.length
+        ? initialDays
+        : ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    );
+    setCategory(defaultCategory);
+    setTimeBlock("Morning");
     setAssignedTo("everyone");
     setNotes(
-      "Add it once, pick the days that fit this week, and move it later if life changes."
+      "Type your own chore, lesson, routine, outing, or reminder. Pick one day or several days.",
     );
-    setResourceTitle("Optional lesson link");
+    setResourceTitle("");
     setResourceUrl("");
   }
 
@@ -114,44 +133,68 @@ export default function AddPlanForm({
     ? assignedTo
     : "everyone";
 
+  const singleSelectedDay =
+    selectedDays.length === 1 ? selectedDays[0] : undefined;
+
   return (
-    <aside className="form-card add-plan-card">
+    <aside className="form-card add-plan-card add-plan-card-calendar">
       <div className="add-plan-card-header">
         <div>
-          <p className="eyebrow">Loose planning</p>
-          <h2 className="section-title-sm">Add a plan to the week.</h2>
+          <p className="eyebrow">Add to calendar</p>
+          <h2 className="section-title-sm">
+            {titlePrefix ??
+              (singleSelectedDay
+                ? `Add something to ${dayLabels[singleSelectedDay]}.`
+                : "Add something to the week.")}
+          </h2>
           <p className="text-soft">
-            Pick any days in your 7-day week, assign it to a child or everyone,
-            and keep it movable when real life changes the plan.
+            Add a lesson, chore, routine, outing, appointment, or anything else
+            that belongs in the homeschool week.
           </p>
         </div>
 
-        <button
-          className="mini-helper-button"
-          type="button"
-          onClick={loadExample}
-        >
-          <LuRotateCcw />
-          Use example
-        </button>
+        <div className="add-plan-header-actions">
+          <button
+            className="mini-helper-button"
+            type="button"
+            onClick={loadExample}
+          >
+            <LuRotateCcw />
+            Use example
+          </button>
+
+          {onCancel ? (
+            <button
+              className="mini-helper-button"
+              type="button"
+              onClick={onCancel}
+            >
+              <LuX />
+              Close
+            </button>
+          ) : null}
+        </div>
       </div>
 
-      <form className="add-plan-form-grid" onSubmit={handleSubmit}>
+      <form
+        className="add-plan-form-grid add-plan-form-grid-calendar"
+        onSubmit={handleSubmit}
+      >
         <div className="field-group add-plan-title-field">
           <label className="field-label" htmlFor="title">
-            Plan title
+            What are you adding?
           </label>
           <input
             className="input"
             id="title"
-            placeholder="Swimming, spelling practice, Sunday field trip..."
+            placeholder="Math lesson, feed chickens, co-op day, reading time..."
             value={title}
             onChange={(event) => setTitle(event.target.value)}
           />
         </div>
 
         <div className="field-group add-plan-days-field">
-          <span className="field-label">Days</span>
+          <span className="field-label">Day or days</span>
 
           <div className="day-chip-row day-chip-row-seven">
             {weekDays.map((day) => {
@@ -172,13 +215,13 @@ export default function AddPlanForm({
           </div>
 
           <p className="form-helper-text">
-            Choose one day, several weekdays, or weekend learning days too.
+            Start with one day, or add the same thing to several days at once.
           </p>
         </div>
 
         <div className="field-group add-plan-category-field">
           <label className="field-label" htmlFor="category">
-            Category
+            Type
           </label>
           <select
             className="select"
@@ -198,7 +241,7 @@ export default function AddPlanForm({
           <div className="category-add-row">
             <input
               className="input"
-              placeholder="Add spelling, typing, social studies..."
+              placeholder="Add spelling, animals, kitchen help..."
               value={customCategoryName}
               onChange={(event) => setCustomCategoryName(event.target.value)}
             />
@@ -211,10 +254,6 @@ export default function AddPlanForm({
               <LuTag />
             </button>
           </div>
-
-          <p className="form-helper-text">
-            Add a custom category when your subject needs a better name.
-          </p>
         </div>
 
         <div className="field-group">
@@ -253,12 +292,12 @@ export default function AddPlanForm({
 
         <div className="field-group add-plan-notes-field">
           <label className="field-label" htmlFor="notes">
-            Gentle notes
+            Notes, optional
           </label>
           <textarea
             className="textarea compact-textarea"
             id="notes"
-            placeholder="Optional notes, supplies, a loose backup plan, or what you want to remember..."
+            placeholder="Supplies, page numbers, quick reminders, or what to remember later..."
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
           />
@@ -283,16 +322,12 @@ export default function AddPlanForm({
             value={resourceUrl}
             onChange={(event) => setResourceUrl(event.target.value)}
           />
-
-          <p className="form-helper-text">
-            Add a website, video, online class, PDF, or Google Drive link without turning SoftWeek into a full classroom system.
-          </p>
         </div>
 
         <div className="add-plan-submit-row">
           <button className="btn btn-primary" type="submit">
             <LuPlus />
-            Add to week
+            Add item
           </button>
         </div>
       </form>

@@ -1,5 +1,6 @@
 "use client";
 
+import { LuPlus } from "react-icons/lu";
 import PlanCard from "@/components/planner/PlanCard";
 import { dayLabels } from "@/data/demoPlans";
 import type {
@@ -13,9 +14,11 @@ import type {
 
 type DayColumnProps = {
   day: WeekDay;
+  dateLabel: string;
   plans: PlannerItem[];
   childProfiles: ChildProfile[];
   categories: CategoryDefinition[];
+  onAddToDay?: (day: WeekDay) => void;
   onMove: (id: string, day: WeekDay) => void;
   onCopy: (id: string, day: WeekDay) => void;
   onStatusChange: (id: string, status: PlanStatus) => void;
@@ -28,9 +31,11 @@ type DayColumnProps = {
 
 export default function DayColumn({
   day,
+  dateLabel,
   plans,
   childProfiles,
   categories,
+  onAddToDay,
   onMove,
   onCopy,
   onStatusChange,
@@ -41,11 +46,21 @@ export default function DayColumn({
   canEditStructure = true,
 }: DayColumnProps) {
   return (
-    <section className="day-column">
-      <div className="day-column-header">
-        <p>{dayLabels[day]}</p>
+    <section className="day-column day-column-dated">
+      <div className="day-column-header day-column-header-dated">
+        <div>
+          <p>{dayLabels[day]}</p>
+          <small>{dateLabel}</small>
+        </div>
         <span>{plans.length}</span>
       </div>
+
+      {canEditStructure && onAddToDay ? (
+        <button className="day-add-button" type="button" onClick={() => onAddToDay(day)}>
+          <LuPlus />
+          Add item
+        </button>
+      ) : null}
 
       <div className="day-column-list">
         {plans.length ? (
@@ -67,8 +82,8 @@ export default function DayColumn({
           ))
         ) : (
           <div className="empty-day-card">
-            <p>No pressure here.</p>
-            <span>Add something, or leave the day open.</span>
+            <p>Open day.</p>
+            <span>{canEditStructure ? "Add something here when you need it." : "Nothing assigned here yet."}</span>
           </div>
         )}
       </div>

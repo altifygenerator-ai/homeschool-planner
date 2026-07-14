@@ -29,6 +29,7 @@ export const defaultCategoryDefinitions: CategoryDefinition[] = [
   { id: "math", label: "Math" },
   { id: "nature", label: "Nature" },
   { id: "life-skills", label: "Life skills" },
+  { id: "chores-routines", label: "Chores / routines" },
   { id: "outing", label: "Outing" },
   { id: "science", label: "Science" },
   { id: "history", label: "History" },
