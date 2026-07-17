@@ -494,8 +494,20 @@ export default function PlannerShell() {
   function handleDelete(id: string) {
     if (!canPlan) return;
 
+    const deletedPlan = plans.find((plan) => plan.id === id);
+
     setPlans((current) => current.filter((plan) => plan.id !== id));
     setSavedMessage("");
+
+    if (deletedPlan) {
+      void trackSoftWeekEvent("plan_deleted", {
+        source: "planner",
+        metadata: {
+          day: deletedPlan.day,
+          weekStart: activeWeekStart,
+        },
+      });
+    }
   }
 
   async function handleClearWeek() {

@@ -9,6 +9,7 @@ export type SoftWeekEventName =
   | "plan_added"
   | "plan_moved"
   | "plan_copied"
+  | "plan_deleted"
   | "plan_status_updated"
   | "resource_updated"
   | "week_copied"

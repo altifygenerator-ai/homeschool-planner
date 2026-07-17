@@ -16,6 +16,7 @@ import {
   LuMoveRight,
   LuPalette,
   LuSoup,
+  LuTrash2,
   LuX,
 } from "react-icons/lu";
 import {
@@ -95,6 +96,15 @@ export default function PlanCard({
   const resourceHref = safeResourceHref(plan.resourceUrl);
   const resourceLabel = plan.resourceTitle?.trim() || "Open resource";
 
+  function handleDeleteClick() {
+    if (!canEditStructure) return;
+
+    const shouldDelete = window.confirm("Delete this item from the week?");
+    if (!shouldDelete) return;
+
+    onDelete(plan.id);
+  }
+
   return (
     <article className={`plan-card plan-card-${plan.status}`}>
       <div className="plan-card-header">
@@ -167,6 +177,17 @@ export default function PlanCard({
           {isOpen ? <LuChevronUp /> : <LuChevronDown />}
           Adjust
         </button>
+
+        {canEditStructure ? (
+          <button
+            className="soft-action remove-plan-button"
+            type="button"
+            onClick={handleDeleteClick}
+          >
+            <LuTrash2 />
+            Delete
+          </button>
+        ) : null}
       </div>
 
       {isOpen ? (
@@ -271,15 +292,6 @@ export default function PlanCard({
             />
           </label>
 
-          {canEditStructure ? (
-            <button
-              className="remove-plan-button"
-              type="button"
-              onClick={() => onDelete(plan.id)}
-            >
-              Remove this plan
-            </button>
-          ) : null}
         </div>
       ) : null}
     </article>
