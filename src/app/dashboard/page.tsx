@@ -1,10 +1,5 @@
-import DashboardHome from "@/components/dashboard/DashboardHome";
-import DashboardShell from "@/components/dashboard/DashboardShell";
+import { redirect } from "next/navigation";
 
 export default function DashboardPage() {
-  return (
-    <DashboardShell>
-      <DashboardHome />
-    </DashboardShell>
-  );
+  redirect("/dashboard/planner?view=today");
 }

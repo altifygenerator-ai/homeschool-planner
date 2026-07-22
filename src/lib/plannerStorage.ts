@@ -118,6 +118,7 @@ function dbChildToProfile(row: Record<string, unknown>): ChildProfile {
     id: String(row.id),
     name: String(row.name ?? "Child"),
     colorLabel: (row.color_label as ChildProfile["colorLabel"]) ?? "sage",
+    permissionLevel: (row.permission_level as ChildProfile["permissionLevel"]) ?? "checklist",
   };
 }
 
@@ -125,7 +126,8 @@ function dbPlanToPlannerItem(row: Record<string, unknown>): PlannerItem {
   return {
     id: String(row.id),
     title: String(row.title ?? "Untitled plan"),
-    day: String(row.day_of_week ?? "Monday") as WeekDay,
+    day: row.day_of_week ? (String(row.day_of_week) as WeekDay) : null,
+    placement: row.placement === "week" || !row.day_of_week ? "week" : "day",
     category: String(row.category_slug ?? "other"),
     status: String(row.status ?? "planned") as PlanStatus,
     timeBlock: (String(row.time_block ?? "Anytime") as PlannerItem["timeBlock"]),
@@ -135,6 +137,15 @@ function dbPlanToPlannerItem(row: Record<string, unknown>): PlannerItem {
     actualNotes: row.actual_notes ? String(row.actual_notes) : "",
     resourceTitle: row.resource_title ? String(row.resource_title) : "",
     resourceUrl: row.resource_url ? String(row.resource_url) : "",
+    completedAt: row.completed_at ? String(row.completed_at) : null,
+    actualDate: row.actual_date ? String(row.actual_date) : null,
+    timeSpentMinutes: row.time_spent_minutes === null || row.time_spent_minutes === undefined
+      ? null
+      : Number(row.time_spent_minutes),
+    orderIndex: Number(row.order_index ?? 0),
+    sourceRhythmId: row.source_rhythm_id ? String(row.source_rhythm_id) : null,
+    sourceLessonStackItemId: row.source_lesson_stack_item_id ? String(row.source_lesson_stack_item_id) : null,
+    syncState: "saved",
   };
 }
 
@@ -144,7 +155,8 @@ function plannerItemToDb(plan: PlannerItem, familyId: string, weekStart: string)
     family_id: familyId,
     week_start: normalizeWeekStart(weekStart),
     title: plan.title,
-    day_of_week: plan.day,
+    day_of_week: plan.placement === "day" ? plan.day : null,
+    placement: plan.placement ?? (plan.day ? "day" : "week"),
     category_slug: plan.category,
     status: plan.status,
     time_block: plan.timeBlock,
@@ -153,6 +165,12 @@ function plannerItemToDb(plan: PlannerItem, familyId: string, weekStart: string)
     actual_notes: plan.actualNotes ?? "",
     resource_title: plan.resourceTitle ?? "",
     resource_url: plan.resourceUrl ?? "",
+    completed_at: plan.completedAt ?? null,
+    actual_date: plan.actualDate ?? null,
+    time_spent_minutes: plan.timeSpentMinutes ?? null,
+    order_index: plan.orderIndex ?? 0,
+    source_rhythm_id: plan.sourceRhythmId ?? null,
+    source_lesson_stack_item_id: plan.sourceLessonStackItemId ?? null,
     updated_at: new Date().toISOString(),
     deleted_at: null,
   };
@@ -163,7 +181,7 @@ function savedWeekFromDb(row: Record<string, unknown>): SavedWeekLog {
 
   return {
     id: String(row.id),
-    weekLabel: String(row.week_label ?? snapshot.weekLabel ?? "Saved week"),
+    weekLabel: String(row.week_label ?? snapshot.weekLabel ?? "Weekly record"),
     weekStart: String(row.week_start ?? snapshot.weekStart ?? ""),
     weekEnd: String(row.week_end ?? snapshot.weekEnd ?? ""),
     savedAt: String(row.saved_at ?? snapshot.savedAt ?? new Date().toISOString()),
@@ -178,7 +196,7 @@ function dbTemplateToWeekTemplate(row: Record<string, unknown>): WeekTemplate {
 
   return {
     id: String(row.id),
-    name: String(row.name ?? "Saved week template"),
+    name: String(row.name ?? "Week preset"),
     createdAt: String(row.created_at ?? new Date().toISOString()),
     updatedAt: row.updated_at ? String(row.updated_at) : undefined,
     plans: plans as PlannerItem[],
@@ -266,13 +284,28 @@ export async function savePlansForWeek(weekStart: string, plans: PlannerItem[]) 
     return;
   }
 
-  const { error: clearExistingError } = await supabase
+  const { data: existing, error: existingError } = await supabase
     .from("planner_items")
-    .update({ deleted_at: new Date().toISOString() })
+    .select("id")
     .eq("family_id", familyId)
-    .eq("week_start", normalizeWeekStart(weekStart));
+    .eq("week_start", normalizeWeekStart(weekStart))
+    .is("deleted_at", null);
 
-  if (clearExistingError) throw clearExistingError;
+  if (existingError) throw existingError;
+
+  const incomingIds = new Set(stampedPlans.map((plan) => plan.id));
+  const removedIds = ((existing ?? []) as Array<{ id: string }>)
+    .map((row) => String(row.id))
+    .filter((id) => !incomingIds.has(id));
+
+  if (removedIds.length) {
+    const { error: deleteError } = await supabase
+      .from("planner_items")
+      .update({ deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+      .eq("family_id", familyId)
+      .in("id", removedIds);
+    if (deleteError) throw deleteError;
+  }
 
   if (!stampedPlans.length) return;
 
@@ -395,6 +428,7 @@ export async function saveChildren(children: ChildProfile[]) {
       family_id: familyId,
       name: child.name,
       color_label: child.colorLabel ?? "sage",
+      permission_level: child.permissionLevel ?? "checklist",
       archived_at: null,
       updated_at: new Date().toISOString(),
     })),
@@ -424,6 +458,19 @@ export async function renameChildProfile(childId: string, name: string) {
     .eq("id", childId)
     .eq("family_id", familyId);
 
+  if (error) throw error;
+  return getChildren();
+}
+
+export async function updateChildPermission(childId: string, permissionLevel: NonNullable<ChildProfile["permissionLevel"]>) {
+  const { context, supabase, familyId } = await getStorageContext();
+  if (!context || context.isGuest || !supabase || !familyId) {
+    const next = (await getChildren()).map((child) => child.id === childId ? { ...child, permissionLevel } : child);
+    await saveChildren(next);
+    return getChildren();
+  }
+  if (!context.isParent) return getChildren();
+  const { error } = await supabase.from("children").update({ permission_level: permissionLevel, updated_at: new Date().toISOString() }).eq("id", childId).eq("family_id", familyId);
   if (error) throw error;
   return getChildren();
 }
@@ -491,7 +538,7 @@ export async function getCategoryDefinitions(): Promise<CategoryDefinition[]> {
 
   if (error) throw error;
 
-  const customOnly = (data ?? [])
+  const customOnly = ((data ?? []) as Array<{ slug: string; label: string }>)
     .map((row) => ({
       id: String(row.slug),
       label: String(row.label),
@@ -689,7 +736,7 @@ export async function getWeekTemplates(): Promise<WeekTemplate[]> {
 export async function saveWeekTemplate(template: WeekTemplate) {
   const cleanedTemplate: WeekTemplate = {
     ...template,
-    name: template.name.trim() || "Saved week template",
+    name: template.name.trim() || "Week preset",
     plans: cleanTemplatePlans(template.plans),
     updatedAt: new Date().toISOString(),
   };

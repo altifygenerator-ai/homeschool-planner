@@ -8,41 +8,60 @@ import type { SavedWeekLog } from "@/types/planner";
 
 export default function SavedWeeksPage() {
   const [savedWeeks, setSavedWeeks] = useState<SavedWeekLog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   async function loadSavedWeeks() {
-    setSavedWeeks(await getSavedWeeks());
+    setErrorMessage("");
+    try {
+      setSavedWeeks(await getSavedWeeks());
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Weekly records could not be loaded.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
-    let isMounted = true;
-
-    getSavedWeeks().then((nextSavedWeeks) => {
-      if (isMounted) setSavedWeeks(nextSavedWeeks);
-    });
-
-    return () => {
-      isMounted = false;
-    };
+    void loadSavedWeeks();
   }, []);
 
   async function handleDeleteWeek(weekId: string) {
-    await deleteSavedWeek(weekId);
-    await loadSavedWeeks();
+    setDeletingId(weekId);
+    setErrorMessage("");
+    try {
+      await deleteSavedWeek(weekId);
+      await loadSavedWeeks();
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "That record could not be deleted.");
+    } finally {
+      setDeletingId(null);
+    }
   }
 
   return (
     <DashboardShell>
       <div className="dashboard-page-heading">
-        <p className="eyebrow">Saved weeks</p>
-        <h1 className="section-title">Records without digging around.</h1>
-        <p className="section-lead">
-          Saved weeks collect plans, notes, resource links, and child rundowns so
-          you can print clean weekly, monthly, or yearly records for a notebook
-          or folder.
-        </p>
+        <p className="sw-kicker">Records</p>
+        <h1>What happened, without entering it twice.</h1>
+        <p>Completed work, moved plans, notes, resources, and carry-forward history collect here automatically.</p>
       </div>
-
-      <SavedWeeksView savedWeeks={savedWeeks} onDeleteWeek={(weekId) => void handleDeleteWeek(weekId)} />
+      {errorMessage ? (
+        <div className="sw-error-banner" role="alert">
+          <span>{errorMessage}</span>
+          <button type="button" onClick={() => void loadSavedWeeks()}>Try again</button>
+        </div>
+      ) : null}
+      {loading ? (
+        <section className="saved-weeks-card" aria-busy="true"><p>Loading weekly records…</p></section>
+      ) : (
+        <SavedWeeksView
+          savedWeeks={savedWeeks}
+          deletingId={deletingId}
+          onDeleteWeek={(weekId) => void handleDeleteWeek(weekId)}
+        />
+      )}
     </DashboardShell>
   );
 }

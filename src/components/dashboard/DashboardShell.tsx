@@ -1,55 +1,27 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import AccountBar from "@/components/auth/AccountBar";
 import AuthGate from "@/components/auth/AuthGate";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import MobileDashboardNav from "@/components/pwa/MobileDashboardNav";
+import DesktopDashboardNav from "@/components/dashboard/DesktopDashboardNav";
 
-const dashboardLinks = [
-  { label: "Home", href: "/dashboard" },
-  { label: "Planner", href: "/dashboard/planner" },
-  { label: "Saved Weeks", href: "/dashboard/weeks" },
-  { label: "Children", href: "/dashboard/children" },
-  { label: "Account", href: "/dashboard/account" },
-];
-
-type DashboardShellProps = {
-  children: ReactNode;
-};
-
-export default function DashboardShell({ children }: DashboardShellProps) {
+export default function DashboardShell({ children }: { children: ReactNode }) {
   return (
-    <main className="site-shell">
-      <Header />
-
-      <section className="dashboard-section">
-        <div className="container">
-          <AuthGate>
-            <div className="dashboard-topbar soft-card">
-              <div>
-                <p className="eyebrow">SoftWeek Planner</p>
-                <h1>Family planner workspace</h1>
-              </div>
-
-              <nav className="dashboard-nav" aria-label="Dashboard navigation">
-                {dashboardLinks.map((link) => (
-                  <Link href={link.href} key={link.href}>
-                    {link.label}
-                  </Link>
-                ))}
-              </nav>
-
-              <AccountBar />
-            </div>
-
-            {children}
-          </AuthGate>
-        </div>
-      </section>
-
-      <Footer />
-      <MobileDashboardNav />
+    <main className="sw-app-shell">
+      <AuthGate>
+        <header className="sw-app-header">
+          <Link className="sw-app-brand" href="/dashboard/planner?view=today" aria-label="SoftWeek Today">
+            <span className="sw-brand-mark">SW</span>
+            <span><strong>SoftWeek</strong><small>Homeschool planner</small></span>
+          </Link>
+          <Suspense fallback={<div className="sw-desktop-nav-placeholder" aria-hidden="true" />}>
+            <DesktopDashboardNav />
+          </Suspense>
+          <div className="sw-account-area"><AccountBar /></div>
+        </header>
+        <div className="sw-app-content">{children}</div>
+        <Suspense fallback={null}><MobileDashboardNav /></Suspense>
+      </AuthGate>
     </main>
   );
 }

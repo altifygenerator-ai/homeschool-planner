@@ -18,8 +18,12 @@ export default function AccountBar() {
     let isMounted = true;
 
     async function refresh() {
-      const nextContext = await getActiveAccountContext();
-      if (isMounted) setContext(nextContext);
+      try {
+        const nextContext = await getActiveAccountContext();
+        if (isMounted) setContext(nextContext);
+      } catch {
+        if (isMounted) setContext(null);
+      }
     }
 
     void refresh();

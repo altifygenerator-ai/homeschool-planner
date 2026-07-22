@@ -1,49 +1,14 @@
+import Image from "next/image";
 import Link from "next/link";
-import { LuArrowRight, LuLock, LuMousePointerClick, LuUserPlus } from "react-icons/lu";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
-import PwaInstallPrompt from "@/components/pwa/PwaInstallPrompt";
-import { site } from "@/data/site";
 
-const plannerNow = [
-  "Plan a full 7-day homeschool week",
-  "Add one plan to multiple days",
-  "Move or copy a plan without rebuilding the week",
-  "Attach links for videos, PDFs, worksheets, websites, or classes",
-  "Save weekly records with notes and child rundowns",
-  "Print weekly, monthly, or yearly records for a binder",
-];
-
-const notTryingToBe = [
-  "a full school management system",
-  "a complicated gradebook setup",
-  "a perfect schedule that makes you feel behind",
-  "another place that takes longer to manage than paper",
-];
-
-const freePlanFeatures = [
-  "A weekly planner that stays useful",
-  "One child profile for basic planning",
-  "Move, done, skipped, notes, categories, and saved history",
-];
-
-const premiumPlanFeatures = [
-  "Multiple children and optional older-kid logins",
-  "Longer saved history, child portfolios, printables, and exports",
-  "Planning-ahead tools, templates, and backed-up accounts",
-];
-
-const testimonials = [
-  {
-    quote:
-      "SoftWeek Planner was one app that finally did not overwhelm me. My older kids could use it themselves with minimal help.",
-    name: "Miss Elise’s Art House",
-  },
-  {
-    quote:
-      "It feels built for the real homeschool week, not the perfect one. Families can plan loosely, move what changes, and save what happened.",
-    name: "Untethered — Learning, Without Limits",
-  },
+const loop = [
+  ["1", "Capture it", "Put work in This Week before deciding where it belongs."],
+  ["2", "Place it lightly", "Schedule only what needs a day. Leave the rest flexible."],
+  ["3", "Use Today", "Open the app and see the work that matters now."],
+  ["4", "Recover", "When plans change, move unfinished work together."],
+  ["5", "Keep the record", "Completed work and notes become the weekly record automatically."],
 ];
 
 export default function Home() {
@@ -51,253 +16,135 @@ export default function Home() {
     <main className="site-shell">
       <Header />
 
-      <section className="home-hero-section">
-        <div className="container home-hero-grid">
-          <div className="home-hero-copy">
-            <p className="eyebrow">{site.hero.eyebrow}</p>
-            <h1 className="hero-title">{site.hero.title}</h1>
-            <p className="hero-text">{site.hero.text}</p>
+      <section className="marketing-hero">
+        <div className="marketing-hero-copy">
+          <p className="sw-kicker">A homeschool week is allowed to change.</p>
+          <h1>Plan the week without being trapped by it.</h1>
+          <p className="marketing-hero-text">
+            Keep lessons, routines, outings, and real-life learning in one flexible week.
+            When life changes the plan, SoftWeek helps you move the work and keep the
+            record without entering everything twice.
+          </p>
+          <div className="btn-row">
+            <Link className="btn btn-primary" href="/login?mode=create">Start planning</Link>
+            <Link className="btn btn-secondary" href="/guest">Try it without an account</Link>
+          </div>
+          <p className="marketing-small-note">The core promise: less work than winging it.</p>
+        </div>
 
-            <div className="btn-row hero-actions">
-              <Link className="btn btn-primary" href="/login?mode=create">
-                <LuUserPlus />
-                {site.hero.primaryCta}
-              </Link>
-              <Link className="btn btn-secondary" href="/guest">
-                <LuMousePointerClick />
-                {site.hero.secondaryCta}
-              </Link>
+        <div className="marketing-product-stage" aria-label="Preview of the SoftWeek planner">
+          <div className="marketing-product-window">
+            <div className="marketing-window-bar" aria-hidden="true">
+              <span /><span /><span />
+              <strong>SoftWeek weekly planner</strong>
             </div>
-
-            <p className="hero-note">{site.hero.note}</p>
+            <Image
+              className="marketing-preview-wide"
+              src="/pwa-screenshot-wide.png"
+              alt="SoftWeek week view showing This Week, weekly tools, and daily homeschool plans"
+              width={1280}
+              height={651}
+              priority
+              sizes="(max-width: 720px) 1px, (max-width: 1100px) 90vw, 520px"
+            />
+            <Image
+              className="marketing-preview-mobile"
+              src="/pwa-screenshot-mobile.png"
+              alt="SoftWeek mobile Today view with quick add and unfinished work"
+              width={540}
+              height={901}
+              priority
+              sizes="(max-width: 720px) 86vw, 1px"
+            />
           </div>
-
-          <div className="home-product-card soft-card human-note-card">
-            <p className="eyebrow">Why I’m building it</p>
-            <h2>A normal homeschool week rarely stays perfectly planned.</h2>
-            <p>
-              SoftWeek is being built around that normal mess: moved lessons,
-              repeating activities, resource links, older kids checking their own
-              work, and records you can actually keep up with.
-            </p>
-            <div className="product-loop-list">
-              <div>
-                <span>1</span>
-                <p>Plan the week loosely.</p>
-              </div>
-              <div>
-                <span>2</span>
-                <p>Move what changes.</p>
-              </div>
-              <div>
-                <span>3</span>
-                <p>Save what happened.</p>
-              </div>
-              <div>
-                <span>4</span>
-                <p>Print or review records later.</p>
-              </div>
-            </div>
+          <div className="marketing-product-note">
+            <strong>When the day changes</strong>
+            <span>Move unfinished work together instead of cleaning up every item one at a time.</span>
           </div>
         </div>
       </section>
 
-      <section className="section-paper" id="app-preview">
-        <div className="container">
-          <div className="section-center">
-            <p className="eyebrow">What works now</p>
-            <h2 className="section-title">The beta is usable now, not just a landing page.</h2>
-            <p className="section-lead">
-              The goal is not to look like a perfect startup product. The goal is
-              to give families a weekly workspace that saves time and keeps a
-              simple record when the week is done.
-            </p>
-          </div>
+      <section className="marketing-problem" id="life-happened">
+        <div>
+          <p className="sw-kicker">The problem is not planning.</p>
+          <h2>The problem is having to rebuild the plan every time the week changes.</h2>
+        </div>
+        <p>
+          A child needs more time. An appointment takes the morning. Everyone is tired.
+          A field trip replaces the book work. Most planners make the parent clean up
+          every card one at a time, then enter completed work again for records. SoftWeek
+          is built around that exact break in the week.
+        </p>
+      </section>
 
-          <div className="plain-feature-list">
-            {plannerNow.map((feature) => (
-              <article className="plain-feature-card" key={feature}>
-                <span />
-                <p>{feature}</p>
-              </article>
-            ))}
-          </div>
+      <section className="marketing-recovery-story" aria-label="How Life Happened recovers a changed week">
+        <div className="recovery-before">
+          <span>Tuesday morning</span>
+          <h3>Five unfinished items</h3>
+          <p>The day changed. The plan did not happen.</p>
+        </div>
+        <div className="recovery-arrow" aria-hidden="true">→</div>
+        <div className="recovery-after">
+          <span>Life Happened</span>
+          <h3>Spread the work over the remaining days</h3>
+          <p>Preview the move, apply it once, and undo it when needed.</p>
         </div>
       </section>
 
-      <section className="section" id="pain-points">
-        <div className="container human-section-grid">
-          <div>
-            <p className="eyebrow">What it helps with</p>
-            <h2 className="section-title">Built for the week you actually have.</h2>
-            <p className="section-lead">
-              Some homeschool weeks are heavy on book work. Some are errands,
-              appointments, reading, projects, co-op, outside time, and catching
-              up later. SoftWeek is meant to bend without making the whole plan
-              feel broken.
-            </p>
-          </div>
-
-          <div className="feature-grid human-feature-grid">
-            {site.problems.map((item) => (
-              <article className="feature-card human-feature-card" key={item.title}>
-                <h3 className="feature-title">{item.title}</h3>
-                <p className="feature-text">{item.text}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section-soft" id="how-it-works">
-        <div className="container section-grid">
-          <div>
-            <p className="eyebrow">How it works</p>
-            <h2 className="section-title">A simple loop: plan, adjust, save.</h2>
-            <p className="section-lead">
-              Start with a guest planner or create a beta account. Add children,
-              build the week, move what changes, and save a record when you are
-              ready. That is the core of it.
-            </p>
-            <div className="btn-row" style={{ marginTop: "1.7rem" }}>
-              <Link className="btn btn-primary" href="/login?mode=create">
-                Create account
-              </Link>
-              <Link className="btn btn-secondary" href="/login?mode=login">
-                Log in
-              </Link>
-            </div>
-          </div>
-
-          <div className="stack-md home-step-list">
-            {site.steps.map((step, index) => (
-              <article className="paper-card home-step-card" key={step.title}>
-                <span>{index + 1}</span>
-                <div>
-                  <h3>{step.title}</h3>
-                  <p>{step.text}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section" id="not-a-fit">
-        <div className="container honest-grid">
-          <div className="soft-card honest-card">
-            <p className="eyebrow">What it is not</p>
-            <h2 className="section-title-sm">SoftWeek is intentionally smaller.</h2>
-            <p className="text-soft">
-              I’m not trying to build a giant school platform. I’m trying to keep
-              the weekly planning part clear enough that families can come back
-              to it without dreading the setup.
-            </p>
-          </div>
-
-          <div className="paper-card honest-list-card">
-            {notTryingToBe.map((item) => (
-              <p key={item}>{item}</p>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section-soft" id="testimonials">
-        <div className="container">
-          <div className="section-center">
-            <p className="eyebrow">Early feedback</p>
-            <h2 className="section-title">Notes from early testers.</h2>
-            <p className="section-lead">
-              I’m keeping this section plain on purpose. The useful part is what
-              testers noticed, not a polished quote wall.
-            </p>
-          </div>
-
-          <div className="home-testimonial-grid human-testimonial-grid">
-            {testimonials.map((testimonial) => (
-              <figure className="paper-card testimonial-card human-testimonial-card" key={testimonial.name}>
-                <blockquote>“{testimonial.quote}”</blockquote>
-                <figcaption>{testimonial.name}</figcaption>
-              </figure>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section-paper" id="mobile-app">
-        <div className="container">
-          <PwaInstallPrompt />
-        </div>
-      </section>
-
-      <section className="section" id="beta-direction">
-        <div className="container">
-          <div className="soft-card beta-release-card human-beta-card">
-            <div>
-              <p className="eyebrow">Beta notes</p>
-              <h2 className="section-title-sm">Free to test while the planner gets tightened up.</h2>
-              <p className="section-lead">
-                The main weekly planner should stay useful for free. Bigger tools
-                like more saved history, portfolios, exports, child accounts, and
-                planning-ahead features may become premium later, but they are
-                open during beta while I learn what families actually use.
-              </p>
-            </div>
-            <div className="beta-release-panel">
-              <LuLock />
-              <p>
-                Beta feedback matters more than looking finished. Try it, break
-                it, and send over what feels confusing or unnecessary.
-              </p>
-              <Link className="btn btn-primary" href="/login?mode=create">
-                Start beta account <LuArrowRight />
-              </Link>
-            </div>
-          </div>
-
-          <div className="marketing-plan-grid human-plan-grid">
-            <article className="plan-feature-card free-feature-card">
-              <div className="plan-feature-top">
-                <div>
-                  <span>Main planner stays useful</span>
-                  <h3>Free foundation</h3>
-                </div>
-              </div>
-
-              <p>
-                SoftWeek should help a family plan a real week without forcing
-                every parent into a paid plan.
-              </p>
-
-              <ul>
-                {freePlanFeatures.map((feature) => (
-                  <li key={feature}>{feature}</li>
-                ))}
-              </ul>
+      <section className="marketing-loop" id="weekly-loop">
+        <header>
+          <p className="sw-kicker">The weekly loop</p>
+          <h2>SoftWeek carries more of the mental load.</h2>
+        </header>
+        <div className="marketing-loop-list">
+          {loop.map(([number, title, text]) => (
+            <article key={number}>
+              <span>{number}</span>
+              <div><h3>{title}</h3><p>{text}</p></div>
             </article>
-
-            <article className="plan-feature-card premium-feature-card">
-              <div className="plan-feature-top">
-                <div>
-                  <span>Open during beta</span>
-                  <h3>Bigger tools later</h3>
-                </div>
-              </div>
-
-              <p>
-                These are the deeper tools I’m testing before deciding what
-                belongs in a future premium version.
-              </p>
-
-              <ul>
-                {premiumPlanFeatures.map((feature) => (
-                  <li key={feature}>{feature}</li>
-                ))}
-              </ul>
-            </article>
-          </div>
+          ))}
         </div>
+      </section>
+
+      <section className="marketing-views" id="planner-views">
+        <div className="marketing-view-copy">
+          <p className="sw-kicker">Built around real use</p>
+          <h2>Today for doing. Week for planning. Records as a byproduct.</h2>
+          <p>
+            SoftWeek does not start with course setup, grading rules, or a school-year
+            wizard. Add one useful item first. Children, categories, rhythms, and lesson
+            stacks are there when they actually help.
+          </p>
+        </div>
+        <div className="marketing-notebook-list">
+          <div><strong>This Week</strong><span>A holding area for work without a weekday.</span></div>
+          <div><strong>Weekly Rhythm</strong><span>Repeat normal parts of family life without recurrence jargon.</span></div>
+          <div><strong>Lesson Stacks</strong><span>Keep ordered lessons ready without scheduling months ahead.</span></div>
+          <div><strong>Automatic Records</strong><span>What was done, moved, skipped, and noted stays in the record.</span></div>
+        </div>
+      </section>
+
+      <section className="marketing-fit" id="fit">
+        <div>
+          <p className="sw-kicker">A deliberate boundary</p>
+          <h2>It is not trying to become a school management system.</h2>
+        </div>
+        <ul>
+          <li>No required gradebook</li>
+          <li>No streak pressure or guilt badges</li>
+          <li>No curriculum marketplace</li>
+          <li>No complicated setup before the first useful plan</li>
+        </ul>
+      </section>
+
+      <section className="marketing-final">
+        <p className="sw-kicker">Plan lightly. Recover quickly.</p>
+        <h2>Give the week enough structure to help, not enough to trap you.</h2>
+        <div className="btn-row">
+          <Link className="btn btn-primary" href="/login?mode=create">Create a SoftWeek account</Link>
+          <Link className="btn btn-secondary" href="/login?mode=login">Log in</Link>
+        </div>
+        <p>SoftWeek is in active beta. Real family feedback is shaping what stays simple and what gets built next.</p>
       </section>
 
       <Footer />

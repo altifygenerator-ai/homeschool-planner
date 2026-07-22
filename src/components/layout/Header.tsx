@@ -20,8 +20,12 @@ export default function Header() {
     let isMounted = true;
 
     async function refresh() {
-      const nextContext = await getActiveAccountContext();
-      if (isMounted) setContext(nextContext);
+      try {
+        const nextContext = await getActiveAccountContext();
+        if (isMounted) setContext(nextContext);
+      } catch {
+        if (isMounted) setContext(null);
+      }
     }
 
     void refresh();
@@ -33,12 +37,18 @@ export default function Header() {
   }, []);
 
   const nav = context
-    ? [
-        { label: "Planner", href: "/dashboard/planner" },
-        { label: "Saved weeks", href: "/dashboard/weeks" },
-        { label: "Children", href: "/dashboard/children" },
-        { label: "Account", href: "/dashboard/account" },
-      ]
+    ? context.isChild
+      ? [
+          { label: "Today", href: "/dashboard/planner?view=today" },
+          { label: "Week", href: "/dashboard/planner?view=week" },
+          { label: "Account", href: "/dashboard/account" },
+        ]
+      : [
+          { label: "Today", href: "/dashboard/planner?view=today" },
+          { label: "Week", href: "/dashboard/planner?view=week" },
+          { label: "Records", href: "/dashboard/weeks" },
+          { label: "Family", href: "/dashboard/children" },
+        ]
     : site.nav;
 
   async function handleSignOut() {
@@ -84,13 +94,13 @@ export default function Header() {
             </>
           ) : (
             <>
-              <Button href="/login?mode=login">
-                <LuLogIn />
-                Log in
+              <Button href="/login?mode=create">
+                Create account
               </Button>
 
-              <Button href="/login?mode=create" variant="secondary">
-                Create account
+              <Button href="/login?mode=login" variant="secondary">
+                <LuLogIn />
+                Log in
               </Button>
 
               <Button href="/guest" variant="soft">

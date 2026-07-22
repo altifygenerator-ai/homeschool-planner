@@ -8,15 +8,15 @@ Open Supabase, go to SQL Editor, and run:
 supabase/beta-1-1-schema.sql
 ```
 
-That creates the SoftWeek tables, security rules, parent workspaces, child invite flow, saved weekly records, and the paid/free tracking fields.
+That creates the SoftWeek tables, security rules, parent family accounts, child invite flow, saved weekly records, and the paid/free tracking fields.
 
 ## 2. Add environment variables locally
 
 Create `.env.local` from `.env.local.example`:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://htetaxzyzebsfaahxeao.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_PqhKTke9SEhVZqsHp2c5Rg_06yrZ-y7
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
 ```
 
 Do not use the Supabase service role key in the browser.

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function PlannerPage() {
-  redirect("/dashboard/planner");
+  redirect("/dashboard/planner?view=today");
 }

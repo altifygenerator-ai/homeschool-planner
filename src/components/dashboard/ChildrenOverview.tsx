@@ -25,6 +25,7 @@ import {
   getSavedWeeks,
   renameChildProfile,
   saveChildren,
+  updateChildPermission,
 } from "@/lib/plannerStorage";
 import { createId } from "@/lib/utils";
 import { trackSoftWeekEvent } from "@/lib/usageTracking";
@@ -62,8 +63,11 @@ export default function ChildrenOverview() {
   const [openChildAccessId, setOpenChildAccessId] = useState<string | null>(null);
   const [creatingAccessId, setCreatingAccessId] = useState<string | null>(null);
   const [copiedChildId, setCopiedChildId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   async function loadChildren() {
+    setLoadError("");
     const [nextContext, nextChildren, nextSavedWeeks] = await Promise.all([
       getActiveAccountContext(),
       getChildren(),
@@ -84,25 +88,31 @@ export default function ChildrenOverview() {
 
   useEffect(() => {
     let isMounted = true;
-
-    Promise.all([getActiveAccountContext(), getChildren(), getSavedWeeks()])
-      .then(async ([nextContext, nextChildren, nextSavedWeeks]) => {
-        const realChildren = nextChildren.filter((child) => child.id !== "everyone");
-        const entries = await Promise.all(
-          realChildren.map(async (child) => [child.id, await getChildAccount(child.id)] as const)
+    async function start() {
+      try {
+        const [nextContext, nextChildren, nextSavedWeeks] = await Promise.all([
+          getActiveAccountContext(),
+          getChildren(),
+          getSavedWeeks(),
+        ]);
+        const accountEntries = await Promise.all(
+          nextChildren
+            .filter((child) => child.id !== "everyone")
+            .map(async (child) => [child.id, await getChildAccount(child.id)] as const),
         );
-
         if (!isMounted) return;
-
         setContext(nextContext);
         setChildren(nextChildren);
         setSavedWeeks(nextSavedWeeks);
-        setChildAccounts(Object.fromEntries(entries));
-      });
-
-    return () => {
-      isMounted = false;
-    };
+        setChildAccounts(Object.fromEntries(accountEntries));
+      } catch (error) {
+        if (isMounted) setLoadError(error instanceof Error ? error.message : "Family profiles could not be loaded.");
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+    void start();
+    return () => { isMounted = false; };
   }, []);
 
   const realChildren = children
@@ -112,7 +122,7 @@ export default function ChildrenOverview() {
         ? child.id === context.session.childId
         : true
     );
-  const canManage = context?.isParent ?? true;
+  const canManage = context?.isParent ?? false;
 
   async function handleAddChild(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -123,13 +133,19 @@ export default function ChildrenOverview() {
       id: createId("child"),
       name,
       colorLabel: colorLabels[realChildren.length % colorLabels.length],
+      permissionLevel: "checklist",
     };
 
-    await saveChildren([...children, nextChild]);
-    await loadChildren();
-    setNewChildName("");
-    setMessage(`${name} added. You can assign plans to them from the planner.`);
-    void trackSoftWeekEvent("child_added", { source: "children" });
+    try {
+      await saveChildren([...children, nextChild]);
+      await loadChildren();
+      setNewChildName("");
+      setMessage(`${name} added. You can assign plans to them from the planner.`);
+      void trackSoftWeekEvent("child_added", { source: "children" });
+      if (realChildren.length === 0) void trackSoftWeekEvent("first_child_created", { source: "children" });
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "That child profile could not be added.");
+    }
   }
 
   function startRename(child: ChildProfile) {
@@ -141,24 +157,26 @@ export default function ChildrenOverview() {
     event.preventDefault();
     if (!editingId || !canManage) return;
 
-    setChildren(await renameChildProfile(editingId, editingName));
-    setEditingId(null);
-    setEditingName("");
-    setMessage("Child profile updated.");
-    void trackSoftWeekEvent("child_updated", {
-      source: "children",
-      childId: editingId,
-    });
+    try {
+      setChildren(await renameChildProfile(editingId, editingName));
+      setEditingId(null);
+      setEditingName("");
+      setMessage("Child profile updated.");
+      void trackSoftWeekEvent("child_updated", { source: "children", childId: editingId });
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "That child profile could not be renamed.");
+    }
   }
 
   async function handleDelete(childId: string) {
     if (!canManage) return;
-    setChildren(await deleteChildProfile(childId));
-    setMessage("Child profile removed from active planning. Saved records stay in your history.");
-    void trackSoftWeekEvent("child_removed", {
-      source: "children",
-      childId,
-    });
+    try {
+      setChildren(await deleteChildProfile(childId));
+      setMessage("Child profile removed from active planning. Weekly records stay in your history.");
+      void trackSoftWeekEvent("child_removed", { source: "children", childId });
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "That child profile could not be removed.");
+    }
   }
 
   async function handleChildAccess(child: ChildProfile) {
@@ -207,6 +225,21 @@ export default function ChildrenOverview() {
     }
   }
 
+
+  async function handlePermission(child: ChildProfile, permissionLevel: NonNullable<ChildProfile["permissionLevel"]>) {
+    try {
+      setChildren(await updateChildPermission(child.id, permissionLevel));
+      setMessage(`${child.name}'s access is now ${permissionLevel}.`);
+      void trackSoftWeekEvent("child_updated", {
+        source: "permission",
+        childId: child.id,
+        metadata: { permissionLevel },
+      });
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "That access level could not be changed.");
+    }
+  }
+
   async function copyInviteCode(child: ChildProfile, account: LocalAccount | null) {
     const inviteCode = account?.loginName ?? "";
     if (!isInviteAccount(account) || !inviteCode) return;
@@ -219,6 +252,26 @@ export default function ChildrenOverview() {
     } catch {
       setMessage("Could not copy the code. You can still highlight it and copy it manually.");
     }
+  }
+
+  if (loading) {
+    return <section className="soft-card child-manager-card" aria-busy="true"><p>Loading family profiles…</p></section>;
+  }
+
+  if (loadError) {
+    return (
+      <section className="soft-card child-manager-card child-load-error" role="alert">
+        <p className="eyebrow">Family</p>
+        <h2 className="section-title-sm">Family profiles did not finish loading.</h2>
+        <p>{loadError}</p>
+        <button className="btn btn-primary" type="button" onClick={() => {
+          setLoading(true);
+          void loadChildren().catch((error) => {
+            setLoadError(error instanceof Error ? error.message : "Family profiles could not be loaded.");
+          }).finally(() => setLoading(false));
+        }}>Try again</button>
+      </section>
+    );
   }
 
   return (
@@ -249,8 +302,8 @@ export default function ChildrenOverview() {
           </form>
         ) : (
           <p className="text-small">
-            This child account can view records, mark work, and add notes. Profile
-            management stays with the parent account.
+            This child account can see its own profile and assigned work. Profile
+            management and family records stay with the parent account.
           </p>
         )}
 
@@ -284,8 +337,8 @@ export default function ChildrenOverview() {
                     <h2>{child.name}</h2>
                     <p>
                       {summaries.length
-                        ? `${summaries.length} saved week${summaries.length === 1 ? "" : "s"} in this portfolio.`
-                        : "No saved weeks yet."}
+                        ? `${summaries.length} weekly record${summaries.length === 1 ? "" : "s"} in this portfolio.`
+                        : "No weekly records yet."}
                     </p>
                   </div>
 
@@ -348,6 +401,16 @@ export default function ChildrenOverview() {
                                   ? "View child invite"
                                   : "Set up child access"}
                           </button>
+                          <label className="child-permission-select">
+                            <span>Child access</span>
+                            <select value={child.permissionLevel ?? "checklist"} onChange={(event) => {
+                              void handlePermission(child, event.target.value as NonNullable<ChildProfile["permissionLevel"]>);
+                            }}>
+                              <option value="checklist">Checklist</option>
+                              <option value="flexible">Flexible</option>
+                              <option value="independent">Independent</option>
+                            </select>
+                          </label>
                           <button
                             className="mini-text-button danger"
                             type="button"
@@ -366,9 +429,10 @@ export default function ChildrenOverview() {
                           <p className="eyebrow">Optional child access</p>
                           <h3>{child.name}&apos;s child login</h3>
                           <p>
-                            Child access is for older kids who can help check their
-                            own week. They can mark plans done, skipped, or moved and
-                            add notes. Parent controls stay with you.
+                            Child access is for older kids who can help with their own week.
+                            Checklist access lets them update progress and notes. Flexible
+                            and Independent access can also move approved work. Parent-only
+                            planning and family controls stay with you.
                           </p>
                         </div>
 

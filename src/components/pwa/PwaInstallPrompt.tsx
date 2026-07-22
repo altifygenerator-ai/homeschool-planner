@@ -51,8 +51,8 @@ export default function PwaInstallPrompt({ compact = false, className = "" }: Pw
     function handleInstalled() {
       setInstalled(true);
       setPromptEvent(null);
-      setMessage("Softweek was installed. You can open it from your home screen.");
-      void trackSoftWeekEvent("mobile_app_installed", { source: "pwa_install" });
+      setMessage("SoftWeek was installed. You can open it from your home screen.");
+      void trackSoftWeekEvent("pwa_installed", { source: "pwa_install" });
     }
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
@@ -74,7 +74,7 @@ export default function PwaInstallPrompt({ compact = false, className = "" }: Pw
       return "On Android, use Chrome or Samsung Internet. If the button does not appear, open the browser menu and tap Install app or Add to Home screen.";
     }
 
-    return "On mobile, use your browser menu to install or add Softweek to your home screen when the option appears.";
+    return "On mobile, use your browser menu to install or add SoftWeek to your home screen when the option appears.";
   }, [platform]);
 
   async function handleInstall() {
@@ -83,16 +83,21 @@ export default function PwaInstallPrompt({ compact = false, className = "" }: Pw
       return;
     }
 
-    await promptEvent.prompt();
-    const choice = await promptEvent.userChoice;
-    setPromptEvent(null);
+    try {
+      await promptEvent.prompt();
+      const choice = await promptEvent.userChoice;
+      setPromptEvent(null);
 
-    if (choice.outcome === "accepted") {
-      setMessage("Softweek is installing. Check your home screen when it finishes.");
-      void trackSoftWeekEvent("mobile_app_install_accepted", { source: "pwa_install" });
-    } else {
-      setMessage("No problem. You can install it later from this same button or your browser menu.");
-      void trackSoftWeekEvent("mobile_app_install_dismissed", { source: "pwa_install" });
+      if (choice.outcome === "accepted") {
+        setMessage("SoftWeek is installing. Check your home screen when it finishes.");
+        void trackSoftWeekEvent("mobile_app_install_accepted", { source: "pwa_install" });
+      } else {
+        setMessage("No problem. You can install it later from this same button or your browser menu.");
+        void trackSoftWeekEvent("mobile_app_install_dismissed", { source: "pwa_install" });
+      }
+    } catch {
+      setPromptEvent(null);
+      setMessage(fallbackText);
     }
   }
 
@@ -104,11 +109,11 @@ export default function PwaInstallPrompt({ compact = false, className = "" }: Pw
 
       <div className="pwa-install-copy">
         <p className="eyebrow">Mobile app</p>
-        <h2>{installed ? "Softweek is installed on this device." : "Install Softweek on your phone."}</h2>
+        <h2>{installed ? "SoftWeek is installed on this device." : "Install SoftWeek on your phone."}</h2>
         <p>
           {installed
-            ? "Open it from your home screen like an app. Your account, planner, children, saved weeks, and records stay the same."
-            : "Use Softweek from your home screen with its own icon and app-style window. It still uses the same planner and account as the desktop site."}
+            ? "Open it from your home screen like an app. Your account, planner, children, and weekly records stay the same."
+            : "Use SoftWeek from your home screen with its own icon and app-style window. It still uses the same planner and account as the desktop site."}
         </p>
 
         <div className="pwa-install-actions">

@@ -80,6 +80,7 @@ export default function PrintRecordView() {
   const [categories, setCategories] = useState<CategoryDefinition[]>([]);
   const [savedWeeks, setSavedWeeks] = useState<SavedWeekLog[]>([]);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [loadError, setLoadError] = useState("");
 
   const normalizedWeekStart = requestedWeekStart.slice(0, 10);
   const weekRange = useMemo(() => getWeekRangeFromStart(normalizedWeekStart), [normalizedWeekStart]);
@@ -88,23 +89,29 @@ export default function PrintRecordView() {
     let isMounted = true;
 
     async function load() {
-      const [nextPlans, nextChildren, nextCategories, nextSavedWeeks] = await Promise.all([
-        getPlansForWeek(normalizedWeekStart),
-        getChildren(),
-        getCategoryDefinitions(),
-        getSavedWeeks(),
-      ]);
+      setLoadError("");
+      try {
+        const [nextPlans, nextChildren, nextCategories, nextSavedWeeks] = await Promise.all([
+          getPlansForWeek(normalizedWeekStart),
+          getChildren(),
+          getCategoryDefinitions(),
+          getSavedWeeks(),
+        ]);
 
-      if (!isMounted) return;
-      setPlans(nextPlans);
-      setChildren(nextChildren);
-      setCategories(nextCategories);
-      setSavedWeeks(nextSavedWeeks);
-      setHasLoaded(true);
-      void trackSoftWeekEvent("print_opened", {
-        source: "print",
-        metadata: { period, weekStart: normalizedWeekStart, month: requestedMonth, year: requestedYear },
-      });
+        if (!isMounted) return;
+        setPlans(nextPlans);
+        setChildren(nextChildren);
+        setCategories(nextCategories);
+        setSavedWeeks(nextSavedWeeks);
+        void trackSoftWeekEvent("print_opened", {
+          source: "print",
+          metadata: { period, weekStart: normalizedWeekStart, month: requestedMonth, year: requestedYear },
+        });
+      } catch (error) {
+        if (isMounted) setLoadError(error instanceof Error ? error.message : "The print record could not be loaded.");
+      } finally {
+        if (isMounted) setHasLoaded(true);
+      }
     }
 
     void load();
@@ -239,7 +246,7 @@ export default function PrintRecordView() {
         </div>
 
         <div className="print-stat-row">
-          <div><strong>{records.length}</strong><span>Saved weeks</span></div>
+          <div><strong>{records.length}</strong><span>Weekly records</span></div>
           <div><strong>{totalPlans}</strong><span>Total plans</span></div>
           <div><strong>{stats.done}</strong><span>Done</span></div>
           <div><strong>{stats.moved}</strong><span>Moved</span></div>
@@ -281,6 +288,17 @@ export default function PrintRecordView() {
           <div />
           <div />
         </section>
+      </section>
+    );
+  }
+
+  if (hasLoaded && loadError) {
+    return (
+      <section className="paper-card print-loading-card" role="alert">
+        <p className="eyebrow">Print records</p>
+        <h1 className="section-title-sm">This record did not finish loading.</h1>
+        <p className="text-soft">{loadError}</p>
+        <Link className="btn btn-secondary" href="/dashboard/weeks"><LuArrowLeft /> Back to records</Link>
       </section>
     );
   }
@@ -328,9 +346,9 @@ export default function PrintRecordView() {
       </section>
 
       {period === "month"
-        ? renderGroupedRecords(monthlyWeeks, `${labelForMonth(requestedMonth)} homeschool record`, "Month-to-month overview from saved weeks")
+        ? renderGroupedRecords(monthlyWeeks, `${labelForMonth(requestedMonth)} homeschool record`, "Month-to-month overview from weekly records")
         : period === "year"
-          ? renderGroupedRecords(yearlyWeeks, `${requestedYear} homeschool record`, "Year overview from saved weeks")
+          ? renderGroupedRecords(yearlyWeeks, `${requestedYear} homeschool record`, "Year overview from weekly records")
           : renderWeeklyRecord()}
     </div>
   );

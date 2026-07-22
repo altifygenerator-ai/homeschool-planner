@@ -17,10 +17,14 @@ export default function AuthGate({ children }: AuthGateProps) {
     let isMounted = true;
 
     async function refresh() {
-      const nextContext = await getActiveAccountContext();
-      if (!isMounted) return;
-      setContext(nextContext);
-      setHasChecked(true);
+      try {
+        const nextContext = await getActiveAccountContext();
+        if (isMounted) setContext(nextContext);
+      } catch {
+        if (isMounted) setContext(null);
+      } finally {
+        if (isMounted) setHasChecked(true);
+      }
     }
 
     void refresh();
@@ -55,7 +59,9 @@ export default function AuthGate({ children }: AuthGateProps) {
             type="button"
             onClick={() => {
               startGuestSession();
-              void getActiveAccountContext().then(setContext);
+              void getActiveAccountContext()
+                .then(setContext)
+                .catch(() => setContext(null));
             }}
           >
             <LuMousePointerClick />

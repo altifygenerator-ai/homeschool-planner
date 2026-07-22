@@ -88,6 +88,10 @@ export const childPermissions: LocalAccountPermissions = {
   canAddNotes: true,
 };
 
+function childPermissionsFor(level: string | null | undefined): LocalAccountPermissions {
+  return { ...childPermissions, canPlan: level === "flexible" || level === "independent" };
+}
+
 function normalizeEmail(value: string) {
   return value.trim().toLowerCase();
 }
@@ -331,6 +335,10 @@ export async function getActiveAccountContext(): Promise<AccountContext | null> 
   if (!familyRow) return null;
 
   const account = mapProfileToAccount(profile, session.user.email ?? "");
+  if (account.role === "child" && account.childId) {
+    const { data: childRow } = await supabase.from("children").select("permission_level").eq("id", account.childId).eq("family_id", profile.family_id).maybeSingle();
+    account.permissions = childPermissionsFor(childRow?.permission_level as string | null | undefined);
+  }
   const family = mapFamily(familyRow, session.user.id);
   const accountSession: LocalSession = {
     accountId: account.id,
@@ -439,7 +447,7 @@ export async function createParentLocalAccount({
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "Account was created, but the family workspace did not finish setting up.",
+      message: error instanceof Error ? error.message : "Account was created, but the family planner did not finish setting up.",
     };
   }
 

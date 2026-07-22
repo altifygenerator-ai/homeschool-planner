@@ -85,7 +85,7 @@ export function getFeatureAccess({
       canExportRecords: false,
       isAdmin: false,
       dataSafetyNote:
-        "Guest mode is for trying the planner. Create an account when you want records saved to your family workspace.",
+        "Guest mode is for trying the planner. Create an account when you want records saved to your family planner.",
     };
   }
 

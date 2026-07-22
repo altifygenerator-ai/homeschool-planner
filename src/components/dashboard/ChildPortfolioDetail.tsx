@@ -14,19 +14,29 @@ export default function ChildPortfolioDetail({
 }: ChildPortfolioDetailProps) {
   const [savedWeeks, setSavedWeeks] = useState<SavedWeekLog[]>([]);
   const [children, setChildren] = useState<ChildProfile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     let isMounted = true;
 
     async function load() {
-      const [nextSavedWeeks, nextChildren] = await Promise.all([
-        getSavedWeeks(),
-        getChildren(),
-      ]);
+      try {
+        const [nextSavedWeeks, nextChildren] = await Promise.all([
+          getSavedWeeks(),
+          getChildren(),
+        ]);
 
-      if (!isMounted) return;
-      setSavedWeeks(nextSavedWeeks);
-      setChildren(nextChildren);
+        if (!isMounted) return;
+        setSavedWeeks(nextSavedWeeks);
+        setChildren(nextChildren);
+      } catch (error) {
+        if (isMounted) {
+          setErrorMessage(error instanceof Error ? error.message : "This child record could not be loaded.");
+        }
+      } finally {
+        if (isMounted) setLoading(false);
+      }
     }
 
     void load();
@@ -66,6 +76,27 @@ export default function ChildPortfolioDetail({
     );
   }, [childId, savedWeeks]);
 
+
+  if (loading) {
+    return (
+      <section className="paper-card child-detail-card" aria-busy="true">
+        <p className="eyebrow">Child record</p>
+        <h1 className="section-title-sm">Loading this child’s record…</h1>
+      </section>
+    );
+  }
+
+  if (errorMessage) {
+    return (
+      <section className="paper-card child-detail-card" role="alert">
+        <p className="eyebrow">Child record</p>
+        <h1 className="section-title-sm">This record did not finish loading.</h1>
+        <p className="text-soft">{errorMessage}</p>
+        <Link className="btn btn-secondary" href="/dashboard/children">Back to family</Link>
+      </section>
+    );
+  }
+
   if (!child) {
     return (
       <div className="paper-card child-detail-card">
@@ -91,7 +122,7 @@ export default function ChildPortfolioDetail({
         <p className="eyebrow">Child portfolio</p>
         <h1 className="section-title">{child.name}</h1>
         <p className="section-lead">
-          A simple look at saved weekly rundowns and activities tied to this
+          A simple look at weekly records and activities tied to this
           child.
         </p>
 
@@ -146,8 +177,8 @@ export default function ChildPortfolioDetail({
             ))
           ) : (
             <div className="empty-day-card">
-              <p>No saved weeks yet.</p>
-              <span>Save a week from the planner to start this portfolio.</span>
+              <p>No weekly records yet.</p>
+              <span>Weekly records will appear automatically as assigned work is planned and completed.</span>
             </div>
           )}
         </div>
@@ -177,7 +208,7 @@ export default function ChildPortfolioDetail({
           ) : (
             <div className="empty-day-card">
               <p>No activity history yet.</p>
-              <span>Saved weekly records will show here later.</span>
+              <span>Weekly records will show here after assigned work is completed.</span>
             </div>
           )}
         </div>

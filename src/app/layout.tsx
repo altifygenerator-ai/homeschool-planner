@@ -6,16 +6,65 @@ import "./globals.css";
 
 const siteUrl = "https://softweekplanner.com";
 
+const localWorkerCleanupScript = `(() => {
+  try {
+    const localHosts = new Set(["localhost", "127.0.0.1", "::1"]);
+    const isLocal = localHosts.has(window.location.hostname);
+    const migrationKey = "softweek-service-worker-reset-v6";
+    const controlled = Boolean(navigator.serviceWorker && navigator.serviceWorker.controller);
+
+    let migrated = false;
+    try { migrated = localStorage.getItem(migrationKey) === "done"; } catch {}
+
+    // New production installs have nothing stale to clear. Mark the migration
+    // complete before the current worker is registered later in the page load.
+    if (!isLocal && !controlled) {
+      try { localStorage.setItem(migrationKey, "done"); } catch {}
+      return;
+    }
+
+    if (!isLocal && migrated) return;
+
+    const needsReload = controlled;
+    if (needsReload) document.documentElement.style.visibility = "hidden";
+
+    const workerCleanup = "serviceWorker" in navigator
+      ? navigator.serviceWorker.getRegistrations()
+          .then((registrations) => Promise.allSettled(registrations.map((registration) => registration.unregister())))
+          .catch(() => [])
+      : Promise.resolve([]);
+
+    const cacheCleanup = "caches" in window
+      ? caches.keys()
+          .then((keys) => Promise.allSettled(keys.filter((key) => key.startsWith("softweek-")).map((key) => caches.delete(key))))
+          .catch(() => [])
+      : Promise.resolve([]);
+
+    Promise.allSettled([workerCleanup, cacheCleanup]).finally(() => {
+      if (!isLocal) {
+        try { localStorage.setItem(migrationKey, "done"); } catch {}
+      }
+      if (needsReload) {
+        window.location.replace(window.location.href);
+        return;
+      }
+      document.documentElement.style.visibility = "";
+    });
+  } catch {
+    document.documentElement.style.visibility = "";
+  }
+})();`;
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  applicationName: "Softweek",
+  applicationName: "SoftWeek",
   manifest: "/manifest.webmanifest",
   title: {
     default: "SoftWeek Planner | Simple Homeschool Weekly Planning",
     template: "%s | SoftWeek Planner",
   },
   description:
-    "SoftWeek Planner is a simple homeschool weekly planner in beta. Plan a real week, move what changes, attach resource links, save weekly records, and print records for your binder.",
+    "Plan the homeschool week lightly, recover when life changes it, and keep the record automatically.",
 
   keywords: [
     "homeschool planner",
@@ -54,14 +103,14 @@ export const metadata: Metadata = {
 
   appleWebApp: {
     capable: true,
-    title: "Softweek",
+    title: "SoftWeek",
     statusBarStyle: "default",
   },
 
   openGraph: {
     title: "SoftWeek Planner | Simple Homeschool Weekly Planning",
     description:
-      "A beta homeschool planner for planning the week, moving what changes, saving records, and printing binder-friendly records.",
+      "Plan the week lightly, recover when life changes it, and keep the record automatically.",
     url: siteUrl,
     siteName: "SoftWeek Planner",
     type: "website",
@@ -80,7 +129,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "SoftWeek Planner | Simple Homeschool Weekly Planning",
     description:
-      "Plan the week, move what changes, save the record, and print records for your homeschool binder.",
+      "Plan lightly, recover quickly, and keep homeschool records automatically.",
     images: ["/og-image.png"],
   },
 
@@ -102,7 +151,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   viewportFit: "cover",
-  themeColor: "#fbf6ec",
+  themeColor: "#f4f0e7",
 };
 
 export default function RootLayout({
@@ -112,7 +161,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
-      <body>{children}<BetaFeedbackWidget /><ServiceWorkerRegister /><Analytics /></body>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: localWorkerCleanupScript }} />
+      </head>
+      <body>
+        {children}
+        <BetaFeedbackWidget />
+        <ServiceWorkerRegister />
+        <Analytics />
+      </body>
     </html>
   );
 }

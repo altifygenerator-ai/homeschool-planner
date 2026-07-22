@@ -102,7 +102,7 @@ export default function AuthPage() {
             Save your homeschool planner under a family account.
           </h1>
           <p className="section-lead">
-            Create a family workspace, log back in from another device, or try
+            Create a family planner, log back in from another device, or try
             SoftWeek as a guest first. Beta accounts are free while SoftWeek is
             being tested with homeschool families.
           </p>
@@ -110,7 +110,7 @@ export default function AuthPage() {
           <div className="auth-promise-card soft-card">
             <LuLock />
             <div>
-              <strong>Your weekly records stay with your family workspace.</strong>
+              <strong>Your weekly records stay with your family account.</strong>
               <p>
                 Beta accounts are meant for real testing now, with better saved
                 records and fuller planning tools coming as SoftWeek grows.
@@ -121,7 +121,7 @@ export default function AuthPage() {
           <div className="auth-mini-grid">
             <div>
               <strong>Parent account</strong>
-              <span>Full planner, child profiles, saved weeks, categories.</span>
+              <span>Full planner, child profiles, automatic weekly records, and categories.</span>
             </div>
             <div>
               <strong>Child account option</strong>
@@ -310,7 +310,7 @@ export default function AuthPage() {
 
           <p className="text-small auth-footnote">
             Guest mode is just for trying the planner. For real use, create a
-            beta account so your family setup and saved weeks can stay together.
+            beta account so your family setup and weekly records can stay together.
           </p>
 
           <Link className="auth-back-link" href="/">
