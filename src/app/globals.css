@@ -235,7 +235,8 @@ p, li, small, strong, span { overflow-wrap: break-word; }
 @keyframes sw-pulse { 50% { opacity: .35; } }
 
 .sw-error-banner { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 18px; border: 1px solid #d9a49f; border-left: 4px solid var(--danger); background: var(--danger-soft); padding: 11px 13px; border-radius: 6px; }
-.sw-error-banner button { border: 0; background: transparent; font-weight: 750; text-decoration: underline; }
+.sw-error-banner button, .sw-warning-banner button { border: 0; background: transparent; color: inherit; font-weight: 750; text-decoration: underline; }
+.sw-warning-banner { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 18px; border: 1px solid #d6c28e; border-left: 4px solid var(--ochre); background: #fff8e6; color: var(--ink); padding: 11px 13px; border-radius: 6px; }
 
 .sw-screen { min-width: 0; }
 .sw-screen-header { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; margin-bottom: 24px; }

@@ -91,6 +91,7 @@ export default function PlannerShell({
   const [loading, setLoading] = useState(true);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("saved");
   const [errorMessage, setErrorMessage] = useState("");
+  const [recordWarning, setRecordWarning] = useState("");
   const [undo, setUndo] = useState<UndoState | null>(null);
   const [focusToken] = useState(initialAdd ? 1 : 0);
   const [lifeDay, setLifeDay] = useState<WeekDay | undefined>();
@@ -219,10 +220,15 @@ export default function PlannerShell({
         plans: plans.map(withoutSyncState),
         childSummaries: generateChildWeeklySummaries(children, plans),
       };
-      void saveWeekLog(record).catch((error) => {
-        setSyncStatus("error");
-        setErrorMessage(error instanceof Error ? error.message : "The automatic weekly record could not be updated.");
-      });
+      void saveWeekLog(record)
+        .then(() => setRecordWarning(""))
+        .catch((error) => {
+          console.error("SoftWeek automatic weekly record update failed", error);
+          const detail = error instanceof Error && error.message
+            ? ` ${error.message}`
+            : "";
+          setRecordWarning(`Your planner changes are saved, but the automatic weekly record could not update.${detail}`);
+        });
     }, 900);
     return () => {
       if (recordTimer.current) window.clearTimeout(recordTimer.current);
@@ -649,6 +655,7 @@ export default function PlannerShell({
       </div>
 
       {errorMessage ? <div className="sw-error-banner" role="alert"><span>{errorMessage}</span><button type="button" onClick={() => setErrorMessage("")}>Dismiss</button></div> : null}
+      {recordWarning ? <div className="sw-warning-banner" role="status"><span>{recordWarning}</span><button type="button" onClick={() => setRecordWarning("")}>Dismiss</button></div> : null}
 
       {view === "today" ? (
         <TodayScreen plans={plans} children={children} weekStart={weekStart} day={focusedDay} activeChildId={activeChildId} canEdit={canEdit} canMove={canMove} focusToken={focusToken} onChildChange={setActiveChildId} onAdd={addPlan} onComplete={complete} onRestore={restore} onMove={move} onSkip={skip} onDelete={(item) => void remove(item)} onNote={note} onMakeRhythm={openRhythm} />

@@ -656,6 +656,25 @@ export async function getSavedWeeks(): Promise<SavedWeekLog[]> {
   return (data ?? []).map(savedWeekFromDb);
 }
 
+function storageErrorMessage(error: unknown, fallback: string) {
+  if (error && typeof error === "object") {
+    const value = error as { message?: unknown; details?: unknown; hint?: unknown; code?: unknown };
+    const details = [value.message, value.details, value.hint]
+      .filter((part): part is string => typeof part === "string" && part.trim().length > 0)
+      .map((part) => part.trim());
+
+    if (details.length) return details.join(" ");
+    if (typeof value.code === "string" && value.code) return `${fallback} (${value.code})`;
+  }
+
+  if (error instanceof Error && error.message) return error.message;
+  return fallback;
+}
+
+function familyWeekRecordId(familyId: string, weekStart: string) {
+  return `week-record:${familyId}:${normalizeWeekStart(weekStart)}`;
+}
+
 export async function saveWeekLog(log: SavedWeekLog) {
   const { context, supabase, familyId } = await getStorageContext();
 
@@ -668,24 +687,54 @@ export async function saveWeekLog(log: SavedWeekLog) {
 
   if (!context.isParent) return;
 
+  const normalizedStart = normalizeWeekStart(log.weekStart);
+  const normalizedEnd = normalizeWeekStart(log.weekEnd);
+
+  // Older builds used an ID based only on the date (for example
+  // "week-record-2026-07-20"). Because saved_weeks.id is a global primary key,
+  // a different family opening the same week could own that ID and RLS would
+  // reject every later family's automatic record upsert. Reuse this family's
+  // existing row when one is present; otherwise create a family-scoped ID.
+  const { data: existingRows, error: lookupError } = await supabase
+    .from("saved_weeks")
+    .select("id")
+    .eq("family_id", familyId)
+    .eq("period_type", "week")
+    .eq("period_start", normalizedStart)
+    .is("deleted_at", null)
+    .order("updated_at", { ascending: false })
+    .limit(1);
+
+  if (lookupError) {
+    throw new Error(storageErrorMessage(lookupError, "The existing weekly record could not be checked."));
+  }
+
+  const recordId = existingRows?.[0]?.id
+    ? String(existingRows[0].id)
+    : familyWeekRecordId(familyId, normalizedStart);
+  const snapshot: SavedWeekLog = { ...log, id: recordId };
+
   const { error } = await supabase.from("saved_weeks").upsert(
     {
-      id: log.id,
+      id: recordId,
       family_id: familyId,
       week_label: log.weekLabel,
-      week_start: normalizeWeekStart(log.weekStart),
-      week_end: normalizeWeekStart(log.weekEnd),
+      week_start: normalizedStart,
+      week_end: normalizedEnd,
       saved_at: log.savedAt,
-      snapshot: log,
+      snapshot,
       period_type: "week",
-      period_start: normalizeWeekStart(log.weekStart),
-      period_end: normalizeWeekStart(log.weekEnd),
+      period_start: normalizedStart,
+      period_end: normalizedEnd,
       updated_at: new Date().toISOString(),
+      deleted_at: null,
     },
     { onConflict: "id" }
   );
 
-  if (error) throw error;
+  if (error) {
+    throw new Error(storageErrorMessage(error, "The weekly record could not be saved."));
+  }
 }
 
 export async function deleteSavedWeek(weekId: string) {
