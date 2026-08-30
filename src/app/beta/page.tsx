@@ -12,7 +12,7 @@ const feedbackEmail =
 const feedbackPoints = [
   {
     title: "Try one normal week",
-    text: "Add a few real plans, leave one in This Week, and move work when the day changes.",
+    text: "Set up one real course, choose its normal days, complete a lesson, and see whether the next-step flow feels easier than maintaining a calendar.",
   },
   {
     title: "Review the automatic record",
@@ -40,10 +40,10 @@ export default function BetaPage() {
               </h1>
 
               <p className="section-lead">
-                SoftWeek is usable now for Today, flexible weekly planning, the This Week
-                holding area, Life Happened recovery, child profiles, and automatic records.
-                It is still beta, so I’m trying to find what feels helpful, confusing, or unnecessary
-                before I polish the wrong things.
+                SoftWeek now centers on Courses, Today, a lighter weekly view, and automatic records.
+                Load a curriculum sequence once, choose the normal days, and SoftWeek keeps the next
+                lesson moving without dating the whole year. It is still beta, so I’m looking for the
+                parts that genuinely save time and the parts that still get in the way.
               </p>
 
               <div className="btn-row beta-actions">
@@ -73,10 +73,10 @@ export default function BetaPage() {
               </p>
 
               <div className="beta-question-list">
-                <p>Does adding plans feel easy?</p>
-                <p>Would multi-day plans save time?</p>
+                <p>Was setting up a course obvious?</p>
+                <p>Does seeing only the next lesson reduce planning work?</p>
                 <p>Does the automatic record reflect what really happened?</p>
-                <p>What should be removed, renamed, or moved?</p>
+                <p>Would you come back to Today during a normal school week?</p>
               </div>
 
               <Link className="btn btn-primary" href={feedbackEmail}>
@@ -102,9 +102,9 @@ export default function BetaPage() {
                 The beta does not need to look perfect. It needs to work.
               </h2>
               <p className="section-lead">
-                I’m keeping the planner focused on Today, a flexible weekly flow, automatic records,
-                child logins, resource links, rhythms, and print records. Feedback
-                helps decide what gets simplified next.
+                I’m keeping the planner focused on Today, Courses, a flexible weekly flow, automatic
+                records, and simple family use. Feedback helps decide whether this lighter next-lesson
+                approach is actually worth coming back to week after week.
               </p>
             </div>
 

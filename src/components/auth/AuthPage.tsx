@@ -13,9 +13,11 @@ import {
 import {
   createChildSupabaseAccount,
   createParentLocalAccount,
+  getActiveAccountContext,
   loginLocalAccount,
   startGuestSession,
 } from "@/lib/localAuth";
+import { migrateGuestPlannerToActiveAccount } from "@/lib/guestMigration";
 
 export default function AuthPage() {
   const router = useRouter();
@@ -47,6 +49,7 @@ export default function AuthPage() {
     setMessage("");
     setIsWorking(true);
 
+    const wasGuest = (await getActiveAccountContext())?.isGuest ?? false;
     const result =
       accountType === "child"
         ? await createChildSupabaseAccount({
@@ -69,6 +72,14 @@ export default function AuthPage() {
       return;
     }
 
+    if (wasGuest && accountType === "parent") {
+      try {
+        await migrateGuestPlannerToActiveAccount();
+      } catch (error) {
+        console.error("SoftWeek guest planner migration failed", error);
+      }
+    }
+
     finish();
   }
 
@@ -77,12 +88,22 @@ export default function AuthPage() {
     setMessage("");
     setIsWorking(true);
 
+    const wasGuest = (await getActiveAccountContext())?.isGuest ?? false;
     const result = await loginLocalAccount(login, loginPassword, inviteCode);
     setIsWorking(false);
 
     if (!result.ok) {
       setMessage(result.message || "I could not log in with that email and password.");
       return;
+    }
+
+    if (wasGuest) {
+      try {
+        const context = await getActiveAccountContext();
+        if (context?.isParent) await migrateGuestPlannerToActiveAccount();
+      } catch (error) {
+        console.error("SoftWeek guest planner migration failed", error);
+      }
     }
 
     finish();
@@ -309,8 +330,7 @@ export default function AuthPage() {
           </button>
 
           <p className="text-small auth-footnote">
-            Guest mode is just for trying the planner. For real use, create a
-            beta account so your family setup and weekly records can stay together.
+            Guest mode includes sample work so you can try SoftWeek first. If you add your own work, creating a parent account on this device will carry it into your family planner.
           </p>
 
           <Link className="auth-back-link" href="/">

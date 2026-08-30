@@ -45,6 +45,15 @@ export type SoftWeekEventName =
   | "rhythm_removed"
   | "lesson_stack_created"
   | "lesson_stack_item_completed"
+  | "course_opened"
+  | "course_created"
+  | "course_next_surfaced"
+  | "course_next_added"
+  | "course_lesson_completed"
+  | "course_rhythm_updated"
+  | "course_paused"
+  | "course_resumed"
+  | "quick_log_completed"
   | "week_closeout_started"
   | "week_closeout_completed"
   | "unfinished_items_carried"
@@ -72,6 +81,7 @@ type ProfileTrackingRow = {
   id: string;
   family_id: string | null;
   child_id: string | null;
+  last_seen_at?: string | null;
 };
 
 const SESSION_KEY = "softweek_analytics_session";
@@ -128,7 +138,7 @@ export async function trackSoftWeekEvent(eventName: SoftWeekEventName, options: 
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("id, family_id, child_id")
+    .select("id, family_id, child_id, last_seen_at")
     .eq("id", user.id)
     .maybeSingle();
   const typedProfile = profile as ProfileTrackingRow | null;
@@ -136,6 +146,33 @@ export async function trackSoftWeekEvent(eventName: SoftWeekEventName, options: 
 
   const now = new Date().toISOString();
   const eventKey = milestoneEvents.has(eventName) ? `${user.id}:${eventName}` : null;
+
+  if (eventName === "planner_opened" && typedProfile.last_seen_at && !trackingFailures.has("app_events")) {
+    const weekKey = (value: Date) => {
+      const day = value.getDay();
+      const mondayOffset = day === 0 ? -6 : 1 - day;
+      const monday = new Date(value.getFullYear(), value.getMonth(), value.getDate() + mondayOffset, 12, 0, 0, 0);
+      return `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, "0")}-${String(monday.getDate()).padStart(2, "0")}`;
+    };
+    const previous = new Date(typedProfile.last_seen_at);
+    const current = new Date();
+    if (!Number.isNaN(previous.getTime()) && weekKey(previous) !== weekKey(current)) {
+      await supabase.from("app_events").insert({
+        family_id: typedProfile.family_id,
+        user_id: user.id,
+        child_id: options.childId ?? typedProfile.child_id ?? null,
+        event_name: "weekly_return",
+        event_source: "planner",
+        session_id: sessionId(),
+        event_key: null,
+        metadata: {
+          previous_seen_at: typedProfile.last_seen_at,
+          acquisition: acquisition(),
+          path: window.location.pathname,
+        },
+      });
+    }
+  }
 
   if (!trackingFailures.has("app_events")) {
     const { error: eventError } = await supabase.from("app_events").insert({

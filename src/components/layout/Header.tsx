@@ -40,11 +40,13 @@ export default function Header() {
     ? context.isChild
       ? [
           { label: "Today", href: "/dashboard/planner?view=today" },
+          { label: "Courses", href: "/dashboard/planner?view=courses" },
           { label: "Week", href: "/dashboard/planner?view=week" },
           { label: "Account", href: "/dashboard/account" },
         ]
       : [
           { label: "Today", href: "/dashboard/planner?view=today" },
+          { label: "Courses", href: "/dashboard/planner?view=courses" },
           { label: "Week", href: "/dashboard/planner?view=week" },
           { label: "Records", href: "/dashboard/weeks" },
           { label: "Family", href: "/dashboard/children" },

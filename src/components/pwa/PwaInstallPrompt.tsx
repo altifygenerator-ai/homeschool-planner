@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { LuCheck, LuDownload, LuInfo, LuSmartphone } from "react-icons/lu";
+import { LuCheck, LuDownload, LuInfo, LuSmartphone, LuX } from "react-icons/lu";
 import { trackSoftWeekEvent } from "@/lib/usageTracking";
 
 type BeforeInstallPromptEvent = Event & {
@@ -36,11 +36,14 @@ export default function PwaInstallPrompt({ compact = false, className = "" }: Pw
   const [installed, setInstalled] = useState(false);
   const [platform, setPlatform] = useState<"unknown" | "android" | "ios" | "other">("unknown");
   const [message, setMessage] = useState("");
+  const [ready, setReady] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     const hydrationTimer = window.setTimeout(() => {
       setPlatform(getMobilePlatform());
       setInstalled(isStandaloneDisplay());
+      setReady(true);
     }, 0);
 
     function handleBeforeInstallPrompt(event: Event) {
@@ -67,14 +70,14 @@ export default function PwaInstallPrompt({ compact = false, className = "" }: Pw
 
   const fallbackText = useMemo(() => {
     if (platform === "ios") {
-      return "On iPhone or iPad, open the Share menu and choose Add to Home Screen.";
+      return "On iPhone or iPad, open Share and choose Add to Home Screen.";
     }
 
     if (platform === "android") {
-      return "On Android, use Chrome or Samsung Internet. If the button does not appear, open the browser menu and tap Install app or Add to Home screen.";
+      return "If Install does not appear, use the browser menu and choose Install app or Add to Home screen.";
     }
 
-    return "On mobile, use your browser menu to install or add SoftWeek to your home screen when the option appears.";
+    return "Use your mobile browser menu to install SoftWeek when the option appears.";
   }, [platform]);
 
   async function handleInstall() {
@@ -92,7 +95,7 @@ export default function PwaInstallPrompt({ compact = false, className = "" }: Pw
         setMessage("SoftWeek is installing. Check your home screen when it finishes.");
         void trackSoftWeekEvent("mobile_app_install_accepted", { source: "pwa_install" });
       } else {
-        setMessage("No problem. You can install it later from this same button or your browser menu.");
+        setMessage("No problem. You can install it later from your browser menu.");
         void trackSoftWeekEvent("mobile_app_install_dismissed", { source: "pwa_install" });
       }
     } catch {
@@ -101,6 +104,8 @@ export default function PwaInstallPrompt({ compact = false, className = "" }: Pw
     }
   }
 
+  if (compact && (!ready || installed || dismissed || platform === "other")) return null;
+
   return (
     <section className={`pwa-install-card ${compact ? "pwa-install-card-compact" : ""} ${className}`.trim()}>
       <div className="pwa-install-icon" aria-hidden="true">
@@ -108,30 +113,36 @@ export default function PwaInstallPrompt({ compact = false, className = "" }: Pw
       </div>
 
       <div className="pwa-install-copy">
-        <p className="eyebrow">Mobile app</p>
-        <h2>{installed ? "SoftWeek is installed on this device." : "Install SoftWeek on your phone."}</h2>
+        <p className="eyebrow">{compact ? "Keep it close" : "Mobile app"}</p>
+        <h2>{installed ? "SoftWeek is installed on this device." : compact ? "Put SoftWeek on your home screen." : "Install SoftWeek on your phone."}</h2>
         <p>
           {installed
-            ? "Open it from your home screen like an app. Your account, planner, children, and weekly records stay the same."
-            : "Use SoftWeek from your home screen with its own icon and app-style window. It still uses the same planner and account as the desktop site."}
+            ? "Open it from your home screen like an app. Your planner and records stay the same."
+            : compact
+              ? "If this is becoming part of your school day, make Today one tap away."
+              : "Use SoftWeek from your home screen with its own icon and app-style window. It still uses the same planner and account as the desktop site."}
         </p>
 
         <div className="pwa-install-actions">
           {!installed ? (
             <button className="btn btn-primary" type="button" onClick={() => void handleInstall()}>
               <LuDownload />
-              Install mobile app
+              Install SoftWeek
             </button>
           ) : null}
 
-          <p className="pwa-install-note">
-            <LuInfo />
-            {fallbackText}
-          </p>
+          {!compact ? (
+            <p className="pwa-install-note">
+              <LuInfo />
+              {fallbackText}
+            </p>
+          ) : null}
         </div>
 
         {message ? <p className="pwa-install-status">{message}</p> : null}
       </div>
+
+      {compact ? <button type="button" className="pwa-install-dismiss" aria-label="Dismiss install suggestion" onClick={() => setDismissed(true)}><LuX /></button> : null}
     </section>
   );
 }

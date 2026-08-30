@@ -445,7 +445,7 @@ export async function readLessonStacks(): Promise<LessonStack[]> {
   const itemRows = (items ?? []) as Record<string, unknown>[];
   return stackRows.map((row) => ({
     id: String(row.id),
-    name: String(row.name ?? "Lesson stack"),
+    name: String(row.name ?? "Course"),
     assignedTo: row.assigned_to_child_id ? String(row.assigned_to_child_id) : "everyone",
     category: String(row.category_slug ?? "other"),
     active: Boolean(row.active ?? true),
@@ -469,7 +469,7 @@ export async function saveLessonStack(stack: LessonStack) {
     localSet(STACKS_KEY, [stack, ...current.filter((item) => item.id !== stack.id)]);
     return;
   }
-  if (!account.isParent) throw new Error("Only a parent account can change lesson stacks.");
+  if (!account.isParent) throw new Error("Only a parent account can change courses.");
   const { error } = await supabase.from("lesson_stacks").upsert({
     id: stack.id,
     family_id: familyId,

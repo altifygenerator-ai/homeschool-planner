@@ -60,18 +60,22 @@ export const metadata: Metadata = {
   applicationName: "SoftWeek",
   manifest: "/manifest.webmanifest",
   title: {
-    default: "SoftWeek Planner | Simple Homeschool Weekly Planning",
+    default: "SoftWeek | Homeschool Curriculum Planner That Keeps Lessons Moving",
     template: "%s | SoftWeek Planner",
   },
   description:
-    "Plan the homeschool week lightly, recover when life changes it, and keep the record automatically.",
+    "Load your homeschool curriculum once, keep the next lesson moving, and build records automatically without assigning the whole year to rigid dates.",
 
   keywords: [
     "homeschool planner",
+    "homeschool curriculum planner",
+    "homeschool lesson planner",
     "homeschool weekly planner",
     "weekly homeschool planner",
     "homeschool planning app",
     "flexible homeschool planner",
+    "homeschool curriculum tracker",
+    "homeschool lesson tracker",
     "homeschool record keeping",
     "homeschool planner for multiple kids",
     "homeschool resource planner",
@@ -108,9 +112,9 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: "SoftWeek Planner | Simple Homeschool Weekly Planning",
+    title: "SoftWeek | Homeschool Curriculum Planner That Keeps Lessons Moving",
     description:
-      "Plan the week lightly, recover when life changes it, and keep the record automatically.",
+      "Load curriculum once, keep the next lesson moving, and let completed work build your homeschool record automatically.",
     url: siteUrl,
     siteName: "SoftWeek Planner",
     type: "website",
@@ -120,16 +124,16 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "SoftWeek Planner weekly homeschool planning app",
+        alt: "SoftWeek homeschool curriculum flow planner",
       },
     ],
   },
 
   twitter: {
     card: "summary_large_image",
-    title: "SoftWeek Planner | Simple Homeschool Weekly Planning",
+    title: "SoftWeek | Homeschool Curriculum Planner That Keeps Lessons Moving",
     description:
-      "Plan lightly, recover quickly, and keep homeschool records automatically.",
+      "Load curriculum once, keep the next lesson moving, and build homeschool records automatically.",
     images: ["/og-image.png"],
   },
 

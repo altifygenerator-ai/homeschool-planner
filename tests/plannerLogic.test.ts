@@ -3,12 +3,14 @@ import assert from "node:assert/strict";
 import {
   applyRecoveryChanges,
   buildRecoveryChanges,
+  courseRhythmId,
   dateKeyForDay,
+  generateCourseLessonItems,
   generateRhythmItems,
   nextLessonItems,
 } from "../src/lib/plannerLogic.ts";
 import { getWeekRangeFromStart, getWeekStartIso, shiftWeekStart } from "../src/lib/week.ts";
-import type { PlannerItem, WeeklyRhythm } from "../src/types/planner.ts";
+import type { LessonStack, PlannerItem, WeeklyRhythm } from "../src/types/planner.ts";
 
 function plan(id: string, day: PlannerItem["day"], status: PlannerItem["status"] = "planned"): PlannerItem {
   return {
@@ -132,4 +134,63 @@ test("recovery leaves completed and skipped work unchanged", () => {
   assert.equal(result.find((item) => item.id === "done")?.status, "done");
   assert.equal(result.find((item) => item.id === "skipped")?.status, "skipped");
   assert.equal(result.find((item) => item.id === "open")?.placement, "week");
+});
+
+
+test("course rhythms feed only the next lesson into the real current day", () => {
+  const now = new Date();
+  const currentWeek = getWeekStartIso(now);
+  const today = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][now.getDay()] as PlannerItem["day"];
+  assert.ok(today);
+
+  const stack: LessonStack = {
+    id: "math-course",
+    name: "Math",
+    assignedTo: "everyone",
+    category: "math",
+    active: true,
+    createdAt: now.toISOString(),
+    items: [
+      { id: "math-1", title: "Lesson 1", position: 0, status: "queued" },
+      { id: "math-2", title: "Lesson 2", position: 1, status: "queued" },
+    ],
+  };
+  const rhythm: WeeklyRhythm = {
+    id: courseRhythmId(stack.id),
+    name: "Math",
+    title: "Math",
+    weekdays: [today],
+    assignedTo: "everyone",
+    category: "math",
+    timeBlock: "Anytime",
+    startWeek: currentWeek,
+    active: true,
+    createdAt: now.toISOString(),
+  };
+
+  const generated = generateCourseLessonItems([stack], [rhythm], currentWeek, []);
+  assert.equal(generated.length, 1);
+  assert.equal(generated[0].title, "Lesson 1");
+  assert.equal(generated[0].sourceLessonStackItemId, "math-1");
+  assert.equal(generated[0].day, today);
+
+  const repeated = generateCourseLessonItems([stack], [rhythm], currentWeek, generated);
+  assert.equal(repeated.length, 0);
+});
+
+test("course rhythms do not create generic subject-name rhythm items", () => {
+  const weekStart = "2026-07-20";
+  const rhythm: WeeklyRhythm = {
+    id: courseRhythmId("science"),
+    name: "Science",
+    title: "Science",
+    weekdays: ["Monday", "Wednesday"],
+    assignedTo: "everyone",
+    category: "science",
+    timeBlock: "Anytime",
+    startWeek: weekStart,
+    active: true,
+    createdAt: "2026-07-20T00:00:00Z",
+  };
+  assert.deepEqual(generateRhythmItems([rhythm], weekStart, [], () => "unused"), []);
 });

@@ -3,10 +3,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import TodayScreen from "@/components/planner/redesign/TodayScreen";
 import WeekScreen from "@/components/planner/redesign/WeekScreen";
+import CourseScreen from "@/components/planner/redesign/CourseScreen";
 import LifeHappenedDialog from "@/components/planner/redesign/LifeHappenedDialog";
 import WeeklyRhythmEditor from "@/components/planner/redesign/WeeklyRhythmEditor";
-import LessonStackManager from "@/components/planner/redesign/LessonStackManager";
 import WeekCloseout from "@/components/planner/redesign/WeekCloseout";
+import PwaInstallPrompt from "@/components/pwa/PwaInstallPrompt";
 import { getChildren, saveWeekLog } from "@/lib/plannerStorage";
 import {
   bulkMovePlannerItems,
@@ -25,14 +26,14 @@ import {
   updatePlannerItem,
 } from "@/lib/plannerRepository";
 import { getActiveAccountContext, type AccountContext } from "@/lib/localAuth";
-import { applyRecoveryChanges, dayForDate, generateRhythmItems, nextLessonItems, type RecoveryChange, type RecoveryMode } from "@/lib/plannerLogic";
+import { applyRecoveryChanges, courseRhythmId, dayForDate, generateCourseLessonItems, generateRhythmItems, isCourseRhythm, type RecoveryChange, type RecoveryMode } from "@/lib/plannerLogic";
 import { createId } from "@/lib/utils";
 import { getCurrentWeekRange, getWeekRangeFromStart, shiftWeekStart } from "@/lib/week";
 import { generateChildWeeklySummaries } from "@/lib/weeklySummary";
 import { trackSoftWeekEvent } from "@/lib/usageTracking";
 import type { ChildProfile, LessonStack, PlannerItem, SavedWeekLog, WeekDay, WeeklyRhythm } from "@/types/planner";
 
-type PlannerView = "today" | "week";
+type PlannerView = "today" | "courses" | "week";
 type SyncStatus = "saved" | "saving" | "offline" | "error";
 
 type UndoState = {
@@ -98,7 +99,6 @@ export default function PlannerShell({
   const [lifeOpen, setLifeOpen] = useState(false);
   const [rhythmOpen, setRhythmOpen] = useState(false);
   const [rhythmSource, setRhythmSource] = useState<PlannerItem | null>(null);
-  const [stackOpen, setStackOpen] = useState(false);
   const [closeoutOpen, setCloseoutOpen] = useState(initialCloseout);
   const recordTimer = useRef<number | null>(null);
 
@@ -106,20 +106,21 @@ export default function PlannerShell({
   const canEdit = account?.isParent ?? false;
   const canMove = canEdit || Boolean(account?.account.permissions.canPlan);
 
-  const loadWeek = useCallback(async (targetWeek: string, knownRhythms?: WeeklyRhythm[]) => {
+  const loadWeek = useCallback(async (targetWeek: string, knownRhythms?: WeeklyRhythm[], knownStacks?: LessonStack[]) => {
     setLoading(true);
     setErrorMessage("");
     try {
       const nextPlans = (await readPlannerWeek(targetWeek)).map((item) => normalizeItem(item, targetWeek));
       const activeRhythms = knownRhythms ?? await readWeeklyRhythms();
+      const activeStacks = knownStacks ?? await readLessonStacks();
       const context = await getActiveAccountContext();
-      const generated = context?.isParent
+      const generatedRhythms = context?.isParent
         ? generateRhythmItems(activeRhythms, targetWeek, nextPlans, createId)
         : [];
 
       let savedGenerated: PlannerItem[] = [];
-      if (generated.length) {
-        const results = await Promise.allSettled(generated.map((item) => createPlannerItem(item)));
+      if (generatedRhythms.length) {
+        const results = await Promise.allSettled(generatedRhythms.map((item) => createPlannerItem(item)));
         savedGenerated = results.flatMap((result) => result.status === "fulfilled" ? [result.value] : []);
         const failures = results.length - savedGenerated.length;
         if (savedGenerated.length) {
@@ -131,13 +132,44 @@ export default function PlannerShell({
         }
       }
 
-      const combined = [...nextPlans, ...savedGenerated];
+      const basePlans = [...nextPlans, ...savedGenerated];
+      const courseGenerated = context?.isParent
+        ? generateCourseLessonItems(activeStacks, activeRhythms, targetWeek, basePlans)
+        : [];
+      let savedCourseItems: PlannerItem[] = [];
+      let nextStacks = activeStacks;
+
+      if (courseGenerated.length) {
+        const results = await Promise.allSettled(courseGenerated.map((item) => createPlannerItem(item)));
+        savedCourseItems = results.flatMap((result) => result.status === "fulfilled" ? [result.value] : []);
+        const savedByLessonId = new Map(savedCourseItems.filter((item) => item.sourceLessonStackItemId).map((item) => [item.sourceLessonStackItemId as string, item]));
+        nextStacks = activeStacks.map((stack) => ({
+          ...stack,
+          items: stack.items.map((lesson) => {
+            const generated = savedByLessonId.get(lesson.id);
+            return generated ? { ...lesson, status: "planned" as const, plannerItemId: generated.id, completedAt: null } : lesson;
+          }),
+        }));
+        const changedStacks = nextStacks.filter((stack) => activeStacks.some((before) => before.id === stack.id && before.items.some((lesson, index) => lesson !== stack.items[index])));
+        if (changedStacks.length) await Promise.allSettled(changedStacks.map((stack) => saveLessonStack(stack)));
+        if (savedCourseItems.length) {
+          void trackSoftWeekEvent("course_next_surfaced", { source: "today", metadata: { count: savedCourseItems.length } });
+        }
+        const failures = courseGenerated.length - savedCourseItems.length;
+        if (failures) {
+          setErrorMessage(`${failures} course ${failures === 1 ? "lesson" : "lessons"} could not be surfaced today. Your course order is still safe.`);
+          setSyncStatus("error");
+        }
+      }
+
+      const combined = [...basePlans, ...savedCourseItems];
       setPlans(combined);
+      setStacks(nextStacks);
       if (!combined.length && context?.isParent) void trackSoftWeekEvent("onboarding_started", { source: "empty-planner" });
       setWeekStart(targetWeek);
       const todayDay = dayForDate(targetWeek);
       setFocusedDay(todayDay ?? "Monday");
-      if (!generated.length || savedGenerated.length === generated.length) {
+      if ((!generatedRhythms.length || savedGenerated.length === generatedRhythms.length) && (!courseGenerated.length || savedCourseItems.length === courseGenerated.length)) {
         setSyncStatus(typeof navigator !== "undefined" && !navigator.onLine ? "offline" : "saved");
       }
       void trackSoftWeekEvent("week_opened", { source: "planner", metadata: { weekStart: targetWeek } });
@@ -170,9 +202,12 @@ export default function PlannerShell({
           void trackSoftWeekEvent("reminder_clicked", { source: initialReminder });
         }
 
-        await loadWeek(getCurrentWeekRange().weekStart, nextRhythms);
+        await loadWeek(getCurrentWeekRange().weekStart, nextRhythms, nextStacks);
+        void trackSoftWeekEvent("planner_opened", { source: initialView });
         if (initialView === "today") {
           void trackSoftWeekEvent("today_opened", { source: "planner" });
+        } else if (initialView === "courses") {
+          void trackSoftWeekEvent("course_opened", { source: "planner" });
         }
       } catch (error) {
         if (!mounted) return;
@@ -191,7 +226,7 @@ export default function PlannerShell({
       try {
         const replayed = await replayOfflinePlannerChanges();
         setSyncStatus("saved");
-        if (replayed) await loadWeek(weekStart, rhythms);
+        if (replayed) await loadWeek(weekStart, rhythms, stacks);
       } catch (error) {
         setSyncStatus("error");
         setErrorMessage(error instanceof Error ? error.message : "Offline changes could not be synchronized.");
@@ -204,7 +239,7 @@ export default function PlannerShell({
       window.removeEventListener("online", online);
       window.removeEventListener("offline", offline);
     };
-  }, [loadWeek, rhythms, weekStart]);
+  }, [loadWeek, rhythms, stacks, weekStart]);
 
   useEffect(() => {
     if (loading || account?.isChild || !account) return;
@@ -273,6 +308,42 @@ export default function PlannerShell({
     }
   }
 
+  async function logCompletedWork(title: string, assignedTo: string) {
+    const cleanTitle = title.trim();
+    if (!cleanTitle) return;
+    const item: PlannerItem = {
+      id: createId("log"),
+      title: cleanTitle,
+      day: focusedDay,
+      placement: "day",
+      category: "other",
+      status: "done",
+      timeBlock: "Anytime",
+      assignedTo,
+      weekStart,
+      actualNotes: "",
+      completedAt: new Date().toISOString(),
+      actualDate: currentDateKey(),
+      orderIndex: plans.length,
+      syncState: "saving",
+    };
+    setPlans((current) => [...current, item]);
+    setSyncStatus("saving");
+    setErrorMessage("");
+    try {
+      const savedItem = await createPlannerItem(item);
+      setPlans((current) => current.map((plan) => plan.id === item.id ? savedItem : plan));
+      setSyncStatus(savedItem.syncState === "queued" ? "offline" : "saved");
+      void trackSoftWeekEvent("quick_log_completed", { source: "today" });
+    } catch (error) {
+      setPlans((current) => current.filter((plan) => plan.id !== item.id));
+      setSyncStatus("error");
+      const message = error instanceof Error ? error.message : "That completed work could not be logged.";
+      setErrorMessage(message);
+      throw new Error(message);
+    }
+  }
+
   async function pastePlans(titles: string[], day: WeekDay | null, assignedTo: string) {
     let savedCount = 0;
     for (const title of titles) {
@@ -307,30 +378,52 @@ export default function PlannerShell({
     }
   }
 
-  function updateLocalLessonProgress(item: PlannerItem, status: "planned" | "done", completedAt: string | null) {
+  async function persistLessonProgress(
+    item: PlannerItem,
+    status: "queued" | "planned" | "done" | "skipped",
+    completedAt: string | null,
+  ) {
     if (!item.sourceLessonStackItemId) return;
-    setStacks((current) => current.map((stack) => ({
+    const stack = stacks.find((candidate) => candidate.items.some((lesson) => lesson.id === item.sourceLessonStackItemId));
+    if (!stack) return;
+    const nextStack: LessonStack = {
       ...stack,
+      updatedAt: new Date().toISOString(),
       items: stack.items.map((lesson) => lesson.id === item.sourceLessonStackItemId
-        ? { ...lesson, status, completedAt, plannerItemId: item.id }
+        ? {
+            ...lesson,
+            status,
+            completedAt,
+            plannerItemId: status === "queued" ? null : item.id,
+          }
         : lesson),
-    })));
+    };
+    setStacks((current) => current.map((candidate) => candidate.id === stack.id ? nextStack : candidate));
+    try {
+      await saveLessonStack(nextStack);
+    } catch (error) {
+      console.error("SoftWeek course progress sync failed", error);
+    }
   }
 
   async function complete(item: PlannerItem) {
     const completedAt = new Date().toISOString();
     const actualDate = currentDateKey();
     const saved = await mutate(item, { status: "done", completedAt, actualDate }, () => completePlannerItem(item.id, item, actualDate), "first_item_completed");
-    if (saved) updateLocalLessonProgress(item, "done", completedAt);
+    if (saved) {
+      await persistLessonProgress(item, "done", completedAt);
+      if (item.sourceLessonStackItemId) void trackSoftWeekEvent("course_lesson_completed", { source: "today" });
+    }
   }
 
   async function restore(item: PlannerItem) {
     const saved = await mutate(item, { status: "planned", completedAt: null, actualDate: null }, () => restorePlannerItem(item.id, item), "plan_status_updated");
-    if (saved) updateLocalLessonProgress(item, "planned", null);
+    if (saved) await persistLessonProgress(item, "planned", null);
   }
 
-  function skip(item: PlannerItem) {
-    void mutate(item, { status: "skipped", completedAt: null }, () => skipPlannerItem(item.id, item), "plan_status_updated");
+  async function skip(item: PlannerItem) {
+    const saved = await mutate(item, { status: "skipped", completedAt: null }, () => skipPlannerItem(item.id, item), "plan_status_updated");
+    if (saved) await persistLessonProgress(item, "skipped", null);
   }
 
   function move(item: PlannerItem, day: WeekDay | null) {
@@ -346,6 +439,7 @@ export default function PlannerShell({
     setSyncStatus("saving");
     try {
       await deletePlannerItem(item.id, item);
+      if (item.sourceLessonStackItemId) await persistLessonProgress(item, "queued", null);
       setSyncStatus(typeof navigator !== "undefined" && !navigator.onLine ? "offline" : "saved");
       setUndo({
         label: `Deleted “${item.title}”`,
@@ -358,6 +452,7 @@ export default function PlannerShell({
               ...current.filter((plan) => plan.id !== restoredItem.id),
               restoredItem,
             ]);
+            if (restoredItem.sourceLessonStackItemId) await persistLessonProgress(restoredItem, "planned", null);
             setSyncStatus(restoredItem.syncState === "queued" ? "offline" : "saved");
             setUndo(null);
           } catch (error) {
@@ -428,27 +523,114 @@ export default function PlannerShell({
     }
   }
 
-  async function saveStack(stack: LessonStack) {
+  function makeCourseRhythm(stack: LessonStack, weekdays: WeekDay[], existing?: WeeklyRhythm): WeeklyRhythm {
+    return {
+      id: courseRhythmId(stack.id),
+      name: stack.name,
+      title: stack.name,
+      weekdays,
+      assignedTo: stack.assignedTo,
+      category: stack.category,
+      timeBlock: "Anytime",
+      notes: existing?.notes ?? "",
+      resourceTitle: existing?.resourceTitle ?? "",
+      resourceUrl: existing?.resourceUrl ?? "",
+      startWeek: existing?.startWeek ?? weekStart,
+      endWeek: existing?.endWeek ?? null,
+      active: stack.active,
+      createdAt: existing?.createdAt ?? new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+  }
+
+  async function surfaceCourseToday(stack: LessonStack, rhythm: WeeklyRhythm) {
+    const generated = generateCourseLessonItems([stack], [rhythm], weekStart, plans);
+    if (!generated.length) return;
+    const item = generated[0];
+    const savedItem = await createPlannerItem(item);
+    const nextStack: LessonStack = {
+      ...stack,
+      updatedAt: new Date().toISOString(),
+      items: stack.items.map((lesson) => lesson.id === savedItem.sourceLessonStackItemId
+        ? { ...lesson, status: "planned", plannerItemId: savedItem.id, completedAt: null }
+        : lesson),
+    };
+    await saveLessonStack(nextStack);
+    setStacks((current) => current.map((candidate) => candidate.id === stack.id ? nextStack : candidate));
+    setPlans((current) => current.some((plan) => plan.id === savedItem.id) ? current : [...current, savedItem]);
+    void trackSoftWeekEvent("course_next_surfaced", { source: "course-rhythm" });
+  }
+
+  async function saveCourse(stack: LessonStack, weekdays: WeekDay[]) {
     setSyncStatus("saving");
+    setErrorMessage("");
+    const existingRhythm = rhythms.find((item) => item.id === courseRhythmId(stack.id));
+    const rhythm = makeCourseRhythm(stack, weekdays, existingRhythm);
     try {
       await saveLessonStack(stack);
+      await saveWeeklyRhythm(rhythm);
       setStacks((current) => [stack, ...current.filter((item) => item.id !== stack.id)]);
-      setSyncStatus("saved");
-      void trackSoftWeekEvent("lesson_stack_created", { source: "lesson-stacks", metadata: { itemCount: stack.items.length } });
+      setRhythms((current) => [rhythm, ...current.filter((item) => item.id !== rhythm.id)]);
+      await surfaceCourseToday(stack, rhythm);
+      setSyncStatus(typeof navigator !== "undefined" && !navigator.onLine ? "offline" : "saved");
+      void trackSoftWeekEvent("course_created", { source: "courses", metadata: { itemCount: stack.items.length, weekdays: weekdays.length } });
+      void trackSoftWeekEvent("onboarding_completed", { source: "course-created", metadata: { itemCount: stack.items.length } });
     } catch (error) {
       setSyncStatus("error");
-      setErrorMessage(error instanceof Error ? error.message : "The lesson stack could not be saved.");
+      const message = error instanceof Error ? error.message : "The course could not be saved.";
+      setErrorMessage(message);
+      throw new Error(message);
     }
   }
 
-  async function addLessons(stack: LessonStack, count: number) {
-    const lessons = nextLessonItems(stack.items, count);
+  async function updateCourseDays(stack: LessonStack, weekdays: WeekDay[]) {
+    if (!weekdays.length) return;
+    const existing = rhythms.find((item) => item.id === courseRhythmId(stack.id));
+    const rhythm = makeCourseRhythm(stack, weekdays, existing);
+    setRhythms((current) => [rhythm, ...current.filter((item) => item.id !== rhythm.id)]);
+    setSyncStatus("saving");
+    try {
+      await saveWeeklyRhythm(rhythm);
+      await surfaceCourseToday(stack, rhythm);
+      setSyncStatus(typeof navigator !== "undefined" && !navigator.onLine ? "offline" : "saved");
+      void trackSoftWeekEvent("course_rhythm_updated", { source: "courses", metadata: { weekdays: weekdays.length } });
+    } catch (error) {
+      setSyncStatus("error");
+      setErrorMessage(error instanceof Error ? error.message : "Those course days could not be saved.");
+    }
+  }
+
+  async function toggleCourse(stack: LessonStack) {
+    const nextStack = { ...stack, active: !stack.active, updatedAt: new Date().toISOString() };
+    const existing = rhythms.find((item) => item.id === courseRhythmId(stack.id));
+    const rhythm = makeCourseRhythm(nextStack, existing?.weekdays?.length ? existing.weekdays : ["Monday", "Tuesday", "Wednesday", "Thursday"], existing);
+    setSyncStatus("saving");
+    try {
+      await saveLessonStack(nextStack);
+      await saveWeeklyRhythm(rhythm);
+      setStacks((current) => current.map((item) => item.id === stack.id ? nextStack : item));
+      setRhythms((current) => [rhythm, ...current.filter((item) => item.id !== rhythm.id)]);
+      if (nextStack.active) await surfaceCourseToday(nextStack, rhythm);
+      setSyncStatus(typeof navigator !== "undefined" && !navigator.onLine ? "offline" : "saved");
+      void trackSoftWeekEvent(nextStack.active ? "course_resumed" : "course_paused", { source: "courses" });
+    } catch (error) {
+      setSyncStatus("error");
+      setErrorMessage(error instanceof Error ? error.message : "The course could not be updated.");
+    }
+  }
+
+  async function addLessons(stack: LessonStack, count: number, targetDay: WeekDay = focusedDay) {
+    const visiblePlanIds = new Set(plans.map((item) => item.id));
+    const lessons = [...stack.items]
+      .sort((a, b) => a.position - b.position)
+      .filter((lesson) => lesson.status === "queued" || (lesson.status === "planned" && (!lesson.plannerItemId || !visiblePlanIds.has(lesson.plannerItemId))))
+      .slice(0, count);
     if (!lessons.length) return;
     const created = lessons.map((lesson, index): PlannerItem => ({
-      id: `lesson-plan:${lesson.id}:${weekStart}`,
+      id: `lesson-plan:${lesson.id}:${weekStart}:${targetDay}`,
       title: lesson.title,
-      day: null,
-      placement: "week",
+      day: targetDay,
+      placement: "day",
       category: stack.category,
       status: "planned",
       timeBlock: "Anytime",
@@ -465,13 +647,13 @@ export default function PlannerShell({
       const results = await Promise.allSettled(created.map((item) => createPlannerItem(item)));
       const savedItems = results.flatMap((result) => result.status === "fulfilled" ? [result.value] : []);
       const savedIds = new Set(savedItems.map((item) => item.id));
-      const nextStack = {
+      const nextStack: LessonStack = {
         ...stack,
         updatedAt: new Date().toISOString(),
         items: stack.items.map((item) => {
           const generated = created.find((plan) => plan.sourceLessonStackItemId === item.id);
           return generated && savedIds.has(generated.id)
-            ? { ...item, status: "planned" as const, plannerItemId: generated.id }
+            ? { ...item, status: "planned" as const, plannerItemId: generated.id, completedAt: null }
             : item;
         }),
       };
@@ -488,12 +670,13 @@ export default function PlannerShell({
         setErrorMessage(`${savedItems.length} lesson${savedItems.length === 1 ? " was" : "s were"} added. ${failed} could not be saved and can be retried.`);
       } else {
         setSyncStatus(queued ? "offline" : "saved");
+        void trackSoftWeekEvent("course_next_added", { source: "courses", metadata: { count: savedItems.length } });
       }
     } catch (error) {
       await Promise.allSettled(created.map((item) => deletePlannerItem(item.id, item)));
       setPlans((current) => current.filter((item) => !created.some((createdItem) => createdItem.id === item.id)));
       setSyncStatus("error");
-      setErrorMessage(error instanceof Error ? error.message : "The lessons could not be added.");
+      setErrorMessage(error instanceof Error ? error.message : "The next lesson could not be added.");
     }
   }
 
@@ -635,7 +818,7 @@ export default function PlannerShell({
       void trackSoftWeekEvent("week_closeout_completed", { source: "closeout", metadata: { carried: carried.length } });
       void trackSoftWeekEvent("next_week_created", { source: "closeout" });
       setView("week");
-      await loadWeek(targetWeek, rhythms);
+      await loadWeek(targetWeek, rhythms, stacks);
     } catch (error) {
       setSyncStatus("error");
       setErrorMessage(error instanceof Error ? error.message : "The week could not be closed.");
@@ -658,15 +841,74 @@ export default function PlannerShell({
       {recordWarning ? <div className="sw-warning-banner" role="status"><span>{recordWarning}</span><button type="button" onClick={() => setRecordWarning("")}>Dismiss</button></div> : null}
 
       {view === "today" ? (
-        <TodayScreen plans={plans} children={children} weekStart={weekStart} day={focusedDay} activeChildId={activeChildId} canEdit={canEdit} canMove={canMove} focusToken={focusToken} onChildChange={setActiveChildId} onAdd={addPlan} onComplete={complete} onRestore={restore} onMove={move} onSkip={skip} onDelete={(item) => void remove(item)} onNote={note} onMakeRhythm={openRhythm} />
+        <TodayScreen
+          plans={plans}
+          children={children}
+          stacks={stacks}
+          weekStart={weekStart}
+          day={focusedDay}
+          activeChildId={activeChildId}
+          canEdit={canEdit}
+          canMove={canMove}
+          isGuest={account?.isGuest ?? false}
+          focusToken={focusToken}
+          onChildChange={setActiveChildId}
+          onAdd={addPlan}
+          onComplete={complete}
+          onRestore={restore}
+          onMove={move}
+          onSkip={skip}
+          onDelete={(item) => void remove(item)}
+          onNote={note}
+          onMakeRhythm={openRhythm}
+          onOpenCourses={() => { setView("courses"); void trackSoftWeekEvent("course_opened", { source: "today" }); }}
+          onLogDone={logCompletedWork}
+        />
+      ) : view === "courses" ? (
+        <CourseScreen
+          stacks={stacks}
+          children={children}
+          rhythms={rhythms}
+          canEdit={canEdit}
+          onSaveCourse={saveCourse}
+          onUpdateDays={updateCourseDays}
+          onToggleCourse={toggleCourse}
+          onAddNext={(stack) => addLessons(stack, 1, focusedDay)}
+        />
       ) : (
-        <WeekScreen plans={plans} children={children} weekStart={weekStart} weekLabel={weekRange.weekLabel} activeChildId={activeChildId} canEdit={canEdit} canMove={canMove} focusToken={focusToken} onChildChange={setActiveChildId} onSwitchWeek={(direction) => void loadWeek(shiftWeekStart(weekStart, direction), rhythms)} onThisWeek={() => void loadWeek(getCurrentWeekRange().weekStart, rhythms)} onAdd={addPlan} onPaste={pastePlans} onComplete={complete} onRestore={restore} onMove={move} onSkip={skip} onDelete={(item) => void remove(item)} onNote={note} onMakeRhythm={openRhythm} onLifeHappened={(day) => { setLifeDay(day); setLifeOpen(true); void trackSoftWeekEvent("life_happened_opened", { source: day ? "day" : "week" }); }} onOpenRhythms={() => openRhythm()} onOpenStacks={() => setStackOpen(true)} onCopyLastWeek={() => void copyLastWeek()} onCloseout={() => { setCloseoutOpen(true); void trackSoftWeekEvent("week_closeout_started", { source: "week-tools" }); }} />
+        <WeekScreen
+          plans={plans}
+          children={children}
+          weekStart={weekStart}
+          weekLabel={weekRange.weekLabel}
+          activeChildId={activeChildId}
+          canEdit={canEdit}
+          canMove={canMove}
+          focusToken={focusToken}
+          onChildChange={setActiveChildId}
+          onSwitchWeek={(direction) => void loadWeek(shiftWeekStart(weekStart, direction), rhythms, stacks)}
+          onThisWeek={() => void loadWeek(getCurrentWeekRange().weekStart, rhythms, stacks)}
+          onAdd={addPlan}
+          onPaste={pastePlans}
+          onComplete={complete}
+          onRestore={restore}
+          onMove={move}
+          onSkip={skip}
+          onDelete={(item) => void remove(item)}
+          onNote={note}
+          onMakeRhythm={openRhythm}
+          onLifeHappened={(day) => { setLifeDay(day); setLifeOpen(true); void trackSoftWeekEvent("life_happened_opened", { source: day ? "day" : "week" }); }}
+          onOpenRhythms={() => openRhythm()}
+          onCopyLastWeek={() => void copyLastWeek()}
+          onCloseout={() => { setCloseoutOpen(true); void trackSoftWeekEvent("week_closeout_started", { source: "week-tools" }); }}
+        />
       )}
+
+      {canEdit && !account?.isGuest && (stacks.length > 0 || plans.length >= 3) ? <PwaInstallPrompt compact className="sw-retention-install" /> : null}
 
       {undo ? <div className="sw-undo-toast" role="status"><span>{undo.label}</span><button type="button" onClick={() => void undo.run()}>Undo</button></div> : null}
       {lifeOpen ? <LifeHappenedDialog plans={plans} weekStart={weekStart} selectedDay={lifeDay} onClose={() => setLifeOpen(false)} onApply={(mode, changes, dayKind) => void applyLifeHappened(mode, changes, dayKind)} /> : null}
-      {rhythmOpen ? <WeeklyRhythmEditor weekStart={weekStart} children={children} rhythms={rhythms} sourceItem={rhythmSource} onSave={(rhythm) => void saveRhythm(rhythm)} onToggle={(rhythm) => void toggleRhythm(rhythm)} onClose={() => { setRhythmOpen(false); setRhythmSource(null); }} /> : null}
-      {stackOpen ? <LessonStackManager stacks={stacks} children={children} onSave={(stack) => void saveStack(stack)} onAddLessons={(stack, count) => void addLessons(stack, count)} onClose={() => setStackOpen(false)} /> : null}
+      {rhythmOpen ? <WeeklyRhythmEditor weekStart={weekStart} children={children} rhythms={rhythms.filter((rhythm) => !isCourseRhythm(rhythm))} sourceItem={rhythmSource} onSave={(rhythm) => void saveRhythm(rhythm)} onToggle={(rhythm) => void toggleRhythm(rhythm)} onClose={() => { setRhythmOpen(false); setRhythmSource(null); }} /> : null}
       {closeoutOpen ? <WeekCloseout plans={plans} onClose={() => setCloseoutOpen(false)} onComplete={(ids, noteValue) => void closeWeek(ids, noteValue)} /> : null}
     </div>
   );

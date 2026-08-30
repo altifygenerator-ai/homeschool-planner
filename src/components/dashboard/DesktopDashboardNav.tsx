@@ -7,6 +7,7 @@ import { getActiveAccountContext } from "@/lib/localAuth";
 
 const parentLinks = [
   { label: "Today", href: "/dashboard/planner?view=today", view: "today" },
+  { label: "Courses", href: "/dashboard/planner?view=courses", view: "courses" },
   { label: "Week", href: "/dashboard/planner?view=week", view: "week" },
   { label: "Records", href: "/dashboard/weeks" },
   { label: "Family", href: "/dashboard/children" },
@@ -14,6 +15,7 @@ const parentLinks = [
 
 const childLinks = [
   { label: "Today", href: "/dashboard/planner?view=today", view: "today" },
+  { label: "Courses", href: "/dashboard/planner?view=courses", view: "courses" },
   { label: "Week", href: "/dashboard/planner?view=week", view: "week" },
   { label: "Account", href: "/dashboard/account" },
 ];

@@ -12,7 +12,7 @@ function first(value: string | string[] | undefined) {
 export default async function DashboardPlannerPage({ searchParams }: PlannerPageProps) {
   const params = await searchParams;
   const requestedView = first(params.view);
-  const initialView = requestedView === "week" ? "week" : "today";
+  const initialView = requestedView === "week" ? "week" : requestedView === "courses" ? "courses" : "today";
   const initialAdd = first(params.add) === "1";
   const initialCloseout = first(params.closeout) === "1";
   const initialReminder = first(params.reminder) ?? null;

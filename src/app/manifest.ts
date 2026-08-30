@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "SoftWeek Planner",
     short_name: "SoftWeek",
     description:
-      "A flexible homeschool weekly planner that helps families plan lightly, recover when plans change, and keep records automatically.",
+      "A homeschool curriculum-flow planner that keeps the next lesson moving and turns completed work into records automatically.",
     start_url: "/dashboard/planner?view=today&source=pwa",
     scope: "/",
     display: "standalone",
@@ -24,7 +24,7 @@ export default function manifest(): MetadataRoute.Manifest {
         sizes: "1280x651",
         type: "image/png",
         form_factor: "wide",
-        label: "SoftWeek weekly planner with This Week and daily sections",
+        label: "SoftWeek homeschool planner week view",
       },
       {
         src: "/pwa-screenshot-mobile.png",

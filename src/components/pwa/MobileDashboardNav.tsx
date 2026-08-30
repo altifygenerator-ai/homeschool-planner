@@ -3,27 +3,28 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LuArchive, LuCalendarDays, LuListChecks, LuPlus, LuUserRound, LuUsersRound } from "react-icons/lu";
+import { LuArchive, LuBookOpen, LuCalendarDays, LuListChecks, LuPlus, LuUserRound } from "react-icons/lu";
 import { getActiveAccountContext } from "@/lib/localAuth";
 
 type MobileNavItem = {
   label: string;
   href: string;
   icon: typeof LuListChecks;
-  view?: "today" | "week";
+  view?: "today" | "courses" | "week";
   add?: boolean;
 };
 
 const parentLinks: MobileNavItem[] = [
   { label: "Today", href: "/dashboard/planner?view=today", icon: LuListChecks, view: "today" },
-  { label: "Week", href: "/dashboard/planner?view=week", icon: LuCalendarDays, view: "week" },
+  { label: "Courses", href: "/dashboard/planner?view=courses", icon: LuBookOpen, view: "courses" },
   { label: "Add", href: "/dashboard/planner?view=today&add=1", icon: LuPlus, add: true },
+  { label: "Week", href: "/dashboard/planner?view=week", icon: LuCalendarDays, view: "week" },
   { label: "Records", href: "/dashboard/weeks", icon: LuArchive },
-  { label: "Family", href: "/dashboard/children", icon: LuUsersRound },
 ];
 
 const childLinks: MobileNavItem[] = [
   { label: "Today", href: "/dashboard/planner?view=today", icon: LuListChecks, view: "today" },
+  { label: "Courses", href: "/dashboard/planner?view=courses", icon: LuBookOpen, view: "courses" },
   { label: "Week", href: "/dashboard/planner?view=week", icon: LuCalendarDays, view: "week" },
   { label: "Account", href: "/dashboard/account", icon: LuUserRound },
 ];

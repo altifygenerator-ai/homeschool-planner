@@ -2,6 +2,8 @@ import { createId } from "@/lib/utils";
 import { getFeatureAccess, type SoftWeekAccess, type SoftWeekPlanTier } from "@/lib/featureAccess";
 import { getSupabaseClient, getSupabaseSession, isSupabaseConfigured } from "@/lib/supabaseClient";
 import { trackSoftWeekEvent } from "@/lib/usageTracking";
+import { dayForDate } from "@/lib/plannerLogic";
+import { getCurrentWeekRange } from "@/lib/week";
 
 export type LocalAccountRole = "parent" | "child";
 
@@ -166,6 +168,90 @@ function saveGuestSession(session: LocalSession) {
 function clearGuestSession() {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(SESSION_KEY);
+}
+
+function seedGuestSample() {
+  if (typeof window === "undefined") return;
+  const weekStart = getCurrentWeekRange().weekStart;
+  const day = dayForDate(weekStart) ?? "Monday";
+  const weekKey = `softweek_week_plans:${weekStart.slice(0, 10)}`;
+  const existing = window.localStorage.getItem(weekKey);
+  if (existing) {
+    try {
+      const parsed = JSON.parse(existing) as unknown[];
+      if (Array.isArray(parsed) && parsed.length) return;
+    } catch {}
+  }
+
+  const now = new Date().toISOString();
+  const actualDate = now.slice(0, 10);
+  const sample = [
+    {
+      id: "guest-demo-math",
+      title: "Math — Lesson 18",
+      day,
+      placement: "day",
+      category: "other",
+      status: "planned",
+      timeBlock: "Anytime",
+      assignedTo: "everyone",
+      weekStart,
+      notes: "Sample item — try checking it off.",
+      actualNotes: "",
+      resourceTitle: "",
+      resourceUrl: "",
+      completedAt: null,
+      actualDate: null,
+      orderIndex: 0,
+      sourceRhythmId: null,
+      sourceLessonStackItemId: null,
+      syncState: "saved",
+    },
+    {
+      id: "guest-demo-reading",
+      title: "Reading — Chapter 6",
+      day,
+      placement: "day",
+      category: "other",
+      status: "planned",
+      timeBlock: "Anytime",
+      assignedTo: "everyone",
+      weekStart,
+      notes: "",
+      actualNotes: "",
+      resourceTitle: "",
+      resourceUrl: "",
+      completedAt: null,
+      actualDate: null,
+      orderIndex: 1,
+      sourceRhythmId: null,
+      sourceLessonStackItemId: null,
+      syncState: "saved",
+    },
+    {
+      id: "guest-demo-science",
+      title: "Science — nature journal",
+      day,
+      placement: "day",
+      category: "other",
+      status: "done",
+      timeBlock: "Anytime",
+      assignedTo: "everyone",
+      weekStart,
+      notes: "",
+      actualNotes: "Observed leaves and sketched two plants.",
+      resourceTitle: "",
+      resourceUrl: "",
+      completedAt: now,
+      actualDate,
+      orderIndex: 2,
+      sourceRhythmId: null,
+      sourceLessonStackItemId: null,
+      syncState: "saved",
+    },
+  ];
+  window.localStorage.setItem(weekKey, JSON.stringify(sample));
+  window.localStorage.setItem("softweek_current_plans", JSON.stringify(sample));
 }
 
 function mapProfileToAccount(profile: Record<string, unknown>, email = "") {
@@ -385,6 +471,7 @@ export function startGuestSession() {
   };
 
   saveGuestSession(session);
+  seedGuestSample();
   return session;
 }
 
@@ -413,6 +500,7 @@ export async function createParentLocalAccount({
     return { ok: false, message: "Add an email and a password with at least 6 characters." };
   }
 
+  const previousGuestSession = getGuestSession();
   clearGuestSession();
 
   const { data, error } = await supabase.auth.signUp({
@@ -428,9 +516,13 @@ export async function createParentLocalAccount({
     },
   });
 
-  if (error) return { ok: false, message: error.message };
+  if (error) {
+    if (previousGuestSession) saveGuestSession(previousGuestSession);
+    return { ok: false, message: error.message };
+  }
 
   if (!data.session) {
+    if (previousGuestSession) saveGuestSession(previousGuestSession);
     return {
       ok: true,
       needsEmailConfirm: true,
@@ -544,6 +636,7 @@ export async function loginLocalAccount(login: string, password: string, inviteC
     return { ok: false, message: "Add your email and password." };
   }
 
+  const previousGuestSession = getGuestSession();
   clearGuestSession();
 
   const { error } = await supabase.auth.signInWithPassword({
@@ -551,7 +644,10 @@ export async function loginLocalAccount(login: string, password: string, inviteC
     password: cleanPasswordValue,
   });
 
-  if (error) return { ok: false, message: error.message };
+  if (error) {
+    if (previousGuestSession) saveGuestSession(previousGuestSession);
+    return { ok: false, message: error.message };
+  }
 
   try {
     await ensureCurrentProfile({ inviteCode });

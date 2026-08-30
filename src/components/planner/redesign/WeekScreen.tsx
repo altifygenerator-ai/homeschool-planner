@@ -30,7 +30,6 @@ type WeekScreenProps = {
   onMakeRhythm: (item: PlannerItem) => void;
   onLifeHappened: (day?: WeekDay) => void;
   onOpenRhythms: () => void;
-  onOpenStacks: () => void;
   onCopyLastWeek: () => void;
   onCloseout: () => void;
 };
@@ -79,8 +78,7 @@ export default function WeekScreen(props: WeekScreenProps) {
       {props.canEdit ? (
         <nav className="sw-week-tools" aria-label="Week tools">
           <button type="button" onClick={props.onCopyLastWeek}>Copy last week</button>
-          <button type="button" onClick={props.onOpenRhythms}>Weekly Rhythm</button>
-          <button type="button" onClick={props.onOpenStacks}>Lesson Stacks</button>
+          <button type="button" onClick={props.onOpenRhythms}>Repeating routines</button>
           <button type="button" onClick={() => props.onLifeHappened()}>Life Happened</button>
           <button type="button" onClick={props.onCloseout}>Wrap up week</button>
         </nav>
@@ -88,12 +86,12 @@ export default function WeekScreen(props: WeekScreenProps) {
 
       <section className="sw-week-inbox">
         <div className="sw-section-heading">
-          <div><h2>This Week</h2><p>Work that belongs in the week without forcing it onto a day.</p></div>
+          <div><h2>Loose ends for this week</h2><p>Use this for one-off work that belongs in the week without forcing it onto a day. Courses stay in their own flow.</p></div>
           <span>{unscheduled.length}</span>
         </div>
         <div className="sw-item-list">
           {unscheduled.map((item) => <PlannerItemRow key={item.id} item={item} children={props.children} canEdit={props.canEdit} canMove={props.canMove} onComplete={props.onComplete} onRestore={props.onRestore} onMove={props.onMove} onSkip={props.onSkip} onDelete={props.onDelete} onNote={props.onNote} onMakeRhythm={props.onMakeRhythm} />)}
-          {!unscheduled.length ? <div className="sw-empty-line">Nothing is waiting here. Add ideas before deciding where they fit.</div> : null}
+          {!unscheduled.length ? <div className="sw-empty-line">Nothing is waiting here. That is fine — normal course work does not need to live in this holding area.</div> : null}
         </div>
       </section>
 
